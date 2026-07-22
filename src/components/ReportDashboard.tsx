@@ -104,65 +104,65 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/50 scrollbar-none">
+      <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200 touch-pan-x flex-nowrap scroll-smooth">
         <button
           onClick={() => setActiveTab("criteria")}
-          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
             activeTab === "criteria"
               ? "border-blue-900 text-blue-900 bg-white"
               : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
-          <Award className="w-4 h-4 mr-1" />
+          <Award className="w-4 h-4" />
           <span>Chi Tiết 4 Tiêu Chí</span>
         </button>
 
         <button
           onClick={() => setActiveTab("strengths")}
-          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
             activeTab === "strengths"
               ? "border-blue-900 text-blue-900 bg-white"
               : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
-          <Sparkles className="w-4 h-4 mr-1" />
+          <Sparkles className="w-4 h-4" />
           <span>Thế Mạnh & Cải Thiện</span>
         </button>
 
         <button
           onClick={() => setActiveTab("upgrades")}
-          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
             activeTab === "upgrades"
               ? "border-blue-900 text-blue-900 bg-white"
               : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
-          <Flame className="w-4 h-4 mr-1" />
+          <Flame className="w-4 h-4" />
           <span>Nâng Cấp Câu</span>
         </button>
 
         <button
-          onClick={() => setActiveTab("model")}
-          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
-            activeTab === "model"
-              ? "border-blue-900 text-blue-900 bg-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          <BookOpen className="w-4 h-4 mr-1" />
-          <span>Bài Viết Mẫu (Band 8.0+)</span>
-        </button>
-
-        <button
           onClick={() => setActiveTab("roadmap")}
-          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
             activeTab === "roadmap"
               ? "border-blue-900 text-blue-900 bg-white"
               : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
           }`}
         >
-          <ArrowRight className="w-4 h-4 mr-1" />
+          <ArrowRight className="w-4 h-4" />
           <span>Cẩm Nang Lên Band</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("model")}
+          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+            activeTab === "model"
+              ? "border-blue-900 text-blue-900 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Bài Viết Mẫu (Band 8.0+)</span>
         </button>
       </div>
 
@@ -349,7 +349,33 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </div>
         )}
 
-        {/* 4. Bài Viết Mẫu Band 8.0+ */}
+        {/* 4. Cẩm Nang Lên Band */}
+        {activeTab === "roadmap" && (
+          <div className="space-y-4" id="panel-roadmap">
+            <div className="flex items-center space-x-2 text-slate-700 mb-3">
+              <span className="w-1.5 h-4 bg-amber-500 rounded-full"></span>
+              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                Lộ Trình Hành Động Tối Ưu Cho Bài Viết Kế Tiếp
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              {report.nextBandSteps.map((step, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-start space-x-3"
+                >
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs font-bold shrink-0">
+                    {idx + 1}
+                  </span>
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 5. Bài Viết Mẫu Band 8.0+ */}
         {activeTab === "model" && (
           <div className="space-y-4" id="panel-model">
             <div className="flex items-center justify-between">
@@ -379,34 +405,8 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
             <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 flex items-start space-x-2">
               <HelpCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <p>
-                <span className="font-bold">Cách tự học hiệu quả:</span> Hãy so sánh đoạn văn của bạn với bài viết mẫu này, ghi lại các từ vựng cao cấp, cấu trúc ngữ pháp phức tạp và cách kết nối câu tự nhiên mà giám khảo AVA đã ứng dụng.
+                <span className="font-bold">Cách tự học hiệu quả:</span> Bài viết mẫu này đã trực tiếp tiếp thu và áp dụng các ý tưởng nâng cấp, lập luận sắc bén và hành động cụ thể từ phần Cẩm Nang Lên Band phía trên. Hãy so sánh bài làm của bạn với bài viết mẫu này để học tập cách triển khai câu từ chuẩn Band 8.0+.
               </p>
-            </div>
-          </div>
-        )}
-
-        {/* 5. Lộ Trình Lên Band */}
-        {activeTab === "roadmap" && (
-          <div className="space-y-4" id="panel-roadmap">
-            <div className="flex items-center space-x-2 text-slate-700 mb-3">
-              <span className="w-1.5 h-4 bg-amber-500 rounded-full"></span>
-              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
-                Lộ Trình Hành Động Tối Ưu Cho Bài Viết Kế Tiếp
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              {report.nextBandSteps.map((step, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-start space-x-3"
-                >
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs font-bold shrink-0">
-                    {idx + 1}
-                  </span>
-                  <p className="text-xs text-slate-700 font-medium leading-relaxed">{step}</p>
-                </div>
-              ))}
             </div>
           </div>
         )}

@@ -122,6 +122,7 @@ Quy tắc chấm điểm tiêu chí và làm tròn băng điểm (IELTS Band Des
 - Điểm của từng tiêu chí trong 4 tiêu chí (Task Achievement/Response, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy) BẮT BUỘC LÀ SỐ NGUYÊN (Ví dụ: 1, 2, 3, 4, 5, 6, 7, 8, 9). TUYỆT ĐỐI KHÔNG ĐƯỢC CHO ĐIỂM NỬA BAND (.5) HOẶC SỐ LẺ DÀNH CHO BẤT KỲ TIÊU CHÍ THÀNH PHẦN NÀO.
 - Bám sát nguyên tắc IELTS Band Descriptors chính thức: Một bài viết CHỈ ĐƯỢC CHO ĐIỂM BAND N khi ĐÁP ỨNG ĐẦY ĐỦ VÀ TRỌN VẸN TẤT CẢ các đặc trưng tích cực (positive features) của Band N ở tiêu chí tương ứng. Chỉ cần DÙ CHỈ 1 đặc trưng của Band N KHÔNG ĐƯỢC ĐÁP ỨNG (ví dụ: vẫn còn mắc lỗi ngữ pháp nhỏ, dùng từ chưa hoàn toàn chính xác, thiếu tổng quan overview, hoặc còn dính lỗi chấm câu...), điểm tiêu chí đó BẮT BUỘC PHẢI TỤT XUỐNG MỘT CẤP BAND THẤP HƠN (Band N-1).
 - Điểm Tổng (Overall Band) sẽ do hệ thống tự động tính dựa trên trung bình cộng của 4 tiêu chí số nguyên này và làm tròn theo quy tắc IELTS chính thức (Ví dụ: trung bình 6.75 -> Overall 7.0; 6.25 -> Overall 6.5; 6.125 -> Overall 6.0; 7.0 -> Overall 7.0).
+- LƯU Ý BẮT BUỘC VỀ KHÁI QUÁT HÓA VÀ LẬP LUẬN (Overgeneralization & Unconvincing Logic trong TR / TA): Nếu bài viết mắc lỗi overgeneralization (khái quát hóa quá đà), lập luận mang tính định kiến / phiến diện, thiếu tính thuyết phục / logic cao, hoặc chưa nêu đầy đủ thông tin quan trọng khiến bài KHÔNG ĐẠT ĐƯỢC BAND 8 ở tiêu chí TR (Task Response) hay TA (Task Achievement), bạn BẮT BUỘC phải trích dẫn CỤ THỂ vị trí câu văn / đoạn văn vi phạm trong bài làm của thí sinh (ngay trong phần feedback/example của TA/TR hoặc phần Cải Thiện), chỉ rõ chính xác lỗi đó nằm ở câu nào / đoạn nào và giải thích rõ nguyên nhân.
 
 Yêu cầu về số lượng từ (hãy kiểm tra số từ nhận được: ${wordCount} từ):
 - Task 1: tối thiểu 150 từ. Nếu dưới 150 từ, điểm Task Achievement không thể vượt quá Band 5.
@@ -219,7 +220,7 @@ Cấu trúc JSON phản hồi bắt buộc:
     "Các bước hành động cụ thể, chi tiết 2",
     "Các bước hành động cụ thể, chi tiết 3"
   ],
-  "fullUpgradeEssay": "Phiên bản nâng cấp toàn bộ bài viết (hoặc một phần lớn bài viết nếu quá dài) đạt chuẩn Band 8.0+ để thí sinh tham khảo và đối chiếu học tập."
+  "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. LƯU Ý QUAN TRỌNG: Bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới, các điểm sửa lỗi và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band (nextBandSteps) và phần Cải Thiện phía trên."
 }`;
 
   const promptText = `
