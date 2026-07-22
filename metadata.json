@@ -1,0 +1,6 @@
+{
+  "name": "IELTS Academic Writing Examiner",
+  "description": "Hệ thống AVA - Chuyên gia chấm điểm IELTS Academic Writing chuẩn khảo thí",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

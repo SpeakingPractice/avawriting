@@ -1,0 +1,750 @@
+import React, { useState, useEffect } from "react";
+import { GradingReport, EssayHistoryItem } from "./types";
+import { ScoreGauge } from "./components/ScoreGauge";
+import { ReviewHistory } from "./components/ReviewHistory";
+import { FileUploader } from "./components/FileUploader";
+import { ReportDashboard } from "./components/ReportDashboard";
+import {
+  Sparkles,
+  Flame,
+  Award,
+  BookOpen,
+  Calendar,
+  Layers,
+  Send,
+  Loader2,
+  BookOpenCheck,
+  PlusCircle,
+  AlertCircle,
+  RefreshCw,
+  Key,
+  Image,
+} from "lucide-react";
+
+export default function App() {
+  const [essay, setEssay] = useState<string>("");
+  const [taskType, setTaskType] = useState<"task1" | "task2">("task2");
+  const [prompt, setPrompt] = useState<string>("");
+  const [task1Image, setTask1Image] = useState<string | null>(null);
+  const [report, setReport] = useState<GradingReport | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingStep, setLoadingStep] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<EssayHistoryItem[]>([]);
+  const [activeHistoryId, setActiveHistoryId] = useState<string | undefined>(undefined);
+  const [customApiKey, setCustomApiKey] = useState<string>(() => {
+    return localStorage.getItem("ava_custom_api_key") || "";
+  });
+  const [isKeyValid, setIsKeyValid] = useState<boolean | null>(() => {
+    const cached = localStorage.getItem("ava_custom_api_key_valid");
+    return cached ? cached === "true" : null;
+  });
+  const [isValidatingKey, setIsValidatingKey] = useState<boolean>(false);
+  const [keyValidationMsg, setKeyValidationMsg] = useState<string | null>(null);
+  const [forceShowConfig, setForceShowConfig] = useState<boolean>(false);
+
+  const handleTask1ImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP...).");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError("Kích thước tệp hình ảnh không được vượt quá 8MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setTask1Image(event.target?.result as string);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleApiKeyChange = (val: string) => {
+    setCustomApiKey(val);
+    localStorage.setItem("ava_custom_api_key", val);
+    if (!val.trim()) {
+      setIsKeyValid(null);
+      setKeyValidationMsg(null);
+      localStorage.removeItem("ava_custom_api_key_valid");
+      setForceShowConfig(false);
+    }
+  };
+
+  // Automatically check the API Key after user typing stops (debounce)
+  useEffect(() => {
+    if (!customApiKey.trim()) {
+      setIsKeyValid(null);
+      setKeyValidationMsg(null);
+      localStorage.removeItem("ava_custom_api_key_valid");
+      return;
+    }
+
+    if (customApiKey.trim().length < 15) {
+      setIsKeyValid(false);
+      setKeyValidationMsg("Độ dài API Key quá ngắn.");
+      localStorage.setItem("ava_custom_api_key_valid", "false");
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setIsValidatingKey(true);
+      setKeyValidationMsg("Đang tự động xác thực API Key...");
+      try {
+        const res = await fetch("/api/validate-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customApiKey }),
+        });
+        const data = await res.json();
+        if (data.valid) {
+          setIsKeyValid(true);
+          setKeyValidationMsg("Kết nối thành công! API Key của bạn hoạt động hoàn hảo.");
+          localStorage.setItem("ava_custom_api_key_valid", "true");
+        } else {
+          setIsKeyValid(false);
+          setKeyValidationMsg(data.error || "Khóa API không hợp lệ hoặc đã hết hạn.");
+          localStorage.setItem("ava_custom_api_key_valid", "false");
+        }
+      } catch (err) {
+        setIsKeyValid(false);
+        setKeyValidationMsg("Lỗi kết nối khi kiểm tra API Key.");
+        localStorage.setItem("ava_custom_api_key_valid", "false");
+      } finally {
+        setIsValidatingKey(false);
+      }
+    }, 1200);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [customApiKey]);
+
+  // Load history from localStorage
+  useEffect(() => {
+    const cached = localStorage.getItem("ava_essay_history");
+    if (cached) {
+      try {
+        setHistory(JSON.parse(cached));
+      } catch (e) {
+        console.error("Failed to parse cached history:", e);
+      }
+    }
+  }, []);
+
+  // Save history to localStorage
+  const saveHistoryToCache = (newHistory: EssayHistoryItem[]) => {
+    setHistory(newHistory);
+    localStorage.setItem("ava_essay_history", JSON.stringify(newHistory));
+  };
+
+  // Word count helper
+  const wordsArray = essay.trim().split(/\s+/).filter(Boolean);
+  const wordCount = wordsArray.length;
+
+  // Requirements description based on task type
+  const targetWordCount = taskType === "task1" ? 150 : 250;
+  const wordCountProgress = Math.min((wordCount / targetWordCount) * 100, 100);
+
+  // Core handler to submit essay for AI grading
+  const handleGradeEssay = async () => {
+    if (!essay.trim()) {
+      setError("Vui lòng điền nội dung bài viết trước khi chấm.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setReport(null);
+
+    // Dynamic loading screen step sequence
+    const steps = [
+      "Hệ thống AVA đang tiếp nhận bài viết...",
+      "Đang quét độ dài bài viết và cấu trúc câu...",
+      "Đang phân tích vốn từ vựng (Lexical Resource)...",
+      "Đang kiểm tra độ đa dạng cấu trúc ngữ pháp (GRA)...",
+      "Đang đánh giá tính mạch lạc và liên kết (CC)...",
+      "Đang so khớp với các tiêu chuẩn Band Descriptors 2023...",
+      "AVA đang tổng hợp chứng nhận và lập báo cáo chi tiết..."
+    ];
+
+    let currentStepIdx = 0;
+    setLoadingStep(steps[currentStepIdx]);
+
+    const interval = setInterval(() => {
+      if (currentStepIdx < steps.length - 1) {
+        currentStepIdx++;
+        setLoadingStep(steps[currentStepIdx]);
+      }
+    }, 2800);
+
+    try {
+      const response = await fetch("/api/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          essay, 
+          taskType, 
+          prompt, 
+          customApiKey,
+          image: taskType === "task1" ? task1Image : null,
+        }),
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error("Không thể phân tích phản hồi từ máy chủ. Vui lòng thử lại sau.");
+      }
+
+      clearInterval(interval);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Có lỗi xảy ra trong quá trình chấm bài.");
+      }
+
+      setReport(data);
+
+      // Add to history
+      const historyItem: EssayHistoryItem = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        essay,
+        taskType,
+        prompt,
+        report: data,
+      };
+
+      const updatedHistory = [historyItem, ...history];
+      saveHistoryToCache(updatedHistory);
+      setActiveHistoryId(historyItem.id);
+
+    } catch (err: any) {
+      clearInterval(interval);
+      console.error(err);
+      const errMsg = err.message || "";
+      setError(errMsg || "Không thể kết nối với dịch vụ chấm điểm AVA. Vui lòng kiểm tra lại kết nối hoặc khóa API.");
+
+      if (customApiKey.trim()) {
+        const lowerMsg = errMsg.toLowerCase();
+        if (
+          lowerMsg.includes("quota") ||
+          lowerMsg.includes("429") ||
+          lowerMsg.includes("hạn ngạch") ||
+          lowerMsg.includes("limit") ||
+          lowerMsg.includes("exhausted") ||
+          lowerMsg.includes("key")
+        ) {
+          setIsKeyValid(false);
+          setKeyValidationMsg("API Key cá nhân đã hết quota hoặc bị từ chối kết nối. Vui lòng cấu hình khóa mới.");
+          setForceShowConfig(true);
+          localStorage.setItem("ava_custom_api_key_valid", "false");
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset/Clear active inputs for a new attempt
+  const handleNewAttempt = () => {
+    setEssay("");
+    setPrompt("");
+    setTask1Image(null);
+    setReport(null);
+    setActiveHistoryId(undefined);
+    setError(null);
+  };
+
+  // Reload an item from the history
+  const handleSelectHistory = (item: EssayHistoryItem) => {
+    setEssay(item.essay);
+    setTaskType(item.taskType);
+    setPrompt(item.prompt);
+    setReport(item.report);
+    setActiveHistoryId(item.id);
+    setError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Delete an item from the history
+  const handleDeleteHistory = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const filtered = history.filter((item) => item.id !== id);
+    saveHistoryToCache(filtered);
+    if (activeHistoryId === id) {
+      setReport(null);
+      setActiveHistoryId(undefined);
+    }
+  };
+
+  // Clear all history logs
+  const handleClearHistory = () => {
+    if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử chấm bài không? Thao tác này không thể khôi phục.")) {
+      saveHistoryToCache([]);
+      setReport(null);
+      setActiveHistoryId(undefined);
+    }
+  };
+
+  // Handle trigger for revision flow
+  const handleRevisionTrigger = (revisedText: string) => {
+    setEssay(revisedText);
+    setReport(null);
+    setActiveHistoryId(undefined);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-16" id="app-root">
+      {/* Upper Navigation & Branding Header */}
+      <header className="bg-blue-900 text-white border-b-4 border-yellow-400 shadow-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo and title */}
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleNewAttempt}>
+              <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center shadow-md">
+                <span className="text-blue-900 font-bold text-xl font-display">AVA</span>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold tracking-tight uppercase font-display flex items-center space-x-2">
+                  <span>Hệ Thống Giám Khảo IELTS AVA</span>
+                </h1>
+                <p className="text-xs text-blue-200 uppercase tracking-widest font-medium">
+                  Chuyên gia chấm thi Academic Writing
+                </p>
+              </div>
+            </div>
+
+            {/* Senior Badge */}
+            <div className="hidden sm:flex flex-col items-end text-right">
+              <div className="text-xs opacity-80 uppercase tracking-wider">Phiên bản: #AVA-2026</div>
+              <div className="text-sm font-semibold text-yellow-400">British Council/IDP Standard</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Body */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        {/* Custom API Key Info Banner (When key is valid and not forced to show) */}
+        {isKeyValid === true && !forceShowConfig ? (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-emerald-800 animate-fadeIn" id="api-key-active-banner">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-semibold">
+                🔑 Đang áp dụng <strong className="underline">API KEY CÁ NHÂN</strong> hoạt động ổn định. Đã ẩn cấu hình để tối ưu hiển thị.
+              </span>
+            </div>
+            <button
+              onClick={() => setForceShowConfig(true)}
+              className="text-xs text-blue-900 hover:text-blue-700 font-bold underline transition-colors cursor-pointer self-start sm:self-auto"
+            >
+              Cấu hình lại hoặc Xóa khóa
+            </button>
+          </div>
+        ) : (
+          /* Custom API Key Input Bar (Shown when key is empty, invalid, or forced) */
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative overflow-hidden" id="api-key-config-box">
+            <div className="flex items-start md:items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-900 shrink-0">
+                <Key className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                  Cấu hình <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-blue-800 hover:text-blue-600">API KEY CÁ NHÂN</a> (Tùy chọn)
+                </h4>
+                <p className="text-[11px] text-slate-500">Nhập khóa Gemini API Key của bạn để sử dụng tài khoản riêng, tránh bị quá tải giới hạn yêu cầu (API Quota Limit).</p>
+              </div>
+            </div>
+            <div className="flex-1 max-w-sm w-full">
+              <div className="relative">
+                <input
+                  type="password"
+                  value={customApiKey}
+                  onChange={(e) => handleApiKeyChange(e.target.value)}
+                  placeholder="Nhập khóa API Key của bạn (AIzaSy...)"
+                  className="w-full text-xs bg-slate-50 text-slate-800 border border-slate-300 rounded-lg pl-3 pr-16 py-2.5 focus:ring-1 focus:ring-blue-900 focus:border-blue-900 outline-none transition-all placeholder:text-slate-400 font-mono"
+                />
+                {customApiKey && (
+                  <button 
+                    onClick={() => handleApiKeyChange("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 hover:text-rose-700 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                    title="Xóa khóa API"
+                  >
+                    Xóa
+                  </button>
+                )}
+              </div>
+
+              {/* Validation Status Message */}
+              {customApiKey.trim().length > 0 && (
+                <div className="mt-1.5 text-[11px] font-medium flex items-center gap-1.5">
+                  {isValidatingKey ? (
+                    <span className="text-blue-600 animate-pulse flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span>
+                      Đang tự động xác minh khóa...
+                    </span>
+                  ) : isKeyValid === true ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-600 font-semibold">✓ {keyValidationMsg}</span>
+                      <button
+                        onClick={() => setForceShowConfig(false)}
+                        className="text-[10px] text-slate-400 hover:text-slate-600 underline font-bold"
+                      >
+                        [Ẩn khung này]
+                      </button>
+                    </div>
+                  ) : isKeyValid === false ? (
+                    <span className="text-rose-600 font-semibold">✗ {keyValidationMsg}</span>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT PANEL: INPUT PANEL & SETTINGS (Lg: cols-5) */}
+          <section className="lg:col-span-5 space-y-6" id="input-section">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+              
+              {/* Header Title inside panel */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center space-x-2">
+                  <BookOpenCheck className="w-5 h-5 text-blue-700" />
+                  <h2 className="font-extrabold text-sm uppercase tracking-tight text-slate-800 font-display">
+                    Soạn thảo bài viết
+                  </h2>
+                </div>
+                <button
+                  onClick={handleNewAttempt}
+                  className="text-xs text-blue-700 hover:text-blue-800 font-bold flex items-center space-x-1"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Bài viết mới</span>
+                </button>
+              </div>
+
+              {/* Task Type Toggle */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Dạng bài thi IELTS (Task Type):
+                </label>
+                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    onClick={() => {
+                      setTaskType("task1");
+                      setReport(null);
+                    }}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      taskType === "task1"
+                        ? "bg-white text-blue-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    Task 1 (Academic Graph)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTaskType("task2");
+                      setReport(null);
+                    }}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      taskType === "task2"
+                        ? "bg-white text-blue-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    Task 2 (Academic Essay)
+                  </button>
+                </div>
+              </div>
+
+              {/* Original Question Prompt */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Đề bài gốc (Original Question):
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-semibold">(Khuyên dùng)</span>
+                </div>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder={
+                    taskType === "task1"
+                      ? "Ví dụ: The charts below show the percentage of household access to internet..."
+                      : "Ví dụ: Some people believe that university education should be free..."
+                  }
+                  rows={2}
+                  className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all scrollbar-thin"
+                />
+              </div>
+
+              {/* Task 1 Diagram / Chart Image Input */}
+              {taskType === "task1" && (
+                <div className="space-y-2 animate-fadeIn" id="task1-image-upload-container">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Hình ảnh biểu đồ / sơ đồ Task 1:
+                    </label>
+                    <span className="text-[10px] text-blue-700 font-bold">(Giúp AI chấm Task 1 chuẩn nhất)</span>
+                  </div>
+
+                  {task1Image ? (
+                    <div className="relative bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={task1Image}
+                          alt="Task 1 diagram"
+                          className="w-14 h-14 object-cover rounded-lg border border-slate-300 shadow-sm shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <span className="block text-xs font-bold text-slate-800 truncate">
+                            ✓ Đã chèn hình ảnh biểu đồ Task 1
+                          </span>
+                          <span className="text-[11px] text-emerald-600 font-medium block">
+                            AVA sẽ trực tiếp soi chiếu hình ảnh này khi chấm bài.
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTask1Image(null)}
+                        className="px-2.5 py-1 text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
+                      >
+                        Xóa ảnh
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/50 hover:bg-blue-50/20 transition-all group">
+                      <div className="flex items-center gap-2 text-slate-600 group-hover:text-blue-900 transition-colors">
+                        <Image className="w-4.5 h-4.5 text-blue-700" />
+                        <span className="text-xs font-bold">Thêm hình ảnh biểu đồ / sơ đồ / bản đồ...</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 mt-0.5">Thả tệp PNG, JPG, WEBP hoặc bấm để tải lên (Tối đa 8MB)</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleTask1ImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
+
+              {/* Drag-and-drop Word Extractor */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Hoặc tải tệp bài viết từ máy tính:
+                </label>
+                <FileUploader
+                  onTextExtracted={(text) => {
+                    setEssay(text);
+                    setError(null);
+                  }}
+                  onError={(msg) => setError(msg)}
+                />
+              </div>
+
+              {/* Essay Text Area */}
+              <div className="space-y-2 relative">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Nội dung bài viết (Your Essay):
+                  </label>
+                  
+                  {/* Dynamic Word Progress Counter */}
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      wordCount >= targetWordCount
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-amber-50 text-amber-600 animate-pulse"
+                    }`}
+                  >
+                    {wordCount} / {targetWordCount} từ
+                  </span>
+                </div>
+
+                <textarea
+                  value={essay}
+                  onChange={(e) => setEssay(e.target.value)}
+                  placeholder="Nhập hoặc dán nội dung bài viết IELTS Academic của bạn vào đây..."
+                  rows={14}
+                  className="w-full text-xs p-4 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-serif leading-relaxed transition-all scrollbar-thin"
+                />
+
+                {/* Progress bar line under textarea */}
+                <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden absolute bottom-1.5 left-0">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      wordCount >= targetWordCount ? "bg-emerald-500" : "bg-amber-500"
+                    }`}
+                    style={{ width: `${wordCountProgress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Error indicator */}
+              {error && (
+                <div className="p-3.5 bg-rose-50 border border-rose-100 rounded-xl flex items-start space-x-2.5 text-rose-800 text-xs leading-relaxed animate-fadeIn">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Action grading button */}
+              <button
+                onClick={handleGradeEssay}
+                disabled={loading}
+                className={`w-full py-4 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center space-x-2 ${
+                  loading
+                    ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                    : "bg-blue-900 hover:bg-blue-850 text-white shadow-blue-900/10 hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                    <span>Hệ Thống AVA Đang Chấm Bài...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 text-amber-300" />
+                    <span>Nộp bài & Bắt đầu chấm điểm</span>
+                  </>
+                )}
+              </button>
+
+            </div>
+
+            {/* Previous Essay Review History Logs */}
+            <ReviewHistory
+              history={history}
+              onSelect={handleSelectHistory}
+              onDelete={handleDeleteHistory}
+              onClearAll={handleClearHistory}
+              activeId={activeHistoryId}
+            />
+          </section>
+
+          {/* RIGHT PANEL: REPORT VIEWER / LOADING SCREEN / PLACEHOLDER (Lg: cols-7) */}
+          <section className="lg:col-span-7" id="output-section">
+            
+            {loading ? (
+              // Stunning, comprehensive Loading state
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 text-center shadow-xl space-y-6 flex flex-col items-center justify-center min-h-[500px] animate-fadeIn">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full border-4 border-slate-100 border-t-blue-700 animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Award className="w-6 h-6 text-amber-500" />
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-w-sm">
+                  <h3 className="font-extrabold text-base text-slate-800 tracking-tight font-display">
+                    Đang khảo thí bài viết của bạn
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium animate-pulse min-h-[32px] flex items-center justify-center">
+                    {loadingStep}
+                  </p>
+                </div>
+
+                {/* Simulated professional progress checkpoints */}
+                <div className="w-full max-w-xs space-y-2 pt-4 border-t border-slate-100 text-[10px] text-slate-400 font-semibold text-left">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    <span>[OK] Khai báo tệp tin & Khởi tạo phiên khảo thí</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    <span>[OK] Kiểm tra và đối sánh số từ: {wordCount} từ</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                    <span>[PENDING] Chạy phân tích thuật toán ngữ pháp và từ vựng</span>
+                  </div>
+                </div>
+              </div>
+            ) : report ? (
+              // Loaded certificate report dashboard
+              <ReportDashboard
+                report={report}
+                onRevision={handleRevisionTrigger}
+                originalEssay={essay}
+              />
+            ) : (
+              // Clean, aesthetic Placeholder explaining the system benefit
+              <div className="bg-gradient-to-b from-white to-slate-50/50 border border-slate-200 rounded-2xl p-8 sm:p-12 shadow-xl min-h-[600px] flex flex-col items-center justify-center text-center">
+                
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-100 mb-6 shadow-sm">
+                  <BookOpenCheck className="w-8 h-8" />
+                </div>
+
+                <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-800 font-display">
+                  Sẵn sàng nâng tầm kỹ năng Writing Academic?
+                </h3>
+                <p className="text-xs text-slate-500 max-w-md mt-2 leading-relaxed">
+                  Hệ thống AVA mang đến trải nghiệm chấm thi thử chuẩn xác như một giám khảo cao cấp thực tế. Hoàn thành bài viết của bạn bên trái và nộp bài để nhận báo cáo phân tích toàn diện.
+                </p>
+
+                {/* Features highlighted beautifully */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg mt-8 text-left">
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-start space-x-3 shadow-sm">
+                    <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold mt-0.5">01</span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Chuẩn Thang Band Descriptors</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Chấm điểm độc lập 4 tiêu chí khắt khe theo đúng văn bản mô tả băng điểm cập nhật 2023.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-start space-x-3 shadow-sm">
+                    <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold mt-0.5">02</span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Sửa lỗi trực quan</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Trích dẫn trực tiếp các câu văn yếu trong bài viết của bạn và đề xuất phiên bản nâng cấp hoàn hảo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-start space-x-3 shadow-sm">
+                    <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold mt-0.5">03</span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Bài mẫu độc quyền</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Cung cấp bài mẫu nâng cấp hoàn chỉnh đạt chuẩn Band 8.5+ dựa trên ý tưởng bài viết gốc của bạn.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-start space-x-3 shadow-sm">
+                    <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold mt-0.5">04</span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Vòng lặp sửa đổi</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Giúp bạn tinh chỉnh bài viết nhiều vòng bằng cách dễ dàng đưa văn bản nâng cấp trở lại khu vực nháp.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+          </section>
+
+        </div>
+      </main>
+    </div>
+  );
+}

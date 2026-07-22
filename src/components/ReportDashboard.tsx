@@ -1,0 +1,450 @@
+import React, { useState } from "react";
+import { GradingReport } from "../types";
+import { ScoreGauge } from "./ScoreGauge";
+import {
+  Sparkles,
+  AlertTriangle,
+  ArrowRight,
+  BookOpen,
+  FileText,
+  Copy,
+  Check,
+  RotateCcw,
+  MessageSquare,
+  Award,
+  Flame,
+  HelpCircle,
+} from "lucide-react";
+
+interface ReportDashboardProps {
+  report: GradingReport;
+  onRevision: (textToRevise: string) => void;
+  originalEssay: string;
+}
+
+export const ReportDashboard: React.FC<ReportDashboardProps> = ({
+  report,
+  onRevision,
+  originalEssay,
+}) => {
+  const [activeTab, setActiveTab] = useState<"criteria" | "strengths" | "upgrades" | "model" | "roadmap">("criteria");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyModel = () => {
+    navigator.clipboard.writeText(report.fullUpgradeEssay);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Safe access to criteria
+  const { taOrTr, cc, lr, gra } = report.criteria;
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden" id="report-dashboard">
+      {/* Premium Certificate Header */}
+      <div className="bg-blue-900 text-white p-6 relative border-b-4 border-yellow-400">
+        <div className="absolute top-4 right-4 opacity-10">
+          <Award className="w-24 h-24" />
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center sm:justify-between space-y-4 sm:space-y-0 relative z-10">
+          <div className="text-center sm:text-left">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-500/30 text-[11px] font-bold uppercase tracking-wider mb-2">
+              <Award className="w-3.5 h-3.5" />
+              <span>Khảo Thí Chuẩn Quốc Tế</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+              Báo cáo phân tích bài viết IELTS
+            </h2>
+            <p className="text-xs text-blue-200 mt-1 font-medium max-w-[420px]">
+              Được thực hiện bởi <span className="text-yellow-400 font-bold">Hệ Thống AVA</span> - Chuyên gia khảo thí IELTS Academic với hơn 13 năm kinh nghiệm thực chiến.
+            </p>
+          </div>
+
+          {/* Overall Band Banner */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
+            <ScoreGauge 
+              score={report.overallBand} 
+              size={84} 
+              strokeWidth={8} 
+              showLabel={false} 
+              textColor="text-white"
+              labelColor="text-yellow-300"
+              trackColor="stroke-blue-800/80"
+            />
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-blue-300">Kết quả chung</div>
+              <div className="text-lg font-black text-yellow-400">Band {report.overallBand.toFixed(1)}</div>
+              <div className="text-xs font-semibold text-white/95 mt-0.5">
+                {report.overallBand >= 7.5 ? "Cực Kỳ Ấn Tượng" : report.overallBand >= 6.5 ? "Đạt Chuẩn Chuyên Nghiệp" : report.overallBand >= 5.5 ? "Khá Tốt" : "Cần Cố Gắng"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Word Count Indicator */}
+        <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap gap-4 text-xs text-blue-100">
+          <div className="flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-lg">
+            <span className="font-semibold text-slate-300">Tổng số từ:</span>
+            <span className="font-bold text-white">{report.wordCount} từ</span>
+          </div>
+          <div className="flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-lg">
+            <span className="font-semibold text-slate-300">Trạng thái từ:</span>
+            <span
+              className={`font-bold px-1.5 py-0.25 rounded text-[10px] uppercase ${
+                report.wordCountRequirement === "meets"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : "bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse"
+              }`}
+            >
+              {report.wordCountRequirement === "meets" ? "✓ Đủ số từ tối thiểu" : "⚠️ Chưa đạt độ dài"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/50 scrollbar-none">
+        <button
+          onClick={() => setActiveTab("criteria")}
+          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+            activeTab === "criteria"
+              ? "border-blue-900 text-blue-900 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <Award className="w-4 h-4 mr-1" />
+          <span>Chi Tiết 4 Tiêu Chí</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("strengths")}
+          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+            activeTab === "strengths"
+              ? "border-blue-900 text-blue-900 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <Sparkles className="w-4 h-4 mr-1" />
+          <span>Thế Mạnh & Cải Thiện</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("upgrades")}
+          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+            activeTab === "upgrades"
+              ? "border-blue-900 text-blue-900 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <Flame className="w-4 h-4 mr-1" />
+          <span>Nâng Cấp Câu</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("model")}
+          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+            activeTab === "model"
+              ? "border-blue-900 text-blue-900 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <BookOpen className="w-4 h-4 mr-1" />
+          <span>Bài Viết Mẫu (Band 9.0)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("roadmap")}
+          className={`flex-1 py-3 px-4 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1 ${
+            activeTab === "roadmap"
+              ? "border-blue-900 text-blue-900 bg-white"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <ArrowRight className="w-4 h-4 mr-1" />
+          <span>Cẩm Nang Lên Band</span>
+        </button>
+      </div>
+
+      {/* Tab Panels */}
+      <div className="p-6">
+        {/* 1. Chi Tiết 4 Tiêu Chí */}
+        {activeTab === "criteria" && (
+          <div className="space-y-6" id="panel-criteria">
+            <div className="flex items-center space-x-2 text-slate-700 mb-2">
+              <span className="w-1.5 h-4 bg-blue-700 rounded-full"></span>
+              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                Phân Tích Chuyên Sâu Từng Tiêu Chí Chấm Thi
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[taOrTr, cc, lr, gra].map((criterion, idx) => {
+                if (!criterion) return null;
+                const colors = idx % 2 === 0
+                  ? "border-l-4 border-l-blue-900 border-y-slate-200 border-r-slate-200 bg-white"
+                  : "border-l-4 border-l-yellow-400 border-y-slate-200 border-r-slate-200 bg-white";
+
+                const textColors = idx % 2 === 0
+                  ? "text-blue-900 bg-blue-100"
+                  : "text-yellow-900 bg-yellow-100";
+
+                return (
+                  <div
+                    key={idx}
+                    className={`border rounded-xl p-5 shadow-sm transition-all hover:shadow-md ${colors}`}
+                    id={`criterion-card-${idx}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-slate-800 tracking-tight">
+                        {criterion.name}
+                      </span>
+                      <span className={`text-[11px] font-black px-2.5 py-1 rounded ${textColors}`}>
+                        Band {criterion.band.toFixed(1)}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                      {criterion.feedback}
+                    </p>
+
+                    {criterion.example && (
+                      <div className="mt-3 bg-slate-50 border border-slate-100 rounded-lg p-2.5">
+                        <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                          Trích câu lỗi / cần cải thiện:
+                        </span>
+                        <p className="text-xs font-serif italic text-slate-700 border-l-2 border-slate-300 pl-2">
+                          "{criterion.example}"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 2. Thế Mạnh & Điểm Cải Thiện */}
+        {activeTab === "strengths" && (
+          <div className="space-y-6 animate-fadeIn" id="panel-strengths">
+            {/* Strengths */}
+            <div>
+              <div className="flex items-center space-x-2 text-slate-700 mb-3">
+                <span className="w-1.5 h-4 bg-emerald-500 rounded-full"></span>
+                <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                  Điểm Sáng Trong Bài Viết (Key Strengths)
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {report.strengths.map((st, idx) => (
+                  <div key={idx} className="bg-emerald-50/30 border border-emerald-100 rounded-xl p-4">
+                    <div className="flex items-start space-x-2">
+                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
+                        ✓
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-emerald-900 leading-tight">
+                          {st.title}
+                        </h4>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                          {st.explanation}
+                        </p>
+                        {st.example && (
+                          <div className="mt-2.5 bg-white/70 border border-emerald-100 rounded-lg p-2.5 text-xs font-serif italic text-slate-700 border-l-2 border-emerald-400 pl-2">
+                            "{st.example}"
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Improvements */}
+            <div>
+              <div className="flex items-center space-x-2 text-slate-700 mb-3">
+                <span className="w-1.5 h-4 bg-amber-500 rounded-full"></span>
+                <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                  5 Điểm Cần Sửa Đổi Để Bứt Phá Điểm Số (Priority Improvements)
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {report.improvements.map((imp, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex items-start space-x-3 hover:border-slate-200 transition-colors"
+                  >
+                    <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-amber-100 text-amber-700 text-xs font-bold shrink-0 mt-0.5">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-bold text-slate-800 flex items-center">
+                        {imp.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        <span className="font-semibold text-slate-500">Mô tả lỗi:</span> {imp.explanation}
+                      </p>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        <span className="font-semibold text-blue-700">Tác động đến Band điểm:</span> {imp.impact}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Nâng Cấp Câu Trực Quan */}
+        {activeTab === "upgrades" && (
+          <div className="space-y-4" id="panel-upgrades">
+            <div className="flex items-center space-x-2 text-slate-700 mb-3">
+              <span className="w-1.5 h-4 bg-indigo-500 rounded-full"></span>
+              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                Đối Chiếu So Sánh & Nâng Cấp Câu Lỗi (Before vs After)
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              {report.upgrades.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="border border-slate-100 rounded-xl overflow-hidden shadow-sm"
+                  id={`upgrade-item-${idx}`}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2">
+                    {/* Before */}
+                    <div className="bg-rose-50/40 p-4 border-b md:border-b-0 md:border-r border-slate-100">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 mb-2 uppercase">
+                        Câu văn gốc của bạn
+                      </span>
+                      <p className="text-xs font-serif italic text-slate-700 leading-relaxed">
+                        "{item.before}"
+                      </p>
+                    </div>
+
+                    {/* After */}
+                    <div className="bg-emerald-50/40 p-4">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 mb-2 uppercase flex items-center w-fit space-x-1">
+                        <Sparkles className="w-3 h-3" />
+                        <span>AVA Nâng Cấp (Band 8.5+)</span>
+                      </span>
+                      <p className="text-xs font-serif font-semibold text-emerald-950 leading-relaxed">
+                        "{item.after}"
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Justification */}
+                  <div className="bg-slate-50 p-3 border-t border-slate-100 text-xs text-slate-600">
+                    <span className="font-bold text-slate-700">Lý do nâng cấp:</span> {item.explanation}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 4. Bài Viết Mẫu Band 9.0 */}
+        {activeTab === "model" && (
+          <div className="space-y-4" id="panel-model">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-slate-700">
+                <span className="w-1.5 h-4 bg-blue-700 rounded-full"></span>
+                <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                  Bài Viết Mẫu Hoàn Chỉnh Để Học Tập (Band 8.5 - 9.0)
+                </h3>
+              </div>
+              <button
+                onClick={handleCopyModel}
+                className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? "Đã sao chép!" : "Sao chép bài mẫu"}</span>
+              </button>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[420px] overflow-y-auto scrollbar-thin">
+              {report.fullUpgradeEssay.split("\n\n").map((para, i) => (
+                <p key={i} className="mb-4 last:mb-0 indent-4">
+                  {para}
+                </p>
+              ))}
+            </div>
+
+            <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 flex items-start space-x-2">
+              <HelpCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <p>
+                <span className="font-bold">Cách tự học hiệu quả:</span> Hãy so sánh đoạn văn của bạn với bài viết mẫu này, ghi lại các từ vựng cao cấp, cấu trúc ngữ pháp phức tạp và cách kết nối câu tự nhiên mà giám khảo AVA đã ứng dụng.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 5. Lộ Trình Lên Band */}
+        {activeTab === "roadmap" && (
+          <div className="space-y-4" id="panel-roadmap">
+            <div className="flex items-center space-x-2 text-slate-700 mb-3">
+              <span className="w-1.5 h-4 bg-amber-500 rounded-full"></span>
+              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
+                Lộ Trình Hành Động Tối Ưu Cho Bài Viết Kế Tiếp
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              {report.nextBandSteps.map((step, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-start space-x-3"
+                >
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs font-bold shrink-0">
+                    {idx + 1}
+                  </span>
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Revision / Retake Block - Encourages the user to write their next draft! */}
+      <div className="bg-slate-50 border-t border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-6">
+        <div className="flex items-start space-x-3 text-left">
+          <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0 mt-0.5">
+            <RotateCcw className="w-4 h-4 animate-spin-slow" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-800">
+              Bạn Muốn Nâng Cao Điểm Số Ngay Lập Tức?
+            </h4>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Hệ thống AVA khuyến khích bạn viết lại bài viết này bằng cách áp dụng các điểm cải thiện phía trên, hoặc dùng trực tiếp bài viết mẫu làm xuất phát điểm cho sự sáng tạo mới!
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 w-full md:w-auto shrink-0 justify-end">
+          <button
+            onClick={() => onRevision(originalEssay)}
+            className="flex-1 md:flex-none justify-center inline-flex items-center space-x-1 text-xs text-slate-700 hover:text-slate-800 font-bold bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm transition-all"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Sửa bài gốc</span>
+          </button>
+          <button
+            onClick={() => onRevision(report.fullUpgradeEssay)}
+            className="flex-1 md:flex-none justify-center inline-flex items-center space-x-1 text-xs text-white hover:bg-blue-800 font-bold bg-blue-700 px-4 py-2.5 rounded-xl shadow-md shadow-blue-700/10 hover:shadow-lg transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Dùng bài nâng cấp làm nháp</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
