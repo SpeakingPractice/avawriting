@@ -219,7 +219,7 @@ Cấu trúc JSON phản hồi bắt buộc:
     "Các bước hành động cụ thể, chi tiết 2",
     "Các bước hành động cụ thể, chi tiết 3"
   ],
-  "fullUpgradeEssay": "Phiên bản nâng cấp toàn bộ bài viết (hoặc một phần lớn bài viết nếu quá dài) đạt chuẩn Band 8.5 - 9.0 để thí sinh tham khảo và đối chiếu học tập."
+  "fullUpgradeEssay": "Phiên bản nâng cấp toàn bộ bài viết (hoặc một phần lớn bài viết nếu quá dài) đạt chuẩn Band 8.0+ để thí sinh tham khảo và đối chiếu học tập."
 }`;
 
   const promptText = `

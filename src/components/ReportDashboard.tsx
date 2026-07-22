@@ -150,7 +150,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           }`}
         >
           <BookOpen className="w-4 h-4 mr-1" />
-          <span>Bài Viết Mẫu (Band 9.0)</span>
+          <span>Bài Viết Mẫu (Band 8.0+)</span>
         </button>
 
         <button
@@ -349,14 +349,14 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </div>
         )}
 
-        {/* 4. Bài Viết Mẫu Band 9.0 */}
+        {/* 4. Bài Viết Mẫu Band 8.0+ */}
         {activeTab === "model" && (
           <div className="space-y-4" id="panel-model">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-slate-700">
                 <span className="w-1.5 h-4 bg-blue-700 rounded-full"></span>
                 <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
-                  Bài Viết Mẫu Hoàn Chỉnh Để Học Tập (Band 8.5 - 9.0)
+                  Bài Viết Mẫu Hoàn Chỉnh Để Học Tập (Band 8.0+)
                 </h3>
               </div>
               <button
