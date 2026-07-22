@@ -430,4 +430,9 @@ async function startServer() {
   });
 }
 
-startServer();
+// Only start standalone server if not running as a Vercel Serverless Function
+if (!process.env.VERCEL && !process.env.NOW_BUILDER) {
+  startServer();
+}
+
+export default app;

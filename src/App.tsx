@@ -4,6 +4,7 @@ import { ScoreGauge } from "./components/ScoreGauge";
 import { ReviewHistory } from "./components/ReviewHistory";
 import { FileUploader } from "./components/FileUploader";
 import { ReportDashboard } from "./components/ReportDashboard";
+import { validateGeminiApiKeyClient, gradeEssayClient } from "./lib/geminiClient";
 import {
   Sparkles,
   Flame,
@@ -98,20 +99,50 @@ export default function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ customApiKey }),
         });
-        const data = await res.json();
-        if (data.valid) {
-          setIsKeyValid(true);
-          setKeyValidationMsg("Kết nối thành công! API Key của bạn hoạt động hoàn hảo.");
-          localStorage.setItem("ava_custom_api_key_valid", "true");
+        
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          const data = await res.json();
+          if (data.valid) {
+            setIsKeyValid(true);
+            setKeyValidationMsg("Kết nối thành công! API Key của bạn hoạt động hoàn hảo.");
+            localStorage.setItem("ava_custom_api_key_valid", "true");
+          } else {
+            setIsKeyValid(false);
+            setKeyValidationMsg(data.error || "Khóa API không hợp lệ hoặc đã hết hạn.");
+            localStorage.setItem("ava_custom_api_key_valid", "false");
+          }
         } else {
-          setIsKeyValid(false);
-          setKeyValidationMsg(data.error || "Khóa API không hợp lệ hoặc đã hết hạn.");
-          localStorage.setItem("ava_custom_api_key_valid", "false");
+          // If server returns HTML (e.g. static Vercel host without backend API), validate directly on client
+          const clientRes = await validateGeminiApiKeyClient(customApiKey);
+          if (clientRes.valid) {
+            setIsKeyValid(true);
+            setKeyValidationMsg("Kết nối thành công! API Key cá nhân của bạn đã được xác thực trực tiếp.");
+            localStorage.setItem("ava_custom_api_key_valid", "true");
+          } else {
+            setIsKeyValid(false);
+            setKeyValidationMsg(clientRes.error || "Khóa API không hợp lệ hoặc đã hết hạn.");
+            localStorage.setItem("ava_custom_api_key_valid", "false");
+          }
         }
       } catch (err) {
-        setIsKeyValid(false);
-        setKeyValidationMsg("Lỗi kết nối khi kiểm tra API Key.");
-        localStorage.setItem("ava_custom_api_key_valid", "false");
+        // Fall back to client-side validation if backend endpoint is unreachable
+        try {
+          const clientRes = await validateGeminiApiKeyClient(customApiKey);
+          if (clientRes.valid) {
+            setIsKeyValid(true);
+            setKeyValidationMsg("Kết nối thành công! API Key cá nhân của bạn hoạt động hoàn hảo (Client Direct).");
+            localStorage.setItem("ava_custom_api_key_valid", "true");
+          } else {
+            setIsKeyValid(false);
+            setKeyValidationMsg(clientRes.error || "Mã API Key không hợp lệ.");
+            localStorage.setItem("ava_custom_api_key_valid", "false");
+          }
+        } catch (clientErr) {
+          setIsKeyValid(false);
+          setKeyValidationMsg("Lỗi kết nối khi kiểm tra API Key.");
+          localStorage.setItem("ava_custom_api_key_valid", "false");
+        }
       } finally {
         setIsValidatingKey(false);
       }
@@ -179,29 +210,60 @@ export default function App() {
     }, 2800);
 
     try {
-      const response = await fetch("/api/grade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          essay, 
-          taskType, 
-          prompt, 
-          customApiKey,
-          image: taskType === "task1" ? task1Image : null,
-        }),
-      });
+      let data: GradingReport | null = null;
 
-      let data;
       try {
-        data = await response.json();
-      } catch (e) {
-        throw new Error("Không thể phân tích phản hồi từ máy chủ. Vui lòng thử lại sau.");
+        const response = await fetch("/api/grade", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            essay, 
+            taskType, 
+            prompt, 
+            customApiKey,
+            image: taskType === "task1" ? task1Image : null,
+          }),
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+
+        if (contentType.includes("application/json")) {
+          const jsonResult = await response.json();
+          if (!response.ok) {
+            throw new Error(jsonResult.error || "Có lỗi xảy ra trong quá trình chấm bài.");
+          }
+          data = jsonResult;
+        } else if (customApiKey.trim()) {
+          // Response is HTML / non-JSON (e.g., static Vercel host without backend API), fall back to client-side Gemini call
+          data = await gradeEssayClient({
+            essay,
+            taskType,
+            prompt,
+            apiKey: customApiKey.trim(),
+            image: taskType === "task1" ? task1Image : null,
+          });
+        } else {
+          throw new Error("Không thể kết nối API backend (/api/grade). Vì trang web hiện đang chạy dưới dạng tĩnh trên Vercel, vui lòng nhập API Key cá nhân ở ô 'CẤU HÌNH API KEY CÁ NHÂN' phía trên để chấm bài trực tiếp!");
+        }
+      } catch (fetchErr: any) {
+        if (customApiKey.trim()) {
+          // If network error occurred or endpoint failed, fall back to client-side grading
+          data = await gradeEssayClient({
+            essay,
+            taskType,
+            prompt,
+            apiKey: customApiKey.trim(),
+            image: taskType === "task1" ? task1Image : null,
+          });
+        } else {
+          throw fetchErr;
+        }
       }
 
       clearInterval(interval);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Có lỗi xảy ra trong quá trình chấm bài.");
+      if (!data) {
+        throw new Error("Không nhận được dữ liệu báo cáo chấm bài.");
       }
 
       setReport(data);
