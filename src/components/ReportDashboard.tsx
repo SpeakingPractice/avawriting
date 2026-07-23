@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
 import {
@@ -14,6 +14,8 @@ import {
   Award,
   Flame,
   HelpCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface ReportDashboardProps {
@@ -29,11 +31,42 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"criteria" | "strengths" | "upgrades" | "model" | "roadmap">("criteria");
   const [copied, setCopied] = useState(false);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollTabs = (direction: "left" | "right") => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({
+        left: direction === "left" ? -220 : 220,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const handleCopyModel = () => {
-    navigator.clipboard.writeText(report.fullUpgradeEssay);
+    const cleanText = report.fullUpgradeEssay.replace(/<mark[^>]*>([\s\S]*?)<\/mark>/gi, "$1");
+    navigator.clipboard.writeText(cleanText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const renderParagraphWithHighlights = (text: string) => {
+    // Splits by <mark ...>content</mark> or <mark>content</mark>
+    const parts = text.split(/(<mark[^>]*>[\s\S]*?<\/mark>)/gi);
+    return parts.map((part, index) => {
+      const match = part.match(/^<mark[^>]*>([\s\S]*?)<\/mark>$/i);
+      if (match) {
+        return (
+          <mark
+            key={index}
+            className="bg-rose-100 text-rose-950 border-b-2 border-rose-400 font-medium px-1.5 py-0.5 rounded mx-0.5 inline shadow-2xs"
+            title="Nội dung đã được chỉnh sửa / nâng cấp từ bài viết gốc"
+          >
+            {match[1]}
+          </mark>
+        );
+      }
+      return <React.Fragment key={index}>{part}</React.Fragment>;
+    });
   };
 
   // Safe access to criteria
@@ -103,66 +136,87 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200 touch-pan-x flex-nowrap scroll-smooth">
+      {/* Tabs Navigation with Scroll Arrows */}
+      <div className="relative flex items-center border-b border-slate-200 bg-slate-50/50">
         <button
-          onClick={() => setActiveTab("criteria")}
-          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-            activeTab === "criteria"
-              ? "border-blue-900 text-blue-900 bg-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-          }`}
+          onClick={() => scrollTabs("left")}
+          className="absolute left-1 z-10 p-1.5 rounded-full bg-white/90 shadow-md border border-slate-200 text-slate-600 hover:text-blue-900 transition-all cursor-pointer hidden sm:flex items-center justify-center"
+          title="Kéo sang trái"
         >
-          <Award className="w-4 h-4" />
-          <span>Chi Tiết 4 Tiêu Chí</span>
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <button
-          onClick={() => setActiveTab("strengths")}
-          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-            activeTab === "strengths"
-              ? "border-blue-900 text-blue-900 bg-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-          }`}
+        <div
+          ref={tabsContainerRef}
+          className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200 touch-pan-x flex-nowrap scroll-smooth w-full px-2 sm:px-8"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Thế Mạnh & Cải Thiện</span>
-        </button>
+          <button
+            onClick={() => setActiveTab("criteria")}
+            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+              activeTab === "criteria"
+                ? "border-blue-900 text-blue-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            <span>Chi Tiết 4 Tiêu Chí</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("strengths")}
+            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+              activeTab === "strengths"
+                ? "border-blue-900 text-blue-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Thế Mạnh & Cải Thiện</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("upgrades")}
+            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+              activeTab === "upgrades"
+                ? "border-blue-900 text-blue-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Flame className="w-4 h-4" />
+            <span>Nâng Cấp Câu</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("roadmap")}
+            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+              activeTab === "roadmap"
+                ? "border-blue-900 text-blue-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <ArrowRight className="w-4 h-4" />
+            <span>Cẩm Nang Lên Band</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("model")}
+            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+              activeTab === "model"
+                ? "border-blue-900 text-blue-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Bài Viết Mẫu (Band 8.0+)</span>
+          </button>
+        </div>
 
         <button
-          onClick={() => setActiveTab("upgrades")}
-          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-            activeTab === "upgrades"
-              ? "border-blue-900 text-blue-900 bg-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-          }`}
+          onClick={() => scrollTabs("right")}
+          className="absolute right-1 z-10 p-1.5 rounded-full bg-white/90 shadow-md border border-slate-200 text-slate-600 hover:text-blue-900 transition-all cursor-pointer hidden sm:flex items-center justify-center"
+          title="Kéo sang phải"
         >
-          <Flame className="w-4 h-4" />
-          <span>Nâng Cấp Câu</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("roadmap")}
-          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-            activeTab === "roadmap"
-              ? "border-blue-900 text-blue-900 bg-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>Cẩm Nang Lên Band</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("model")}
-          className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-            activeTab === "model"
-              ? "border-blue-900 text-blue-900 bg-white"
-              : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          <span>Bài Viết Mẫu (Band 8.0+)</span>
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
@@ -387,17 +441,27 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
               </div>
               <button
                 onClick={handleCopyModel}
-                className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+                className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? "Đã sao chép!" : "Sao chép bài mẫu"}</span>
+                <span>{copied ? "Đã sao chép văn bản!" : "Sao chép bài mẫu"}</span>
               </button>
             </div>
 
-            <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[420px] overflow-y-auto scrollbar-thin">
+            {/* Color Legend Indicator */}
+            <div className="flex items-center gap-2 text-xs text-slate-700 bg-rose-50/80 border border-rose-200/80 px-3 py-2 rounded-lg">
+              <span className="inline-block bg-rose-100 text-rose-950 border-b-2 border-rose-400 font-bold px-2 py-0.5 rounded text-[11px] shrink-0">
+                🔴 Chữ tô màu đỏ nhạt
+              </span>
+              <span className="font-medium text-slate-700">
+                = Vị trí đã được sửa đổi & nâng cấp từ bài viết gốc của bạn. Những đoạn không tô màu là phần viết tốt được giữ nguyên.
+              </span>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[420px] overflow-y-auto scrollbar-thin">
               {report.fullUpgradeEssay.split("\n\n").map((para, i) => (
                 <p key={i} className="mb-4 last:mb-0 indent-4">
-                  {para}
+                  {renderParagraphWithHighlights(para)}
                 </p>
               ))}
             </div>
@@ -405,7 +469,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
             <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 flex items-start space-x-2">
               <HelpCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <p>
-                <span className="font-bold">Cách tự học hiệu quả:</span> Bài viết mẫu này đã trực tiếp tiếp thu và áp dụng các ý tưởng nâng cấp, lập luận sắc bén và hành động cụ thể từ phần Cẩm Nang Lên Band phía trên. Hãy so sánh bài làm của bạn với bài viết mẫu này để học tập cách triển khai câu từ chuẩn Band 8.0+.
+                <span className="font-bold">Cách tự học hiệu quả:</span> Bài viết mẫu này được xây dựng bằng cách giữ lại các phần tốt trong bài làm của bạn, đồng thời tiếp thu và ứng dụng triệt để các ý tưởng mới từ phần Cẩm Nang Lên Band.
               </p>
             </div>
           </div>

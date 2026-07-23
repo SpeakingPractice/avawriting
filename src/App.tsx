@@ -502,7 +502,6 @@ export default function App() {
                   <button
                     onClick={() => {
                       setTaskType("task1");
-                      setReport(null);
                     }}
                     className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       taskType === "task1"
@@ -515,7 +514,6 @@ export default function App() {
                   <button
                     onClick={() => {
                       setTaskType("task2");
-                      setReport(null);
                     }}
                     className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       taskType === "task2"
