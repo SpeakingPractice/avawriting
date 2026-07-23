@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
+import { exportReportToDoc } from "../lib/exportDoc";
 import {
   Sparkles,
   AlertTriangle,
@@ -16,18 +17,23 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 
 interface ReportDashboardProps {
   report: GradingReport;
   onRevision: (textToRevise: string) => void;
   originalEssay: string;
+  taskType?: "task1" | "task2";
+  promptText?: string;
 }
 
 export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   report,
   onRevision,
   originalEssay,
+  taskType = "task2",
+  promptText = "",
 }) => {
   const [activeTab, setActiveTab] = useState<"criteria" | "strengths" | "upgrades" | "model" | "roadmap">("criteria");
   const [copied, setCopied] = useState(false);
@@ -47,6 +53,10 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
     navigator.clipboard.writeText(cleanText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExportDoc = () => {
+    exportReportToDoc(report, taskType, promptText, originalEssay);
   };
 
   const renderParagraphWithHighlights = (text: string) => {
@@ -115,24 +125,35 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </div>
         </div>
 
-        {/* Word Count Indicator */}
-        <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap gap-4 text-xs text-blue-100">
-          <div className="flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-lg">
-            <span className="font-semibold text-slate-300">Tổng số từ:</span>
-            <span className="font-bold text-white">{report.wordCount} từ</span>
+        {/* Word Count Indicator & Export Button */}
+        <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-blue-100">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center space-x-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+              <span className="font-semibold text-blue-200">Tổng số từ:</span>
+              <span className="font-bold text-white">{report.wordCount} từ</span>
+            </div>
+            <div className="flex items-center space-x-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+              <span className="font-semibold text-blue-200">Trạng thái từ:</span>
+              <span
+                className={`font-bold px-2 py-0.5 rounded text-[10px] uppercase ${
+                  report.wordCountRequirement === "meets"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse"
+                }`}
+              >
+                {report.wordCountRequirement === "meets" ? "✓ Đủ số từ tối thiểu" : "⚠️ Chưa đạt độ dài"}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-lg">
-            <span className="font-semibold text-slate-300">Trạng thái từ:</span>
-            <span
-              className={`font-bold px-1.5 py-0.25 rounded text-[10px] uppercase ${
-                report.wordCountRequirement === "meets"
-                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                  : "bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse"
-              }`}
-            >
-              {report.wordCountRequirement === "meets" ? "✓ Đủ số từ tối thiểu" : "⚠️ Chưa đạt độ dài"}
-            </span>
-          </div>
+
+          <button
+            onClick={handleExportDoc}
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-extrabold text-xs shadow-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            title="Tải xuống file Word (.doc) giữ nguyên định dạng tô đỏ, nhận xét 4 tiêu chí và Cẩm nang lên band"
+          >
+            <Download className="w-4 h-4 text-blue-950" />
+            <span>Xuất File Word (.doc)</span>
+          </button>
         </div>
       </div>
 
@@ -439,13 +460,22 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                   Bài Viết Mẫu Hoàn Chỉnh Để Học Tập (Band 8.0+)
                 </h3>
               </div>
-              <button
-                onClick={handleCopyModel}
-                className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? "Đã sao chép văn bản!" : "Sao chép bài mẫu"}</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleExportDoc}
+                  className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-300 hover:bg-amber-400 border border-amber-400 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-blue-950" />
+                  <span>Xuất File Word (.doc)</span>
+                </button>
+                <button
+                  onClick={handleCopyModel}
+                  className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? "Đã sao chép!" : "Sao chép bài mẫu"}</span>
+                </button>
+              </div>
             </div>
 
             {/* Color Legend Indicator */}

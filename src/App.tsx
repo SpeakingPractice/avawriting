@@ -43,12 +43,11 @@ export default function App() {
   const [isValidatingKey, setIsValidatingKey] = useState<boolean>(false);
   const [keyValidationMsg, setKeyValidationMsg] = useState<string | null>(null);
   const [forceShowConfig, setForceShowConfig] = useState<boolean>(false);
+  const [isDraggingTask1Image, setIsDraggingTask1Image] = useState<boolean>(false);
 
-  const handleTask1ImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processTask1ImageFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      setError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP...).");
+      setError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF...).");
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
@@ -61,6 +60,11 @@ export default function App() {
       setError(null);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleTask1ImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processTask1ImageFile(file);
   };
 
   const handleApiKeyChange = (val: string) => {
@@ -583,19 +587,47 @@ export default function App() {
                       </button>
                     </div>
                   ) : (
-                    <label className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/50 hover:bg-blue-50/20 transition-all group">
-                      <div className="flex items-center gap-2 text-slate-600 group-hover:text-blue-900 transition-colors">
-                        <Image className="w-4.5 h-4.5 text-blue-700" />
-                        <span className="text-xs font-bold">Thêm hình ảnh biểu đồ / sơ đồ / bản đồ...</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 mt-0.5">Thả tệp PNG, JPG, WEBP hoặc bấm để tải lên (Tối đa 8MB)</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleTask1ImageUpload}
-                        className="hidden"
-                      />
-                    </label>
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDraggingTask1Image(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        setIsDraggingTask1Image(false);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDraggingTask1Image(false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) processTask1ImageFile(file);
+                      }}
+                      className={`border-2 border-dashed rounded-xl p-4 text-center transition-all duration-200 flex flex-col items-center justify-center ${
+                        isDraggingTask1Image
+                          ? "border-blue-500 bg-blue-50/80 scale-[1.01] shadow-md"
+                          : "border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20"
+                      }`}
+                    >
+                      <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+                        <div className="flex items-center gap-2 text-slate-600 group-hover:text-blue-900 transition-colors">
+                          <Image className="w-5 h-5 text-blue-700" />
+                          <span className="text-xs font-bold text-slate-800">
+                            {isDraggingTask1Image
+                              ? "Thả tệp hình ảnh vào đây ngay"
+                              : "Thả hoặc chọn hình ảnh biểu đồ / sơ đồ Task 1"}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 mt-1">
+                          Kéo &amp; thả tệp PNG, JPG, WEBP vào đây hoặc bấm để chọn tệp (Tối đa 8MB)
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleTask1ImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
                   )}
                 </div>
               )}
@@ -739,6 +771,8 @@ export default function App() {
                 report={report}
                 onRevision={handleRevisionTrigger}
                 originalEssay={essay}
+                taskType={taskType}
+                promptText={prompt}
               />
             ) : (
               // Clean, aesthetic Placeholder explaining the system benefit
