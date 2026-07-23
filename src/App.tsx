@@ -5,6 +5,7 @@ import { ReviewHistory } from "./components/ReviewHistory";
 import { FileUploader } from "./components/FileUploader";
 import { ReportDashboard } from "./components/ReportDashboard";
 import { validateGeminiApiKeyClient, gradeEssayClient } from "./lib/geminiClient";
+import { TaskExportData } from "./lib/exportDoc";
 import {
   Sparkles,
   Flame,
@@ -767,13 +768,46 @@ export default function App() {
               </div>
             ) : report ? (
               // Loaded certificate report dashboard
-              <ReportDashboard
-                report={report}
-                onRevision={handleRevisionTrigger}
-                originalEssay={essay}
-                taskType={taskType}
-                promptText={prompt}
-              />
+              (() => {
+                const activeTaskData: TaskExportData = {
+                  taskType,
+                  promptText: prompt,
+                  originalEssay: essay,
+                  report,
+                };
+
+                const latestTask1Item = history.find((item) => item.taskType === "task1");
+                const latestTask2Item = history.find((item) => item.taskType === "task2");
+
+                const t1Data: TaskExportData | null =
+                  taskType === "task1"
+                    ? activeTaskData
+                    : latestTask1Item
+                    ? { taskType: "task1", promptText: latestTask1Item.prompt, originalEssay: latestTask1Item.essay, report: latestTask1Item.report }
+                    : null;
+
+                const t2Data: TaskExportData | null =
+                  taskType === "task2"
+                    ? activeTaskData
+                    : latestTask2Item
+                    ? { taskType: "task2", promptText: latestTask2Item.prompt, originalEssay: latestTask2Item.essay, report: latestTask2Item.report }
+                    : null;
+
+                const availableTasks: TaskExportData[] = [];
+                if (t1Data) availableTasks.push(t1Data);
+                if (t2Data) availableTasks.push(t2Data);
+
+                return (
+                  <ReportDashboard
+                    report={report}
+                    onRevision={handleRevisionTrigger}
+                    originalEssay={essay}
+                    taskType={taskType}
+                    promptText={prompt}
+                    allAvailableTasks={availableTasks}
+                  />
+                );
+              })()
             ) : (
               // Clean, aesthetic Placeholder explaining the system benefit
               <div className="bg-gradient-to-b from-white to-slate-50/50 border border-slate-200 rounded-2xl p-8 sm:p-12 shadow-xl min-h-[600px] flex flex-col items-center justify-center text-center">

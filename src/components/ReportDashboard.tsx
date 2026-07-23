@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
-import { exportReportToDoc } from "../lib/exportDoc";
+import { exportReportToDoc, formatBandScore, TaskExportData } from "../lib/exportDoc";
 import {
   Sparkles,
   AlertTriangle,
@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileCheck,
 } from "lucide-react";
 
 interface ReportDashboardProps {
@@ -26,6 +27,7 @@ interface ReportDashboardProps {
   originalEssay: string;
   taskType?: "task1" | "task2";
   promptText?: string;
+  allAvailableTasks?: TaskExportData[];
 }
 
 export const ReportDashboard: React.FC<ReportDashboardProps> = ({
@@ -34,10 +36,20 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   originalEssay,
   taskType = "task2",
   promptText = "",
+  allAvailableTasks = [],
 }) => {
   const [activeTab, setActiveTab] = useState<"criteria" | "strengths" | "upgrades" | "model" | "roadmap">("criteria");
   const [copied, setCopied] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
+
+  const currentTaskData: TaskExportData = {
+    taskType,
+    promptText,
+    originalEssay,
+    report,
+  };
+
+  const hasDualTasks = allAvailableTasks.length >= 2;
 
   const scrollTabs = (direction: "left" | "right") => {
     if (tabsContainerRef.current) {
@@ -55,8 +67,12 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleExportDoc = () => {
-    exportReportToDoc(report, taskType, promptText, originalEssay);
+  const handleExportSingleDoc = () => {
+    exportReportToDoc([currentTaskData]);
+  };
+
+  const handleExportAllDoc = () => {
+    exportReportToDoc(allAvailableTasks);
   };
 
   const renderParagraphWithHighlights = (text: string) => {
@@ -117,7 +133,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
             />
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-blue-300">Kết quả chung</div>
-              <div className="text-lg font-black text-yellow-400">Band {report.overallBand.toFixed(1)}</div>
+              <div className="text-lg font-black text-yellow-400">Band {formatBandScore(report.overallBand)}</div>
               <div className="text-xs font-semibold text-white/95 mt-0.5">
                 {report.overallBand >= 7.5 ? "Cực Kỳ Ấn Tượng" : report.overallBand >= 6.5 ? "Đạt Chuẩn Chuyên Nghiệp" : report.overallBand >= 5.5 ? "Khá Tốt" : "Cần Cố Gắng"}
               </div>
@@ -146,14 +162,37 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={handleExportDoc}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-extrabold text-xs shadow-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-            title="Tải xuống file Word (.doc) giữ nguyên định dạng tô đỏ, nhận xét 4 tiêu chí và Cẩm nang lên band"
-          >
-            <Download className="w-4 h-4 text-blue-950" />
-            <span>Xuất File Word (.doc)</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasDualTasks ? (
+              <>
+                <button
+                  onClick={handleExportSingleDoc}
+                  className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition-all cursor-pointer border border-white/20 shadow-sm"
+                  title={`Xuất file Word riêng cho Task ${taskType === "task1" ? "1" : "2"}`}
+                >
+                  <Download className="w-3.5 h-3.5 text-yellow-300" />
+                  <span>Xuất Task {taskType === "task1" ? "1" : "2"}</span>
+                </button>
+                <button
+                  onClick={handleExportAllDoc}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black text-xs shadow-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                  title="Xuất file Word gộp chứa trọn bộ báo cáo Task 1 & Task 2"
+                >
+                  <FileCheck className="w-4 h-4 text-blue-950" />
+                  <span>Xuất Cả 2 Tasks (Task 1 &amp; 2)</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleExportSingleDoc}
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-extrabold text-xs shadow-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                title="Tải xuống file Word (.doc) giữ nguyên định dạng tô đỏ, nhận xét 4 tiêu chí và Cẩm nang lên band"
+              >
+                <Download className="w-4 h-4 text-blue-950" />
+                <span>Xuất File Word (.doc)</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -460,14 +499,35 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                   Bài Viết Mẫu Hoàn Chỉnh Để Học Tập (Band 8.0+)
                 </h3>
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleExportDoc}
-                  className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-300 hover:bg-amber-400 border border-amber-400 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
-                >
-                  <Download className="w-3.5 h-3.5 text-blue-950" />
-                  <span>Xuất File Word (.doc)</span>
-                </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {hasDualTasks ? (
+                  <>
+                    <button
+                      onClick={handleExportSingleDoc}
+                      className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-200 hover:bg-amber-300 border border-amber-300 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                      title={`Xuất file Word riêng cho Task ${taskType === "task1" ? "1" : "2"}`}
+                    >
+                      <Download className="w-3.5 h-3.5 text-blue-950" />
+                      <span>Xuất Task {taskType === "task1" ? "1" : "2"}</span>
+                    </button>
+                    <button
+                      onClick={handleExportAllDoc}
+                      className="inline-flex items-center space-x-1 text-xs text-blue-950 hover:text-black font-extrabold bg-amber-400 hover:bg-amber-300 border border-amber-500 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
+                      title="Xuất file Word gộp chứa cả Task 1 & Task 2"
+                    >
+                      <FileCheck className="w-3.5 h-3.5 text-blue-950" />
+                      <span>Xuất Cả 2 Tasks</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleExportSingleDoc}
+                    className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-300 hover:bg-amber-400 border border-amber-400 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5 text-blue-950" />
+                    <span>Xuất File Word (.doc)</span>
+                  </button>
+                )}
                 <button
                   onClick={handleCopyModel}
                   className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
