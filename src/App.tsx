@@ -25,8 +25,10 @@ import {
 
 export default function App() {
   const [essay, setEssay] = useState<string>("");
-  const [taskType, setTaskType] = useState<"task1" | "task2">("task2");
+  const [taskType, setTaskType] = useState<"task1" | "task2" | "combo">("task2");
   const [prompt, setPrompt] = useState<string>("");
+  const [task2Prompt, setTask2Prompt] = useState<string>("");
+  const [task2Essay, setTask2Essay] = useState<string>("");
   const [task1Image, setTask1Image] = useState<string | null>(null);
   const [report, setReport] = useState<GradingReport | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -178,15 +180,79 @@ export default function App() {
   const wordsArray = essay.trim().split(/\s+/).filter(Boolean);
   const wordCount = wordsArray.length;
 
+  const task2WordsArray = task2Essay.trim().split(/\s+/).filter(Boolean);
+  const task2WordCount = task2WordsArray.length;
+
   // Requirements description based on task type
   const targetWordCount = taskType === "task1" ? 150 : 250;
   const wordCountProgress = Math.min((wordCount / targetWordCount) * 100, 100);
 
+  // Helper for single grading request
+  const fetchSingleGrading = async (
+    targetType: "task1" | "task2",
+    essayText: string,
+    promptText: string,
+    imgData: string | null
+  ): Promise<GradingReport> => {
+    try {
+      const response = await fetch("/api/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          essay: essayText, 
+          taskType: targetType, 
+          prompt: promptText, 
+          customApiKey,
+          image: targetType === "task1" ? imgData : null,
+        }),
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+
+      if (contentType.includes("application/json")) {
+        const jsonResult = await response.json();
+        if (!response.ok) {
+          throw new Error(jsonResult.error || "Có lỗi xảy ra trong quá trình chấm bài.");
+        }
+        return jsonResult;
+      } else if (customApiKey.trim()) {
+        return await gradeEssayClient({
+          essay: essayText,
+          taskType: targetType,
+          prompt: promptText,
+          apiKey: customApiKey.trim(),
+          image: targetType === "task1" ? imgData : null,
+        });
+      } else {
+        throw new Error("Không thể kết nối API backend (/api/grade). Vui lòng nhập API Key cá nhân ở ô 'CẤU HÌNH API KEY CÁ NHÂN' phía trên!");
+      }
+    } catch (fetchErr: any) {
+      if (customApiKey.trim()) {
+        return await gradeEssayClient({
+          essay: essayText,
+          taskType: targetType,
+          prompt: promptText,
+          apiKey: customApiKey.trim(),
+          image: targetType === "task1" ? imgData : null,
+        });
+      } else {
+        throw fetchErr;
+      }
+    }
+  };
+
   // Core handler to submit essay for AI grading
   const handleGradeEssay = async () => {
-    if (!essay.trim()) {
-      setError("Vui lòng điền nội dung bài viết trước khi chấm.");
-      return;
+    if (taskType === "combo") {
+      if (!essay.trim() || !task2Essay.trim()) {
+        setError("Vui lòng điền nội dung bài viết cho cả Task 1 và Task 2 trước khi chấm.");
+        return;
+      }
+    } else {
+      if (!essay.trim()) {
+        setError("Vui lòng điền nội dung bài viết trước khi chấm.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -194,7 +260,15 @@ export default function App() {
     setReport(null);
 
     // Dynamic loading screen step sequence
-    const steps = [
+    const steps = taskType === "combo" ? [
+      "Hệ thống AVA đang tiếp nhận bài làm Task 1 & Task 2...",
+      "Đang quét hình ảnh và phân tích dữ liệu biểu đồ Task 1...",
+      "Đang kiểm tra độ dài bài viết và cấu trúc câu 2 Task...",
+      "Đang phân tích vốn từ vựng (Lexical Resource) từng bài...",
+      "Đang kiểm tra độ đa dạng ngữ pháp (GRA) & tính liên kết (CC)...",
+      "Đang đối sánh khắt khe với Band Descriptors 2023...",
+      "AVA đang tổng hợp 2 báo cáo chi tiết và tính điểm Overall Band..."
+    ] : [
       "Hệ thống AVA đang tiếp nhận bài viết...",
       "Đang quét độ dài bài viết và cấu trúc câu...",
       "Đang phân tích vốn từ vựng (Lexical Resource)...",
@@ -215,78 +289,62 @@ export default function App() {
     }, 2800);
 
     try {
-      let data: GradingReport | null = null;
+      if (taskType === "combo") {
+        // Grade both Task 1 and Task 2 simultaneously
+        const [res1, res2] = await Promise.all([
+          fetchSingleGrading("task1", essay, prompt, task1Image),
+          fetchSingleGrading("task2", task2Essay, task2Prompt, null),
+        ]);
 
-      try {
-        const response = await fetch("/api/grade", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            essay, 
-            taskType, 
-            prompt, 
-            customApiKey,
-            image: taskType === "task1" ? task1Image : null,
-          }),
-        });
+        clearInterval(interval);
 
-        const contentType = response.headers.get("content-type") || "";
+        const historyItem1: EssayHistoryItem = {
+          id: (Date.now() - 10).toString(),
+          date: new Date().toISOString(),
+          essay,
+          taskType: "task1",
+          prompt,
+          report: res1,
+        };
 
-        if (contentType.includes("application/json")) {
-          const jsonResult = await response.json();
-          if (!response.ok) {
-            throw new Error(jsonResult.error || "Có lỗi xảy ra trong quá trình chấm bài.");
-          }
-          data = jsonResult;
-        } else if (customApiKey.trim()) {
-          // Response is HTML / non-JSON (e.g., static Vercel host without backend API), fall back to client-side Gemini call
-          data = await gradeEssayClient({
-            essay,
-            taskType,
-            prompt,
-            apiKey: customApiKey.trim(),
-            image: taskType === "task1" ? task1Image : null,
-          });
-        } else {
-          throw new Error("Không thể kết nối API backend (/api/grade). Vì trang web hiện đang chạy dưới dạng tĩnh trên Vercel, vui lòng nhập API Key cá nhân ở ô 'CẤU HÌNH API KEY CÁ NHÂN' phía trên để chấm bài trực tiếp!");
-        }
-      } catch (fetchErr: any) {
-        if (customApiKey.trim()) {
-          // If network error occurred or endpoint failed, fall back to client-side grading
-          data = await gradeEssayClient({
-            essay,
-            taskType,
-            prompt,
-            apiKey: customApiKey.trim(),
-            image: taskType === "task1" ? task1Image : null,
-          });
-        } else {
-          throw fetchErr;
-        }
+        const historyItem2: EssayHistoryItem = {
+          id: Date.now().toString(),
+          date: new Date().toISOString(),
+          essay: task2Essay,
+          taskType: "task2",
+          prompt: task2Prompt,
+          report: res2,
+        };
+
+        const updatedHistory = [historyItem2, historyItem1, ...history];
+        saveHistoryToCache(updatedHistory);
+        setActiveHistoryId(historyItem2.id);
+        setReport(res2);
+      } else {
+        const data = await fetchSingleGrading(
+          taskType,
+          essay,
+          prompt,
+          taskType === "task1" ? task1Image : null
+        );
+
+        clearInterval(interval);
+
+        setReport(data);
+
+        const historyItem: EssayHistoryItem = {
+          id: Date.now().toString(),
+          date: new Date().toISOString(),
+          essay,
+          taskType,
+          prompt,
+          report: data,
+        };
+
+        const updatedHistory = [historyItem, ...history];
+        saveHistoryToCache(updatedHistory);
+        setActiveHistoryId(historyItem.id);
       }
-
-      clearInterval(interval);
-
-      if (!data) {
-        throw new Error("Không nhận được dữ liệu báo cáo chấm bài.");
-      }
-
-      setReport(data);
-
-      // Add to history
-      const historyItem: EssayHistoryItem = {
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        essay,
-        taskType,
-        prompt,
-        report: data,
-      };
-
-      const updatedHistory = [historyItem, ...history];
-      saveHistoryToCache(updatedHistory);
-      setActiveHistoryId(historyItem.id);
-
     } catch (err: any) {
       clearInterval(interval);
       console.error(err);
@@ -318,6 +376,8 @@ export default function App() {
   const handleNewAttempt = () => {
     setEssay("");
     setPrompt("");
+    setTask2Essay("");
+    setTask2Prompt("");
     setTask1Image(null);
     setReport(null);
     setActiveHistoryId(undefined);
@@ -503,187 +563,365 @@ export default function App() {
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Dạng bài thi IELTS (Task Type):
                 </label>
-                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
                   <button
-                    onClick={() => {
-                      setTaskType("task1");
-                    }}
-                    className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    type="button"
+                    onClick={() => setTaskType("task1")}
+                    className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                       taskType === "task1"
-                        ? "bg-white text-blue-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-700"
+                        ? "bg-white text-blue-900 shadow-xs border border-slate-200/80"
+                        : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    Task 1 (Academic Graph)
+                    Task 1
                   </button>
                   <button
-                    onClick={() => {
-                      setTaskType("task2");
-                    }}
-                    className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    type="button"
+                    onClick={() => setTaskType("task2")}
+                    className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                       taskType === "task2"
-                        ? "bg-white text-blue-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-700"
+                        ? "bg-white text-blue-900 shadow-xs border border-slate-200/80"
+                        : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    Task 2 (Academic Essay)
+                    Task 2
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTaskType("combo")}
+                    className={`py-2 text-[11px] font-extrabold rounded-lg transition-all cursor-pointer ${
+                      taskType === "combo"
+                        ? "bg-amber-400 text-blue-950 shadow-xs border border-amber-300"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Task 1 + 2
                   </button>
                 </div>
               </div>
 
-              {/* Original Question Prompt */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Đề bài gốc (Original Question):
-                  </label>
-                  <span className="text-[10px] text-slate-400 font-semibold">(Khuyên dùng)</span>
-                </div>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={
-                    taskType === "task1"
-                      ? "Ví dụ: The charts below show the percentage of household access to internet..."
-                      : "Ví dụ: Some people believe that university education should be free..."
-                  }
-                  rows={2}
-                  className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all scrollbar-thin"
-                />
-              </div>
+              {taskType === "combo" ? (
+                /* DUAL TASK COMBO MODE INPUTS */
+                <div className="space-y-6 animate-fadeIn">
+                  {/* PHẦN 1: TASK 1 */}
+                  <div className="space-y-4 border-b border-slate-200 pb-5">
+                    <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-xs uppercase tracking-wider bg-blue-50 p-2.5 rounded-xl border border-blue-100">
+                      <span>📊 PHẦN 1: IELTS WRITING TASK 1</span>
+                    </div>
 
-              {/* Task 1 Diagram / Chart Image Input */}
-              {taskType === "task1" && (
-                <div className="space-y-2 animate-fadeIn" id="task1-image-upload-container">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Hình ảnh biểu đồ / sơ đồ Task 1:
-                    </label>
-                    <span className="text-[10px] text-blue-700 font-bold">(Giúp AI chấm Task 1 chuẩn nhất)</span>
+                    {/* Task 1 Prompt */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        Đề bài Task 1:
+                      </label>
+                      <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Ví dụ: The charts below show the percentage of household access to internet..."
+                        rows={2}
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all scrollbar-thin"
+                      />
+                    </div>
+
+                    {/* Task 1 Diagram Image */}
+                    <div className="space-y-1.5" id="task1-image-upload-container">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          Hình ảnh biểu đồ / sơ đồ Task 1:
+                        </label>
+                      </div>
+
+                      {task1Image ? (
+                        <div className="relative bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={task1Image}
+                              alt="Task 1 diagram"
+                              className="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-800 truncate">
+                                ✓ Đã chèn hình ảnh biểu đồ
+                              </span>
+                              <span className="text-[10px] text-emerald-600 font-medium block">
+                                AVA sẽ soi chiếu hình ảnh khi chấm.
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setTask1Image(null)}
+                            className="px-2 py-1 text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDraggingTask1Image(true);
+                          }}
+                          onDragLeave={(e) => {
+                            e.preventDefault();
+                            setIsDraggingTask1Image(false);
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setIsDraggingTask1Image(false);
+                            const file = e.dataTransfer.files?.[0];
+                            if (file) processTask1ImageFile(file);
+                          }}
+                          className={`border-2 border-dashed rounded-xl p-3 text-center transition-all duration-200 flex flex-col items-center justify-center ${
+                            isDraggingTask1Image
+                              ? "border-blue-500 bg-blue-50/80 scale-[1.01]"
+                              : "border-slate-200 hover:border-blue-500 bg-slate-50/50"
+                          }`}
+                        >
+                          <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+                            <div className="flex items-center gap-1.5 text-slate-600 group-hover:text-blue-900">
+                              <Image className="w-4 h-4 text-blue-700" />
+                              <span className="text-xs font-bold text-slate-800">
+                                {isDraggingTask1Image ? "Thả hình vào đây ngay" : "Thả hoặc chọn hình biểu đồ Task 1"}
+                              </span>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleTask1ImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Task 1 Essay */}
+                    <div className="space-y-1.5 relative">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          Nội dung bài viết Task 1:
+                        </label>
+                        <span
+                          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                            wordCount >= 150 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-600"
+                          }`}
+                        >
+                          {wordCount} / 150 từ
+                        </span>
+                      </div>
+                      <textarea
+                        value={essay}
+                        onChange={(e) => setEssay(e.target.value)}
+                        placeholder="Nhập hoặc dán bài viết IELTS Task 1 vào đây..."
+                        rows={8}
+                        className="w-full text-xs p-3.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-serif leading-relaxed transition-all scrollbar-thin"
+                      />
+                    </div>
                   </div>
 
-                  {task1Image ? (
-                    <div className="relative bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={task1Image}
-                          alt="Task 1 diagram"
-                          className="w-14 h-14 object-cover rounded-lg border border-slate-300 shadow-sm shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <span className="block text-xs font-bold text-slate-800 truncate">
-                            ✓ Đã chèn hình ảnh biểu đồ Task 1
-                          </span>
-                          <span className="text-[11px] text-emerald-600 font-medium block">
-                            AVA sẽ trực tiếp soi chiếu hình ảnh này khi chấm bài.
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setTask1Image(null)}
-                        className="px-2.5 py-1 text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
-                      >
-                        Xóa ảnh
-                      </button>
+                  {/* PHẦN 2: TASK 2 */}
+                  <div className="space-y-4 pt-1">
+                    <div className="flex items-center space-x-2 text-indigo-900 font-extrabold text-xs uppercase tracking-wider bg-indigo-50 p-2.5 rounded-xl border border-indigo-100">
+                      <span>✍️ PHẦN 2: IELTS WRITING TASK 2</span>
                     </div>
-                  ) : (
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setIsDraggingTask1Image(true);
-                      }}
-                      onDragLeave={(e) => {
-                        e.preventDefault();
-                        setIsDraggingTask1Image(false);
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setIsDraggingTask1Image(false);
-                        const file = e.dataTransfer.files?.[0];
-                        if (file) processTask1ImageFile(file);
-                      }}
-                      className={`border-2 border-dashed rounded-xl p-4 text-center transition-all duration-200 flex flex-col items-center justify-center ${
-                        isDraggingTask1Image
-                          ? "border-blue-500 bg-blue-50/80 scale-[1.01] shadow-md"
-                          : "border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20"
-                      }`}
-                    >
-                      <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
-                        <div className="flex items-center gap-2 text-slate-600 group-hover:text-blue-900 transition-colors">
-                          <Image className="w-5 h-5 text-blue-700" />
-                          <span className="text-xs font-bold text-slate-800">
-                            {isDraggingTask1Image
-                              ? "Thả tệp hình ảnh vào đây ngay"
-                              : "Thả hoặc chọn hình ảnh biểu đồ / sơ đồ Task 1"}
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-slate-400 mt-1">
-                          Kéo &amp; thả tệp PNG, JPG, WEBP vào đây hoặc bấm để chọn tệp (Tối đa 8MB)
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleTask1ImageUpload}
-                          className="hidden"
-                        />
+
+                    {/* Task 2 Prompt */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        Đề bài Task 2:
                       </label>
+                      <textarea
+                        value={task2Prompt}
+                        onChange={(e) => setTask2Prompt(e.target.value)}
+                        placeholder="Ví dụ: Some people believe that university education should be free..."
+                        rows={2}
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all scrollbar-thin"
+                      />
+                    </div>
+
+                    {/* Task 2 Essay */}
+                    <div className="space-y-1.5 relative">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          Nội dung bài viết Task 2:
+                        </label>
+                        <span
+                          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                            task2WordCount >= 250 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-600"
+                          }`}
+                        >
+                          {task2WordCount} / 250 từ
+                        </span>
+                      </div>
+                      <textarea
+                        value={task2Essay}
+                        onChange={(e) => setTask2Essay(e.target.value)}
+                        placeholder="Nhập hoặc dán bài viết IELTS Task 2 vào đây..."
+                        rows={10}
+                        className="w-full text-xs p-3.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-serif leading-relaxed transition-all scrollbar-thin"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* SINGLE TASK INPUTS (Task 1 or Task 2) */
+                <>
+                  {/* Original Question Prompt */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Đề bài gốc (Original Question):
+                      </label>
+                      <span className="text-[10px] text-slate-400 font-semibold">(Khuyên dùng)</span>
+                    </div>
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder={
+                        taskType === "task1"
+                          ? "Ví dụ: The charts below show the percentage of household access to internet..."
+                          : "Ví dụ: Some people believe that university education should be free..."
+                      }
+                      rows={2}
+                      className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all scrollbar-thin"
+                    />
+                  </div>
+
+                  {/* Task 1 Diagram / Chart Image Input */}
+                  {taskType === "task1" && (
+                    <div className="space-y-2 animate-fadeIn" id="task1-image-upload-container">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          Hình ảnh biểu đồ / sơ đồ Task 1:
+                        </label>
+                        <span className="text-[10px] text-blue-700 font-bold">(Giúp AI chấm Task 1 chuẩn nhất)</span>
+                      </div>
+
+                      {task1Image ? (
+                        <div className="relative bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={task1Image}
+                              alt="Task 1 diagram"
+                              className="w-14 h-14 object-cover rounded-lg border border-slate-300 shadow-sm shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-800 truncate">
+                                ✓ Đã chèn hình ảnh biểu đồ Task 1
+                              </span>
+                              <span className="text-[11px] text-emerald-600 font-medium block">
+                                AVA sẽ trực tiếp soi chiếu hình ảnh này khi chấm bài.
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setTask1Image(null)}
+                            className="px-2.5 py-1 text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
+                          >
+                            Xóa ảnh
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDraggingTask1Image(true);
+                          }}
+                          onDragLeave={(e) => {
+                            e.preventDefault();
+                            setIsDraggingTask1Image(false);
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setIsDraggingTask1Image(false);
+                            const file = e.dataTransfer.files?.[0];
+                            if (file) processTask1ImageFile(file);
+                          }}
+                          className={`border-2 border-dashed rounded-xl p-4 text-center transition-all duration-200 flex flex-col items-center justify-center ${
+                            isDraggingTask1Image
+                              ? "border-blue-500 bg-blue-50/80 scale-[1.01] shadow-md"
+                              : "border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20"
+                          }`}
+                        >
+                          <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+                            <div className="flex items-center gap-2 text-slate-600 group-hover:text-blue-900 transition-colors">
+                              <Image className="w-5 h-5 text-blue-700" />
+                              <span className="text-xs font-bold text-slate-800">
+                                {isDraggingTask1Image
+                                  ? "Thả tệp hình ảnh vào đây ngay"
+                                  : "Thả hoặc chọn hình ảnh biểu đồ / sơ đồ Task 1"}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 mt-1">
+                              Kéo &amp; thả tệp PNG, JPG, WEBP vào đây hoặc bấm để chọn tệp (Tối đa 8MB)
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleTask1ImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
+
+                  {/* Drag-and-drop Word Extractor */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Hoặc tải tệp bài viết từ máy tính:
+                    </label>
+                    <FileUploader
+                      onTextExtracted={(text) => {
+                        setEssay(text);
+                        setError(null);
+                      }}
+                      onError={(msg) => setError(msg)}
+                    />
+                  </div>
+
+                  {/* Essay Text Area */}
+                  <div className="space-y-2 relative">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Nội dung bài viết (Your Essay):
+                      </label>
+                      
+                      {/* Dynamic Word Progress Counter */}
+                      <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          wordCount >= targetWordCount
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-amber-50 text-amber-600 animate-pulse"
+                        }`}
+                      >
+                        {wordCount} / {targetWordCount} từ
+                      </span>
+                    </div>
+
+                    <textarea
+                      value={essay}
+                      onChange={(e) => setEssay(e.target.value)}
+                      placeholder="Nhập hoặc dán nội dung bài viết IELTS Academic của bạn vào đây..."
+                      rows={14}
+                      className="w-full text-xs p-4 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-serif leading-relaxed transition-all scrollbar-thin"
+                    />
+
+                    {/* Progress bar line under textarea */}
+                    <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden absolute bottom-1.5 left-0">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          wordCount >= targetWordCount ? "bg-emerald-500" : "bg-amber-500"
+                        }`}
+                        style={{ width: `${wordCountProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                </>
               )}
-
-              {/* Drag-and-drop Word Extractor */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Hoặc tải tệp bài viết từ máy tính:
-                </label>
-                <FileUploader
-                  onTextExtracted={(text) => {
-                    setEssay(text);
-                    setError(null);
-                  }}
-                  onError={(msg) => setError(msg)}
-                />
-              </div>
-
-              {/* Essay Text Area */}
-              <div className="space-y-2 relative">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Nội dung bài viết (Your Essay):
-                  </label>
-                  
-                  {/* Dynamic Word Progress Counter */}
-                  <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                      wordCount >= targetWordCount
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-amber-50 text-amber-600 animate-pulse"
-                    }`}
-                  >
-                    {wordCount} / {targetWordCount} từ
-                  </span>
-                </div>
-
-                <textarea
-                  value={essay}
-                  onChange={(e) => setEssay(e.target.value)}
-                  placeholder="Nhập hoặc dán nội dung bài viết IELTS Academic của bạn vào đây..."
-                  rows={14}
-                  className="w-full text-xs p-4 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-serif leading-relaxed transition-all scrollbar-thin"
-                />
-
-                {/* Progress bar line under textarea */}
-                <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden absolute bottom-1.5 left-0">
-                  <div
-                    className={`h-full transition-all duration-300 ${
-                      wordCount >= targetWordCount ? "bg-emerald-500" : "bg-amber-500"
-                    }`}
-                    style={{ width: `${wordCountProgress}%` }}
-                  />
-                </div>
-              </div>
 
               {/* Error indicator */}
               {error && (
