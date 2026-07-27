@@ -3,6 +3,50 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { jsonrepair } from "jsonrepair";
+
+dotenv.config();
+
+// Helper to safely parse JSON from AI response, automatically repairing syntax errors like unescaped quotes or missing commas
+function parseRobustJson(textResponse: string): any {
+  if (!textResponse || typeof textResponse !== "string") {
+    throw new Error("Không có phản hồi từ mô hình AI.");
+  }
+
+  let cleaned = textResponse.trim();
+  // Remove markdown code fence if present
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+
+  // 1. Attempt standard JSON.parse
+  try {
+    return JSON.parse(cleaned);
+  } catch (e1) {
+    // 2. Attempt jsonrepair on cleaned text
+    try {
+      const repaired = jsonrepair(cleaned);
+      return JSON.parse(repaired);
+    } catch (e2) {
+      // 3. Attempt to isolate valid JSON block between first '{' and last '}'
+      const startIdx = cleaned.indexOf("{");
+      const endIdx = cleaned.lastIndexOf("}");
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        const sliced = cleaned.slice(startIdx, endIdx + 1);
+        try {
+          return JSON.parse(sliced);
+        } catch (e3) {
+          try {
+            const repairedSliced = jsonrepair(sliced);
+            return JSON.parse(repairedSliced);
+          } catch (e4) {
+            console.error("[AVA Robust JSON] All JSON parse attempts failed:", e4);
+            throw e1;
+          }
+        }
+      }
+      throw e1;
+    }
+  }
+}
 
 dotenv.config();
 
@@ -312,6 +356,7 @@ ${trimmedEssay}
         systemInstruction: systemInstruction,
         responseMimeType: "application/json",
         temperature: 0.2, // Keep grading precise and consistent
+        maxOutputTokens: 8192,
       },
     });
 
@@ -323,33 +368,13 @@ ${trimmedEssay}
     // Parse output JSON with robust cleaning and repair
     let parsedResult;
     try {
-      let cleaned = textResponse.trim();
-      // Remove leading markdown formatting if present (e.g., ```json or ```)
-      cleaned = cleaned.replace(/^```(?:json)?\s*/i, "");
-      // Remove trailing markdown formatting if present (e.g., ```)
-      cleaned = cleaned.replace(/\s*```$/, "");
-      cleaned = cleaned.trim();
-      
-      parsedResult = JSON.parse(cleaned);
+      parsedResult = parseRobustJson(textResponse);
     } catch (e) {
       console.error("Failed to parse AI response as JSON:", textResponse);
-      
-      // Let's attempt secondary parsing by locating first { and last }
-      try {
-        const startIdx = textResponse.indexOf("{");
-        const endIdx = textResponse.lastIndexOf("}");
-        if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-          const sliced = textResponse.slice(startIdx, endIdx + 1);
-          parsedResult = JSON.parse(sliced);
-        } else {
-          throw e;
-        }
-      } catch (secondError) {
-        return res.status(500).json({
-          error: "Mô hình AI phản hồi không đúng định dạng cấu trúc dữ liệu. Vui lòng thử lại.",
-          rawText: textResponse,
-        });
-      }
+      return res.status(500).json({
+        error: "Mô hình AI phản hồi cấu trúc dữ liệu không hoàn chỉnh. Vui lòng thử lại.",
+        rawText: textResponse,
+      });
     }
 
     // Individual criteria scores MUST be integers according to strict Band Descriptors (no half bands)

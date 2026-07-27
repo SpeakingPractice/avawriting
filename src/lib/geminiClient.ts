@@ -1,5 +1,43 @@
 import { GoogleGenAI } from "@google/genai";
+import { jsonrepair } from "jsonrepair";
 import { GradingReport } from "../types";
+
+// Helper to safely parse JSON from AI response, automatically repairing syntax errors like unescaped quotes or missing commas
+function parseRobustJson(textResponse: string): any {
+  if (!textResponse || typeof textResponse !== "string") {
+    throw new Error("Không có phản hồi từ mô hình AI.");
+  }
+
+  let cleaned = textResponse.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (e1) {
+    try {
+      const repaired = jsonrepair(cleaned);
+      return JSON.parse(repaired);
+    } catch (e2) {
+      const startIdx = cleaned.indexOf("{");
+      const endIdx = cleaned.lastIndexOf("}");
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        const sliced = cleaned.slice(startIdx, endIdx + 1);
+        try {
+          return JSON.parse(sliced);
+        } catch (e3) {
+          try {
+            const repairedSliced = jsonrepair(sliced);
+            return JSON.parse(repairedSliced);
+          } catch (e4) {
+            console.error("[AVA Robust JSON Client] All JSON parse attempts failed:", e4);
+            throw e1;
+          }
+        }
+      }
+      throw e1;
+    }
+  }
+}
 
 // Helper function to calculate official IELTS rounding (0.0, 0.5, 1.0)
 function roundIELTS(score: number): number {
@@ -243,19 +281,12 @@ ${trimmedEssay}
       systemInstruction: systemInstruction,
       responseMimeType: "application/json",
       temperature: 0.2,
+      maxOutputTokens: 8192,
     },
   });
 
   const responseText = response.text || "";
-  let cleanJsonString = responseText.trim();
-
-  if (cleanJsonString.startsWith("```json")) {
-    cleanJsonString = cleanJsonString.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-  } else if (cleanJsonString.startsWith("```")) {
-    cleanJsonString = cleanJsonString.replace(/^```\s*/, "").replace(/\s*```$/, "");
-  }
-
-  const parsedResult: GradingReport = JSON.parse(cleanJsonString);
+  const parsedResult: GradingReport = parseRobustJson(responseText);
 
   const taScore = Math.floor(Number(parsedResult.criteria?.taOrTr?.band || 0));
   const ccScore = Math.floor(Number(parsedResult.criteria?.cc?.band || 0));
