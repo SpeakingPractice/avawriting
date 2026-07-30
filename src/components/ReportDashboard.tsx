@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
+import { StandardCriteriaGuide } from "./StandardCriteriaGuide";
 import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData } from "../lib/exportDoc";
 import {
   Sparkles,
@@ -19,6 +20,7 @@ import {
   ChevronRight,
   Download,
   FileCheck,
+  Target,
 } from "lucide-react";
 
 interface ReportDashboardProps {
@@ -38,7 +40,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   promptText = "",
   allAvailableTasks = [],
 }) => {
-  const [activeTab, setActiveTab] = useState<"criteria" | "strengths" | "upgrades" | "model" | "roadmap">("criteria");
+  const [activeTab, setActiveTab] = useState<"criteria" | "criteriaGuide" | "strengths" | "upgrades" | "model" | "roadmap">("criteriaGuide");
   const [copied, setCopied] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -242,6 +244,18 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200 touch-pan-x flex-nowrap scroll-smooth w-full px-2 sm:px-8"
         >
           <button
+            onClick={() => setActiveTab("criteriaGuide")}
+            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
+              activeTab === "criteriaGuide"
+                ? "border-blue-900 text-blue-900 bg-white"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Target className="w-4 h-4 text-amber-500" />
+            <span>Tiêu Chí Mẫu & Dàn Bài</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("criteria")}
             className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
               activeTab === "criteria"
@@ -313,6 +327,15 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
 
       {/* Tab Panels */}
       <div className="p-6">
+        {/* 0. Tiêu Chí Mẫu & Dàn Bài Theo Target Band */}
+        {activeTab === "criteriaGuide" && (
+          <StandardCriteriaGuide
+            taskType={activeTaskType}
+            promptText={activeTaskData.promptText}
+            essayText={activeTaskData.originalEssay}
+          />
+        )}
+
         {/* 1. Chi Tiết 4 Tiêu Chí */}
         {activeTab === "criteria" && (
           <div className="space-y-6" id="panel-criteria">
