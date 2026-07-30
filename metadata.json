@@ -1,6 +1,6 @@
 {
-  "name": "IELTS Academic Writing Examiner",
-  "description": "Hệ thống AVA - Chuyên gia chấm điểm IELTS Academic Writing chuẩn khảo thí",
+  "name": "MỸ DU - BẬC THẦY WRITING IELTS",
+  "description": "MỸ DU - BẬC THẦY WRITING IELTS | DARE TO DREAM, THINK AND DO",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

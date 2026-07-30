@@ -47,6 +47,31 @@ export default function App() {
   const [keyValidationMsg, setKeyValidationMsg] = useState<string | null>(null);
   const [forceShowConfig, setForceShowConfig] = useState<boolean>(false);
   const [isDraggingTask1Image, setIsDraggingTask1Image] = useState<boolean>(false);
+  const [customLogo, setCustomLogo] = useState<string | null>(() => {
+    return localStorage.getItem("mydu_custom_logo") || null;
+  });
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF...).");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Kích thước tệp hình ảnh không được vượt quá 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setCustomLogo(result);
+        localStorage.setItem("mydu_custom_logo", result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const processTask1ImageFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -430,16 +455,48 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Logo and title */}
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={handleNewAttempt}>
-              <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center shadow-md">
-                <span className="text-blue-900 font-bold text-xl font-display">AVA</span>
+            <div className="flex items-center space-x-3">
+              {/* Interactive Custom Logo Circle */}
+              <div
+                className="relative cursor-pointer group"
+                onClick={() => logoInputRef.current?.click()}
+                title="Bấm vào đây để tải logo cá nhân của bạn"
+              >
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  onChange={handleLogoUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                {customLogo ? (
+                  <div className="relative">
+                    <img
+                      src={customLogo}
+                      alt="Logo Mỹ Du"
+                      className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-yellow-400 group-hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-blue-900 border border-blue-900 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-extrabold shadow-xs group-hover:scale-110 transition-transform">
+                      +
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center shadow-md relative group-hover:bg-yellow-300 transition-colors">
+                    <span className="text-blue-900 font-extrabold text-sm font-display">MD</span>
+                    <div className="absolute -bottom-1 -right-1 bg-blue-900 text-yellow-400 border border-yellow-400 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-extrabold shadow-xs group-hover:scale-110 transition-transform">
+                      +
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
+
+              {/* Title & Slogan */}
+              <div className="cursor-pointer" onClick={handleNewAttempt}>
                 <h1 className="text-lg font-bold tracking-tight uppercase font-display flex items-center space-x-2">
-                  <span>Hệ Thống Giám Khảo IELTS AVA</span>
+                  <span>MỸ DU - BẬC THẦY WRITING IELTS</span>
                 </h1>
-                <p className="text-xs text-blue-200 uppercase tracking-widest font-medium">
-                  Chuyên gia chấm thi Academic Writing
+                <p className="text-xs text-blue-200 uppercase tracking-widest font-medium italic">
+                  DARE TO DREAM, THINK AND DO
                 </p>
               </div>
             </div>
