@@ -7,9 +7,43 @@ import { jsonrepair } from "jsonrepair";
 
 dotenv.config();
 
+// Helper to safely extract text from Gemini response object
+function extractResponseText(response: any): string {
+  if (!response) return "";
+
+  try {
+    if (typeof response.text === "string" && response.text.trim().length > 0) {
+      return response.text.trim();
+    }
+    if (typeof response.text === "function") {
+      const fnText = response.text();
+      if (typeof fnText === "string" && fnText.trim().length > 0) {
+        return fnText.trim();
+      }
+    }
+  } catch (e) {
+    // Ignore getter errors
+  }
+
+  if (Array.isArray(response.candidates) && response.candidates.length > 0) {
+    for (const cand of response.candidates) {
+      if (cand?.content?.parts && Array.isArray(cand.content.parts)) {
+        const partsText = cand.content.parts
+          .map((p: any) => (typeof p?.text === "string" ? p.text : ""))
+          .filter(Boolean)
+          .join("")
+          .trim();
+        if (partsText) return partsText;
+      }
+    }
+  }
+
+  return "";
+}
+
 // Helper to safely parse JSON from AI response, automatically repairing syntax errors like unescaped quotes or missing commas
 function parseRobustJson(textResponse: string): any {
-  if (!textResponse || typeof textResponse !== "string") {
+  if (!textResponse || typeof textResponse !== "string" || !textResponse.trim()) {
     throw new Error("Không có phản hồi từ mô hình AI.");
   }
 
@@ -39,7 +73,7 @@ function parseRobustJson(textResponse: string): any {
             return JSON.parse(repairedSliced);
           } catch (e4) {
             console.error("[AVA Robust JSON] All JSON parse attempts failed:", e4);
-            throw e1;
+            throw new Error("Mô hình AI trả về cấu trúc dữ liệu không hoàn chỉnh. Vui lòng gửi lại bài viết.");
           }
         }
       }
@@ -92,10 +126,10 @@ async function generateContentWithFallback(
   }
 ) {
   const models = [
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
     "gemini-flash-latest",
+    "gemini-3.6-flash",
     "gemini-3.1-flash-lite",
+    "gemini-3.5-flash",
   ];
 
   let lastError: any = null;
@@ -107,12 +141,30 @@ async function generateContentWithFallback(
         const response = await ai.models.generateContent({
           model,
           contents: options.contents,
-          config: options.config,
+          config: {
+            ...options.config,
+            safetySettings: [
+              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" },
+            ],
+          },
         });
-        return response;
+
+        const text = extractResponseText(response);
+        if (text && text.length > 0) {
+          return { response, text };
+        } else {
+          const finishReason = response?.candidates?.[0]?.finishReason || "UNKNOWN";
+          console.warn(`[AVA Gemini] Model ${model} returned empty response text (finishReason: ${finishReason}). Trying fallback...`);
+          lastError = new Error(`Mô hình ${model} không trả về phản hồi (finishReason: ${finishReason}).`);
+        }
       } catch (err: any) {
         lastError = err;
         const errMsg = String(err?.message || err);
+        console.warn(`[AVA Gemini] Model ${model} (attempt ${attempt + 1}) error: ${errMsg}`);
         const isTransient =
           errMsg.includes("503") ||
           errMsg.includes("UNAVAILABLE") ||
@@ -122,19 +174,16 @@ async function generateContentWithFallback(
           errMsg.includes("RESOURCE_EXHAUSTED");
 
         if (isTransient) {
-          console.warn(
-            `[AVA Gemini] Model ${model} (attempt ${attempt + 1}) encountered high demand / transient error: ${errMsg}. Retrying or switching model...`
-          );
           await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
         } else {
-          // If non-transient error (e.g., INVALID_ARGUMENT, API_KEY_INVALID), throw immediately
-          throw err;
+          break;
         }
       }
     }
   }
 
-  throw lastError;
+  if (lastError) throw lastError;
+  throw new Error("Không có phản hồi từ bất kỳ mô hình AI nào.");
 }
 
 // API endpoint to validate a custom Gemini API key
@@ -350,7 +399,7 @@ ${trimmedEssay}
     // Call Gemini API using fallback sequence with multimodal support
     const contentsPayload = imagePart ? [imagePart, promptText] : promptText;
 
-    const response = await generateContentWithFallback(activeAi, {
+    const { text: textResponse } = await generateContentWithFallback(activeAi, {
       contents: contentsPayload,
       config: {
         systemInstruction: systemInstruction,
@@ -359,11 +408,6 @@ ${trimmedEssay}
         maxOutputTokens: 8192,
       },
     });
-
-    const textResponse = response.text;
-    if (!textResponse) {
-      throw new Error("Không có phản hồi từ mô hình AI.");
-    }
 
     // Parse output JSON with robust cleaning and repair
     let parsedResult;
