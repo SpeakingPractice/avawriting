@@ -311,7 +311,7 @@ export default function App() {
         currentStepIdx++;
         setLoadingStep(steps[currentStepIdx]);
       }
-    }, 2800);
+    }, 1200);
 
     try {
       if (taskType === "combo") {
