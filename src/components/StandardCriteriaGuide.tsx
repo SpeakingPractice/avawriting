@@ -17,6 +17,14 @@ import {
   CheckSquare,
   Award,
   Sliders,
+  Download,
+  Check,
+  Minus,
+  FileSpreadsheet,
+  Table,
+  ChevronDown,
+  ChevronUp,
+  Printer,
 } from "lucide-react";
 
 export type BandLevel = "B1" | "B2" | "C1" | "C2";
@@ -56,6 +64,710 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
   essayText = "",
 }) => {
   const [selectedBand, setSelectedBand] = useState<BandLevel>("C1");
+
+  // State for matrix filter & collapse
+  const [matrixFilter, setMatrixFilter] = useState<"ALL" | "TA_TR" | "CC" | "LR" | "GRA">("ALL");
+  const [isMatrixCollapsed, setIsMatrixCollapsed] = useState<boolean>(false);
+
+  // Rank helper for progression matrix
+  const BAND_ORDER: Record<BandLevel, number> = {
+    B1: 1,
+    B2: 2,
+    C1: 3,
+    C2: 4,
+  };
+
+  const isFeatureSatisfied = (targetBand: BandLevel, minRequiredBand: BandLevel): boolean => {
+    return BAND_ORDER[targetBand] >= BAND_ORDER[minRequiredBand];
+  };
+
+  const handleExportPDF = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Vui lòng cho phép popup trình duyệt để mở cửa sổ tải / in file PDF.");
+      return;
+    }
+
+    const titleText = `BẢNG TIẾN HÓA TIÊU CHÍ CẤP ĐỘ IELTS WRITING (${taskType.toUpperCase()})`;
+
+    let rowsHtml = "";
+
+    progressionCategories.forEach((cat) => {
+      rowsHtml += `
+        <tr class="cat-header">
+          <td colspan="5">
+            <strong>${cat.categoryName}</strong> - <em>${cat.badgeText}</em>
+          </td>
+        </tr>
+      `;
+
+      cat.features.forEach((feat, idx) => {
+        const isB1 = isFeatureSatisfied("B1", feat.minBand) ? '<span class="check">✓ Đạt</span>' : '<span class="dash">-</span>';
+        const isB2 = isFeatureSatisfied("B2", feat.minBand) ? '<span class="check">✓ Đạt</span>' : '<span class="dash">-</span>';
+        const isC1 = isFeatureSatisfied("C1", feat.minBand) ? '<span class="check">✓ Đạt</span>' : '<span class="dash">-</span>';
+        const isC2 = isFeatureSatisfied("C2", feat.minBand) ? '<span class="check">✓ Đạt</span>' : '<span class="dash">-</span>';
+
+        rowsHtml += `
+          <tr>
+            <td class="feat-col">
+              <div class="feat-title">#${idx + 1}. ${feat.title}</div>
+              <div class="feat-desc">${feat.description}</div>
+            </td>
+            <td class="center-col">${isB1}</td>
+            <td class="center-col">${isB2}</td>
+            <td class="center-col">${isC1}</td>
+            <td class="center-col">${isC2}</td>
+          </tr>
+        `;
+      });
+    });
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+        <meta charset="UTF-8">
+        <title>${titleText}</title>
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 10mm;
+          }
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #0f172a;
+            margin: 0;
+            padding: 12px;
+            background: #fff;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+          }
+          .header h1 {
+            font-size: 18px;
+            color: #1e3a8a;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+            font-weight: 800;
+          }
+          .header p {
+            font-size: 11px;
+            color: #475569;
+            margin: 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+          }
+          th, td {
+            border: 1px solid #cbd5e1;
+            padding: 7px 9px;
+            vertical-align: top;
+          }
+          th {
+            background-color: #0f172a;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            font-size: 10px;
+          }
+          th.feat-th {
+            text-align: left;
+            width: 44%;
+          }
+          .cat-header td {
+            background-color: #f1f5f9;
+            color: #1e3a8a;
+            font-size: 11px;
+            padding: 8px 10px;
+            border-top: 2px solid #94a3b8;
+          }
+          .feat-col {
+            width: 44%;
+          }
+          .feat-title {
+            font-weight: bold;
+            color: #0f172a;
+            font-size: 11px;
+          }
+          .feat-desc {
+            color: #475569;
+            font-size: 10px;
+            margin-top: 2px;
+            line-height: 1.3;
+          }
+          .center-col {
+            text-align: center;
+            vertical-align: middle;
+            width: 14%;
+          }
+          .check {
+            display: inline-block;
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 10px;
+          }
+          .dash {
+            color: #cbd5e1;
+            font-size: 14px;
+          }
+          .footer {
+            margin-top: 14px;
+            text-align: right;
+            font-size: 10px;
+            color: #94a3b8;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${titleText}</h1>
+          <p>Hệ thống Tiến Hoá Kỹ Năng IELTS Writing - Tích Luỹ Theo Band Score (B1 5.0+ ➔ B2 6.0+ ➔ C1 7.0+ ➔ C2 7.5+)</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th class="feat-th">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
+              <th>Band B1 (5.0+)<br><span style="font-weight:normal;font-size:9px;">Nền Tảng</span></th>
+              <th>Band B2 (6.0+)<br><span style="font-weight:normal;font-size:9px;">+Tích Lũy B1</span></th>
+              <th>Band C1 (7.0+)<br><span style="font-weight:normal;font-size:9px;">+Tích Lũy B1+B2</span></th>
+              <th>Band C2 (7.5+)<br><span style="font-weight:normal;font-size:9px;">+Tích Lũy B1+B2+C1</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+        <div class="footer">
+          Xuất file tự động từ IELTS Writing Evaluator System
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  interface ProgressionFeatureItem {
+    id: string;
+    title: string;
+    description: string;
+    minBand: BandLevel;
+  }
+
+  interface ProgressionCategoryGroup {
+    code: "TA_TR" | "CC" | "LR" | "GRA";
+    categoryName: string;
+    badgeText: string;
+    headerBg: string;
+    badgeBg: string;
+    textColor: string;
+    borderColor: string;
+    features: ProgressionFeatureItem[];
+  }
+
+  const task1ProgressionCategories: ProgressionCategoryGroup[] = [
+    {
+      code: "TA_TR",
+      categoryName: "1. Task Achievement (TA) - Độ Hoàn Thành Task 1 - Nội Dung & Luận Điểm",
+      badgeText: "Nội Dung & Luận Điểm",
+      headerBg: "bg-blue-100/80",
+      badgeBg: "bg-blue-200/90",
+      textColor: "text-blue-950",
+      borderColor: "border-blue-300",
+      features: [
+        {
+          id: "ta1_1",
+          title: "Giới thiệu đúng biểu đồ và bố cục rõ ràng",
+          description: "Paraphrase đề bài chính xác và chia bài thành Introduction – Overview – Body hợp lý.",
+          minBand: "B1",
+        },
+        {
+          id: "ta1_2",
+          title: "Mô tả các đặc điểm chính của dữ liệu",
+          description: "Lựa chọn các số liệu hoặc xu hướng nổi bật thay vì liệt kê toàn bộ.",
+          minBand: "B1",
+        },
+        {
+          id: "ta1_3",
+          title: "Overview rõ ràng & Nhất quán",
+          description: "Nêu xu hướng chính (tăng/ giảm/ lớn nhất/ nhỏ nhất/ thay đổi nổi bật) ngay ở phần Overall.",
+          minBand: "B1",
+        },
+        {
+          id: "ta1_4",
+          title: "Mô tả và hỗ trợ bằng số liệu phù hợp",
+          description: "Mỗi đoạn thân bài tập trung vào một nhóm dữ liệu và sử dụng số liệu minh họa.",
+          minBand: "B2",
+        },
+        {
+          id: "ta1_5",
+          title: "Bao quát đầy đủ các đặc điểm chính",
+          description: "Không bỏ sót nhóm dữ liệu hoặc xu hướng quan trọng; tránh mô tả lan man các chi tiết nhỏ.",
+          minBand: "B2",
+        },
+        {
+          id: "ta1_6",
+          title: "So sánh và nhóm dữ liệu hợp lý",
+          description: "Biết nhóm các đối tượng có điểm tương đồng và đưa ra các phép so sánh hợp lý.",
+          minBand: "C1",
+        },
+        {
+          id: "ta1_7",
+          title: "Chọn lọc và tổng hợp thông tin hiệu quả",
+          description: "Ưu tiên mô tả xu hướng và đặc điểm nổi bật thay vì liệt kê từng con số.",
+          minBand: "C1",
+        },
+        {
+          id: "ta1_8",
+          title: "Phân tích dữ liệu tinh tế và khách quan",
+          description: "Nhận diện các mô hình phức tạp, ngoại lệ hoặc mối quan hệ giữa các nhóm dữ liệu mà không suy diễn nguyên nhân.",
+          minBand: "C2",
+        },
+      ],
+    },
+    {
+      code: "CC",
+      categoryName: "2. Coherence & Cohesion (CC) - Mạch Lạc & Liên Kết Ý Tưởng - Bố Cục & Chuyển Ý",
+      badgeText: "Bố Cục & Chuyển Ý",
+      headerBg: "bg-indigo-100/80",
+      badgeBg: "bg-indigo-200/90",
+      textColor: "text-indigo-950",
+      borderColor: "border-indigo-300",
+      features: [
+        {
+          id: "cc1_1",
+          title: "Phân chia đoạn văn rõ ràng (Paragraphing)",
+          description: "Chia bài viết thành các đoạn văn riêng biệt có nhiệm vụ rõ ràng (Ví dụ: nhiệm vụ Intro là giới thiệu).",
+          minBand: "B1",
+        },
+        {
+          id: "cc1_2",
+          title: "Sử dụng từ nối cơ bản (Basic Linkers)",
+          description: "Dùng các liên từ thông dụng (and, but, also, besides, first, second, then, next, finally…).",
+          minBand: "B1",
+        },
+        {
+          id: "cc1_3",
+          title: "Sử dụng từ nối học thuật đa dạng (Academic Connectors)",
+          description: "Áp dụng linh hoạt các từ nối (looking first at, turning to, while, whereas, meanwhile, however, by contrast, in comparison, compared with, similarly, likewise, notably, respectively, although, initially, subsequently, following this, once, after which, before being V3…).",
+          minBand: "B2",
+        },
+        {
+          id: "cc1_4",
+          title: "Câu chủ đề (Topic Sentence) rõ ràng định hướng đoạn",
+          description: "Mỗi đoạn thân bài mở đầu bằng câu chủ đề tóm tắt ý chính của cả đoạn. (looking first at the highest contributors,… / turning to the remaining countries,…)",
+          minBand: "B2",
+        },
+        {
+          id: "cc1_5",
+          title: "Mạch triển khai thông tin tự nhiên (mạch đọc không đứt gãy)",
+          description: "Các đoạn được liên kết mượt mà theo một trình tự rõ ràng, giúp người đọc dễ dàng theo dõi sự phát triển của bài viết mà không cảm thấy đột ngột. (Intro → Overview → Body 1 → Body 2…).",
+          minBand: "B2",
+        },
+        {
+          id: "cc1_6",
+          title: "Liên kết tự nhiên bằng phép thế và từ thay thế (referencing/ substitution)",
+          description: "Dùng linh hoạt this figure, this value, this area/site, the former, the latter, this trend, respectively…",
+          minBand: "C1",
+        },
+        {
+          id: "cc1_7",
+          title: "Cách nhóm thông tin và chia đoạn hợp lý (chiến lược grouping hiệu quả)",
+          description: "Biết lựa chọn tiêu chí phù hợp để nhóm các thông tin liên quan và phân chia chúng vào các đoạn hợp lý. Chart: highest contributors → middle group → lowest group HOẶC increase → decrease. Map: left → middle → right HOẶC before → after. Process: preparation → production → distribution.",
+          minBand: "C1",
+        },
+        {
+          id: "cc1_8",
+          title: "Tổng hợp và liên kết thông tin một cách tự nhiên (điều rút ra được)",
+          description: "Biết kết nối các xu hướng hoặc đặc điểm có liên quan để làm nổi bật bức tranh tổng thể. Chart: While the US remained the dominant donor, Germany recorded the fastest growth... Map: Overall, the town underwent significant urban development... Process: After being collected, the water undergoes a series of treatment stages...",
+          minBand: "C2",
+        },
+      ],
+    },
+    {
+      code: "LR",
+      categoryName: "3. Lexical Resource (LR) - Vốn Từ Vựng & Diễn Đạt - Từ Vựng & Collocations",
+      badgeText: "Từ Vựng & Collocations",
+      headerBg: "bg-emerald-100/80",
+      badgeBg: "bg-emerald-200/90",
+      textColor: "text-emerald-950",
+      borderColor: "border-emerald-300",
+      features: [
+        {
+          id: "lr1_1",
+          title: "Từ vựng thông dụng đủ diễn đạt ý tưởng",
+          description: "Đủ vốn từ cơ bản để truyền tải nội dung bài viết không bị tắc nghẽn. (increase, decrease, highest, lowest,…)",
+          minBand: "B1",
+        },
+        {
+          id: "lr1_2",
+          title: "Chính tả và dạng từ cơ bản chính xác",
+          description: "Mắc rất ít lỗi chính tả nghiêm trọng ở các từ vựng cơ bản.",
+          minBand: "B1",
+        },
+        {
+          id: "lr1_3",
+          title: "Sử dụng đúng từ vựng theo từng dạng",
+          description: "Chart: peak, bottom out, level off, fluctuate, account for, represent, proportion, figure… Map: residential area, industrial zone, facilities, demolish, construct, redevelop, remove… Process: raw materials, manufacture, remove impurities, filter, package, transport, deliver…",
+          minBand: "B2",
+        },
+        {
+          id: "lr1_4",
+          title: "Collocations quen thuộc & Dạng từ (Word form) chính xác",
+          description: "Sử dụng cụm từ kết hợp tự nhiên (experience a rise, record a decline, remain unchanged/stable, reach a peak,…) và đúng loại từ.",
+          minBand: "B2",
+        },
+        {
+          id: "lr1_5",
+          title: "Biết Paraphrase linh hoạt tránh lặp từ",
+          description: "Thay thế từ vựng đề bài bằng từ đồng nghĩa hoặc cấu trúc diễn đạt khác. (increase → rise → grow → climb; decrease → fall → drop → decline; figure → number → amount → value).",
+          minBand: "B2",
+        },
+        {
+          id: "lr1_6",
+          title: "Vốn từ học thuật chính xác và collocations nâng cao (thay đổi từ vựng)",
+          description: "Việc sử dụng/ thay đổi từ chính xác, hiểu và vận dụng tốt collocations nâng cao. (recorded a sharp increase, experienced/saw/witnessed a significant drop, remained relatively stable, reached a peak of, reach a trough of, hit a high of, hit a low of, accounted for/ made up the largest proportion, underwent substantial redevelopment/ changes,…)",
+          minBand: "C1",
+        },
+        {
+          id: "lr1_7",
+          title: "Paraphrase chính xác tuyệt đối sắc thái nghĩa (thay đổi cả câu)",
+          description: "Diễn đạt linh hoạt bằng nhiều cách mà không bị chệch sắc thái hay gượng ép. Chart: Germany increased → Germany recorded an increase -> Germany experienced steady growth. Map: A park was replaced by a supermarket → the park gave way to a supermarket → the former park site was redeveloped into a supermarket.",
+          minBand: "C1",
+        },
+        {
+          id: "lr1_8",
+          title: "Vốn từ miêu tả dữ liệu tự nhiên và chính xác như người bản ngữ",
+          description: "Sử dụng linh hoạt các cách diễn đạt học thuật, collocations và paraphrase một cách tự nhiên, chính xác, gần như không có dấu hiệu gượng ép. (The figure increased → The figure experienced a moderate increase → The figure recorded a moderate increase before stabilising at approximately 20%.)",
+          minBand: "C2",
+        },
+      ],
+    },
+    {
+      code: "GRA",
+      categoryName: "4. Grammatical Range & Accuracy (GRA) - Ngữ Pháp & Độ Chính Xác - Cấu Trúc & Ngữ Pháp",
+      badgeText: "Cấu Trúc & Ngữ Pháp",
+      headerBg: "bg-purple-100/80",
+      badgeBg: "bg-purple-200/90",
+      textColor: "text-purple-950",
+      borderColor: "border-purple-300",
+      features: [
+        {
+          id: "gra1_1",
+          title: "Thành thạo câu đơn & Câu ghép cơ bản",
+          description: "Viết đúng các câu đơn và câu ghép sử dụng and, but, so, or.",
+          minBand: "B1",
+        },
+        {
+          id: "gra1_2",
+          title: "Chia đúng thì cơ bản & Hòa hợp Chủ - Vị",
+          description: "Sử dụng đúng thì Hiện tại đơn, Quá khứ đơn, sự hòa hợp giữa chủ ngữ và động từ (số ít / số nhiều), và sử dụng đúng số ít/số nhiều của danh từ.",
+          minBand: "B1",
+        },
+        {
+          id: "gra1_3",
+          title: "Sử dụng linh hoạt các câu phức (Complex Sentences)",
+          description: "Sử dụng linh hoạt các câu phức: mệnh đề quan hệ, mệnh đề thời gian (before, after, when, once, until, while), so sánh (than, twice as…as, three times higher than), nhượng bộ (although, eventhough, while, whereas) để tăng tính đa dạng của câu.",
+          minBand: "B2",
+        },
+        {
+          id: "gra1_4",
+          title: "Đa dạng hoá cấu trúc câu (câu đơn → ghép → phức)",
+          description: "Kết hợp câu đơn, câu ghép, câu phức hoặc kết hợp, và khi phù hợp có sử dụng thể bị động để tăng tính đa dạng trong diễn đạt.",
+          minBand: "B2",
+        },
+        {
+          id: "gra1_5",
+          title: "Kiểm soát tốt ngữ pháp, ít lỗi nghiêm trọng",
+          description: "Các lỗi ngữ pháp nếu có không ảnh hưởng đáng kể đến sự rõ ràng của bài viết.",
+          minBand: "B2",
+        },
+        {
+          id: "gra1_6",
+          title: "Cấu trúc phức nâng cao",
+          description: "Sử dụng linh hoạt các cấu trúc ngữ pháp nâng cao như mệnh đề quan hệ rút gọn (V-ing, V-3), mệnh đề phân từ (having reached a peak in 2009, the figure declined gradually thereafter / remaining stable at around 10 million, the figure then increased slightly to 11 million in 2010)…",
+          minBand: "C1",
+        },
+        {
+          id: "gra1_7",
+          title: "Độ chính xác ngữ pháp cao (~90-95%+)",
+          description: "Hầu như không mắc lỗi ngữ pháp, làm chủ hoàn toàn dấu câu (phẩy, chấm, ngoặc).",
+          minBand: "C1",
+        },
+        {
+          id: "gra1_8",
+          title: "Làm chủ ngữ pháp phức với độ chính xác gần như tuyệt đối",
+          description: "Sử dụng đa dạng các cấu trúc ngữ pháp phức một cách tự nhiên; lỗi rất hiếm và hầu như không ảnh hưởng đến chất lượng bài viết.",
+          minBand: "C2",
+        },
+      ],
+    },
+  ];
+
+  const task2ProgressionCategories: ProgressionCategoryGroup[] = [
+    {
+      code: "TA_TR",
+      categoryName: "1. Task Response (TR) - Trả Lời Trực Tiếp Đề Bài Task 2 - Nội Dung & Luận Điểm",
+      badgeText: "Nội Dung & Luận Điểm",
+      headerBg: "bg-blue-100/80",
+      badgeBg: "bg-blue-200/90",
+      textColor: "text-blue-950",
+      borderColor: "border-blue-300",
+      features: [
+        {
+          id: "tr2_1",
+          title: "Nêu lập trường cơ bản & bố cục đoạn rõ ràng",
+          description: "Trả lời trực tiếp câu hỏi chính của đề bài, chia bài thành Mở - Thân - Kết rõ ràng.",
+          minBand: "B1",
+        },
+        {
+          id: "tr2_2",
+          title: "Cung cấp 2-3 ý chính hỗ trợ bài viết",
+          description: "Nêu được các ý chính và có giải thích.",
+          minBand: "B1",
+        },
+        {
+          id: "tr2_3",
+          title: "Thesis Statement rõ ràng & nhất quán",
+          description: "Nêu bật quan điểm cá nhân ngay ở phần mở bài.",
+          minBand: "B1",
+        },
+        {
+          id: "tr2_4",
+          title: "Phát triển luận điểm đầy đủ (Ý chính -> Giải thích -> Ví dụ)",
+          description: "Mỗi đoạn thân bài tập trung 1 ý chủ đạo với lập luận logic kèm ví dụ minh hoạ.",
+          minBand: "B2",
+        },
+        {
+          id: "tr2_5",
+          title: "Bao phủ trọn vẹn tất cả các yêu cầu đề bài",
+          description: "Giải quyết triệt để mọi vế câu hỏi hoặc nhóm thông tin then chốt không bị bỏ sót.",
+          minBand: "B2",
+        },
+        {
+          id: "tr2_6",
+          title: "Lập luận sắc bén chiều sâu (Mô hình PEEL / Phân tích tác động vĩ mô)",
+          description: "Phân tích nguyên nhân gốc rễ, tác động kinh tế - xã hội, có ví dụ tốt và liên kết lại chủ đề đoạn.",
+          minBand: "C1",
+        },
+        {
+          id: "tr2_7",
+          title: "Xử lý phản biện & nhượng bộ (Counter-argument) mượt mà",
+          description: "Nhượng bộ góc nhìn đối lập và phản biện đanh thép để củng cố lập trường chính.",
+          minBand: "C1",
+        },
+        {
+          id: "tr2_8",
+          title: "Phân tích đanh thép & có chiều sâu / thực tiễn cao",
+          description: "Bảo vệ lập trường bằng tư duy phân tích, giải quyết góc nhìn đa chiều với ý tưởng khó có thể bị bác bỏ. Các giải thích và ví dụ không có sự tuyệt đối hay đánh đồng (tránh overgeneralization).",
+          minBand: "C2",
+        },
+      ],
+    },
+    {
+      code: "CC",
+      categoryName: "2. Coherence & Cohesion (CC) - Mạch Lạc & Liên Kết Ý Tưởng - Bố Cục & Chuyển Ý",
+      badgeText: "Bố Cục & Chuyển Ý",
+      headerBg: "bg-indigo-100/80",
+      badgeBg: "bg-indigo-200/90",
+      textColor: "text-indigo-950",
+      borderColor: "border-indigo-300",
+      features: [
+        {
+          id: "cc2_1",
+          title: "Phân chia đoạn văn rõ ràng (Paragraphing)",
+          description: "Chia bài viết thành các đoạn văn riêng biệt có nhiệm vụ rõ ràng.",
+          minBand: "B1",
+        },
+        {
+          id: "cc2_2",
+          title: "Sử dụng từ nối cơ bản (Basic Linkers)",
+          description: "Dùng các liên từ thông dụng (First, Second, Then, Also, Because, In conclusion).",
+          minBand: "B1",
+        },
+        {
+          id: "cc2_3",
+          title: "Sử dụng từ nối học thuật đa dạng (Academic Connectors)",
+          description: "Áp dụng linh hoạt On the one hand, On the other hand, Furthermore, As a result, Consequently.",
+          minBand: "B2",
+        },
+        {
+          id: "cc2_4",
+          title: "Câu chủ đề (Topic Sentence) rõ ràng định hướng đoạn",
+          description: "Mỗi đoạn thân bài mở đầu bằng câu chủ đề tóm tắt ý chính của cả đoạn.",
+          minBand: "B2",
+        },
+        {
+          id: "cc2_5",
+          title: "Mạch chuyển ý trôi chảy giữa các đoạn văn",
+          description: "Liên kết giữa các đoạn mượt mà, không bị cứng nhắc hay lạm dụng liên từ.",
+          minBand: "B2",
+        },
+        {
+          id: "cc2_6",
+          title: "Liên kết bằng phép thế đại từ & Danh từ hóa (Nominalization)",
+          description: "Sử dụng tự nhiên “it, this policy, these measures, the former/latter” và biến đổi danh từ.",
+          minBand: "C1",
+        },
+        {
+          id: "cc2_7",
+          title: "Mạch suy luận logic không lạm dụng liên từ đầu câu",
+          description: "Tự bản thân các câu nối tiếp nhau bằng tư duy logic tự nhiên, với sự kết hợp của các mục trên.",
+          minBand: "C1",
+        },
+        {
+          id: "cc2_8",
+          title: "Mạch liên kết trôi chảy tuyệt đối",
+          description: "Sự kết nối giữa các ý tưởng mượt mà hơn, ưu tiên sử dụng được quy tắc Diễn Tiến Đề Ngữ (Theme–Rheme progression) trong giai đoạn này.",
+          minBand: "C2",
+        },
+      ],
+    },
+    {
+      code: "LR",
+      categoryName: "3. Lexical Resource (LR) - Vốn Từ Vựng & Diễn Đạt - Từ Vựng & Collocations",
+      badgeText: "Từ Vựng & Collocations",
+      headerBg: "bg-emerald-100/80",
+      badgeBg: "bg-emerald-200/90",
+      textColor: "text-emerald-950",
+      borderColor: "border-emerald-300",
+      features: [
+        {
+          id: "lr2_1",
+          title: "Từ vựng thông dụng đủ diễn đạt ý tưởng",
+          description: "Dùng được từ vựng đơn giản (cho phép lặp từ) nhưng đủ để truyền tải nội dung bài viết.",
+          minBand: "B1",
+        },
+        {
+          id: "lr2_2",
+          title: "Chính tả đúng ở các từ vựng phổ thông",
+          description: "Mắc rất ít lỗi chính tả nghiêm trọng ở các từ vựng cơ bản.",
+          minBand: "B1",
+        },
+        {
+          id: "lr2_3",
+          title: "Sử dụng từ vựng theo chủ đề (Topic-specific vocabulary)",
+          description: "Dùng từ vựng học thuật thuộc chủ đề bài viết chính xác ngữ cảnh.",
+          minBand: "B2",
+        },
+        {
+          id: "lr2_4",
+          title: "Collocations quen thuộc & Dạng từ (Word form) chính xác",
+          description: "Dùng cụm từ kết hợp (play a key role, make a contribution, have an effect on…) và đúng loại từ.",
+          minBand: "B2",
+        },
+        {
+          id: "lr2_5",
+          title: "Biết Paraphrase linh hoạt tránh lặp từ",
+          description: "Thay thế từ vựng đề bài bằng từ đồng nghĩa phù hợp hoặc cấu trúc diễn đạt khác.",
+          minBand: "B2",
+        },
+        {
+          id: "lr2_6",
+          title: "Vốn từ học thuật sâu rộng & Collocations đắt giá",
+          description: "Sử dụng các từ vựng đắt giá (lucrative opportunity, far-reaching impact, root cause, alleviate…).",
+          minBand: "C1",
+        },
+        {
+          id: "lr2_7",
+          title: "Paraphrase chính xác tuyệt đối sắc thái nghĩa",
+          description: "Diễn đạt linh hoạt/ kết hợp bằng nhiều cách (từ đồng nghĩa đúng ngữ cảnh, thay đổi loại từ, phrases, collocations) mà không làm thay đổi ý nghĩa hoặc khiến câu văn gượng ép.",
+          minBand: "C1",
+        },
+        {
+          id: "lr2_8",
+          title: "Ngôn ngữ bản xứ tinh tế & High-level Idiomatic Collocations",
+          description: "Nắm rõ sắc thái từ vựng khi viết, thuật ngữ và collocations chính xác gần như tuyệt đối.",
+          minBand: "C2",
+        },
+      ],
+    },
+    {
+      code: "GRA",
+      categoryName: "4. Grammatical Range & Accuracy (GRA) - Ngữ Pháp & Độ Chính Xác - Cấu Trúc & Ngữ Pháp",
+      badgeText: "Cấu Trúc & Ngữ Pháp",
+      headerBg: "bg-purple-100/80",
+      badgeBg: "bg-purple-200/90",
+      textColor: "text-purple-950",
+      borderColor: "border-purple-300",
+      features: [
+        {
+          id: "gra2_1",
+          title: "Thành thạo câu đơn & Câu ghép cơ bản",
+          description: "Viết đúng các câu đơn và câu ghép sử dụng and, but, so, or.",
+          minBand: "B1",
+        },
+        {
+          id: "gra2_2",
+          title: "Chia đúng thì cơ bản & Hòa hợp Chủ - Vị",
+          description: "Sử dụng đúng thì Hiện tại đơn, Quá khứ đơn và hòa hợp số ít / số nhiều.",
+          minBand: "B1",
+        },
+        {
+          id: "gra2_3",
+          title: "Sử dụng linh hoạt các câu phức (Complex Sentences)",
+          description: "Áp dụng tốt câu điều kiện, mệnh đề quan hệ (which/that/who), câu nhượng bộ (although/while).",
+          minBand: "B2",
+        },
+        {
+          id: "gra2_4",
+          title: "Kết hợp câu đơn và câu phức",
+          description: "Biết sử dụng xen kẽ câu đơn và câu phức để diễn đạt ý; vẫn có thể còn một số lỗi ngữ pháp nhưng nhìn chung không ảnh hưởng đến việc truyền đạt.",
+          minBand: "B2",
+        },
+        {
+          id: "gra2_5",
+          title: "Kiểm soát tốt ngữ pháp, ít lỗi nghiêm trọng",
+          description: "Đảm bảo câu văn luôn rõ nghĩa, người đọc tiếp thu dễ dàng.",
+          minBand: "B2",
+        },
+        {
+          id: "gra2_6",
+          title: "Cấu trúc phức nâng cao (Phân từ rút gọn, Đảo ngữ)",
+          description: "Thành thạo đa dạng ngữ pháp: mệnh đề phân từ chỉ nguyên nhân/kết quả, MĐQH rút gọn (V-ing/ V3), đảo ngữ, cấu trúc nhượng bộ phức tạp (admittedly, granted, it is true that… Nevertheless …).",
+          minBand: "C1",
+        },
+        {
+          id: "gra2_7",
+          title: "Độ chính xác ngữ pháp cao (~90-95%+)",
+          description: "Lỗi ngữ pháp gần như không có nếu có thì người đọc vẫn hiểu được nội dung, làm chủ hoàn toàn dấu câu (phẩy, chấm, ngoặc).",
+          minBand: "C1",
+        },
+        {
+          id: "gra2_8",
+          title: "Làm chủ ngữ pháp phức với độ chính xác gần như tuyệt đối",
+          description: "Sử dụng đa dạng các cấu trúc ngữ pháp phức tạp một cách chính xác; lỗi rất hiếm và hầu như không ảnh hưởng đến sự rõ ràng của bài viết.",
+          minBand: "C2",
+        },
+      ],
+    },
+  ];
+
+  const progressionCategories = taskType === "task1" ? task1ProgressionCategories : task2ProgressionCategories;
+
+  const filteredProgressionCategories =
+    matrixFilter === "ALL"
+      ? progressionCategories
+      : progressionCategories.filter((c) => c.code === matrixFilter);
 
   // State for detected / chosen essay type
   const [task1EssayType, setTask1EssayType] = useState<Task1Type>("line_dynamic");
@@ -1144,6 +1856,291 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* BẢNG SO SÁNH SỰ TIẾN HÓA TIÊU CHÍ THEO TỪNG BAND (PROGRESSION MATRIX) */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex items-start space-x-3">
+            <div className="p-2.5 bg-gradient-to-br from-indigo-900 to-blue-900 text-white rounded-xl shadow-xs shrink-0 mt-0.5">
+              <Table className="w-5 h-5 text-yellow-300" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-blue-950 text-base sm:text-lg flex items-center gap-2">
+                BẢNG TIẾN HÓA TIÊU CHÍ TỪNG CẤP ĐỘ (BAND PROGRESSION MATRIX)
+              </h3>
+              <p className="text-xs text-slate-600 font-medium mt-0.5">
+                Xem sự tích lũy kỹ năng: Cấp độ sau kế thừa nền tảng cấp độ trước và bổ sung thêm các kỹ năng chuyên sâu mới.
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons: PDF Download, CSV Download, Collapse Toggle */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Export PDF Button */}
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              className="px-3.5 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-blue-950"
+              title="Xuất file PDF hoặc mở trang in"
+            >
+              <Printer className="w-4 h-4 text-yellow-300" />
+              <span>Tải Bảng (PDF)</span>
+            </button>
+
+            {/* Export CSV Button */}
+            <button
+              type="button"
+              onClick={() => {
+                let csv = "\uFEFF";
+                csv += "Mã Tiêu Chí,Tên Tiêu Chí,Đặc Tính / Kỹ Năng Yêu Cầu,Mô Tả Chi Tiết,Nền Tảng Đạt (Min Band),Band B1 (5.0+),Band B2 (6.0+),Band C1 (7.0+),Band C2 (7.5+)\n";
+
+                progressionCategories.forEach((cat) => {
+                  cat.features.forEach((feat) => {
+                    const isB1 = isFeatureSatisfied("B1", feat.minBand) ? "ĐẠT [✓]" : "-";
+                    const isB2 = isFeatureSatisfied("B2", feat.minBand) ? "ĐẠT [✓]" : "-";
+                    const isC1 = isFeatureSatisfied("C1", feat.minBand) ? "ĐẠT [✓]" : "-";
+                    const isC2 = isFeatureSatisfied("C2", feat.minBand) ? "ĐẠT [✓]" : "-";
+
+                    csv += `"${cat.code}","${cat.categoryName}","${feat.title.replace(/"/g, '""')}","${feat.description.replace(/"/g, '""')}","${feat.minBand}","${isB1}","${isB2}","${isC1}","${isC2}"\n`;
+                  });
+                });
+
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `IELTS_Writing_Progression_Matrix_${taskType.toUpperCase()}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}
+              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-800"
+              title="Tải bảng dữ liệu CSV"
+            >
+              <Download className="w-4 h-4 text-emerald-200" />
+              <span>Tải CSV</span>
+            </button>
+
+            {/* Collapse / Expand Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsMatrixCollapsed(!isMatrixCollapsed)}
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-300"
+            >
+              {isMatrixCollapsed ? (
+                <>
+                  <ChevronDown className="w-4 h-4 text-blue-900" />
+                  <span>Mở rộng Bảng</span>
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="w-4 h-4 text-slate-600" />
+                  <span>Thu gọn</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* IF COLLAPSED */}
+        {isMatrixCollapsed ? (
+          <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-2 text-blue-950 font-medium">
+              <Table className="w-4 h-4 text-blue-800 shrink-0" />
+              <span>
+                Bảng đang được thu gọn để tiết kiệm không gian. Nhấn <strong>"Mở rộng Bảng"</strong> để xem đầy đủ 32 kỹ năng tích lũy từ Band B1 đến C2.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsMatrixCollapsed(false)}
+              className="px-3 py-1 bg-blue-900 hover:bg-blue-950 text-white rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer"
+            >
+              Mở rộng ngay
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Filter Categories Tabs */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setMatrixFilter("ALL")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                  matrixFilter === "ALL"
+                    ? "bg-blue-900 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                Tất Cả Tiêu Chí
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatrixFilter("TA_TR")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                  matrixFilter === "TA_TR"
+                    ? "bg-blue-800 text-white shadow-xs"
+                    : "bg-blue-50 text-blue-900 hover:bg-blue-100"
+                }`}
+              >
+                1. {taskType === "task1" ? "Task Achievement (TA)" : "Task Response (TR)"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatrixFilter("CC")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                  matrixFilter === "CC"
+                    ? "bg-indigo-800 text-white shadow-xs"
+                    : "bg-indigo-50 text-indigo-900 hover:bg-indigo-100"
+                }`}
+              >
+                2. Coherence &amp; Cohesion (CC)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatrixFilter("LR")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                  matrixFilter === "LR"
+                    ? "bg-emerald-800 text-white shadow-xs"
+                    : "bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                }`}
+              >
+                3. Lexical Resource (LR)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatrixFilter("GRA")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                  matrixFilter === "GRA"
+                    ? "bg-purple-800 text-white shadow-xs"
+                    : "bg-purple-50 text-purple-900 hover:bg-purple-100"
+                }`}
+              >
+                4. Grammatical Range &amp; Accuracy (GRA)
+              </button>
+            </div>
+
+            {/* MATRIX TABLE */}
+            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
+              <table className="w-full text-left border-collapse min-w-[720px]">
+                <thead>
+                  <tr className="bg-slate-900 text-white text-xs font-black uppercase tracking-wider divide-x divide-slate-800">
+                    <th className="p-3.5 w-2/5">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
+                    <th className="p-3.5 text-center bg-amber-950/60 text-amber-200 w-1/7">
+                      <div>B1 (5.0+)</div>
+                      <div className="text-[9px] text-amber-300/80 font-normal normal-case">Nền tảng</div>
+                    </th>
+                    <th className="p-3.5 text-center bg-blue-950/60 text-blue-200 w-1/7">
+                      <div>B2 (6.0+)</div>
+                      <div className="text-[9px] text-blue-300/80 font-normal normal-case">+Tích lũy B1</div>
+                    </th>
+                    <th className="p-3.5 text-center bg-indigo-950/60 text-indigo-200 w-1/7">
+                      <div>C1 (7.0+)</div>
+                      <div className="text-[9px] text-indigo-300/80 font-normal normal-case">+Tích lũy B1+B2</div>
+                    </th>
+                    <th className="p-3.5 text-center bg-purple-950/60 text-purple-200 w-1/7">
+                      <div>C2 (7.5+)</div>
+                      <div className="text-[9px] text-purple-300/80 font-normal normal-case">+Tích lũy B1+B2+C1</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-xs font-medium">
+                  {filteredProgressionCategories.map((cat) => (
+                    <React.Fragment key={cat.code}>
+                      {/* Category Section Header */}
+                      <tr className={`${cat.headerBg} border-t-2 border-slate-300`}>
+                        <td colSpan={5} className="p-2.5 px-3.5 font-black uppercase tracking-wide">
+                          <div className="flex items-center justify-between">
+                            <span className={`flex items-center gap-2 ${cat.textColor}`}>
+                              <span>{cat.categoryName}</span>
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${cat.badgeBg} ${cat.textColor}`}>
+                              {cat.badgeText}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Feature Rows */}
+                      {cat.features.map((feat, idx) => (
+                        <tr key={feat.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/60"}>
+                          {/* Feature Title & Description */}
+                          <td className="p-3.5 align-top border-r border-slate-200">
+                            <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-start gap-1.5">
+                              <span className="text-slate-400 font-mono text-[11px] shrink-0 mt-0.5">#{idx + 1}</span>
+                              <span>{feat.title}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 mt-1 leading-relaxed pl-5 font-normal">
+                              {feat.description}
+                            </p>
+                          </td>
+
+                          {/* B1 Column */}
+                          <td className="p-3.5 align-middle text-center border-r border-slate-200">
+                            {isFeatureSatisfied("B1", feat.minBand) ? (
+                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs font-extrabold text-[11px] gap-1">
+                                <Check className="w-3.5 h-3.5 text-amber-800 stroke-[3]" />
+                                <span>Đạt</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
+                                <Minus className="w-4 h-4" />
+                              </div>
+                            )}
+                          </td>
+
+                          {/* B2 Column */}
+                          <td className="p-3.5 align-middle text-center border-r border-slate-200">
+                            {isFeatureSatisfied("B2", feat.minBand) ? (
+                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs font-extrabold text-[11px] gap-1">
+                                <Check className="w-3.5 h-3.5 text-blue-800 stroke-[3]" />
+                                <span>Đạt</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
+                                <Minus className="w-4 h-4" />
+                              </div>
+                            )}
+                          </td>
+
+                          {/* C1 Column */}
+                          <td className="p-3.5 align-middle text-center border-r border-slate-200">
+                            {isFeatureSatisfied("C1", feat.minBand) ? (
+                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-indigo-100 text-indigo-900 border border-indigo-300 shadow-2xs font-extrabold text-[11px] gap-1">
+                                <Check className="w-3.5 h-3.5 text-indigo-800 stroke-[3]" />
+                                <span>Đạt</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
+                                <Minus className="w-4 h-4" />
+                              </div>
+                            )}
+                          </td>
+
+                          {/* C2 Column */}
+                          <td className="p-3.5 align-middle text-center">
+                            {isFeatureSatisfied("C2", feat.minBand) ? (
+                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-purple-100 text-purple-900 border border-purple-300 shadow-2xs font-extrabold text-[11px] gap-1">
+                                <Check className="w-3.5 h-3.5 text-purple-800 stroke-[3]" />
+                                <span>Đạt</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
+                                <Minus className="w-4 h-4" />
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
