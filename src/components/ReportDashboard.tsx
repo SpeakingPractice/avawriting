@@ -40,7 +40,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   promptText = "",
   allAvailableTasks = [],
 }) => {
-  const [activeTab, setActiveTab] = useState<"criteria" | "criteriaGuide" | "strengths" | "upgrades" | "model" | "roadmap">("criteriaGuide");
+  const [activeTab, setActiveTab] = useState<"criteria" | "criteriaGuide" | "strengths" | "model" | "roadmap">("criteriaGuide");
   const [copied, setCopied] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -137,9 +137,6 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                 ? "Báo cáo phân tích bài viết IELTS Task 1 & Task 2"
                 : `Báo cáo phân tích bài viết IELTS ${activeTaskType === "task1" ? "Task 1" : "Task 2"}`}
             </h2>
-            <p className="text-xs text-blue-200 mt-1 font-medium max-w-[420px]">
-              Được thực hiện bởi <span className="text-yellow-400 font-bold">Hệ Thống AVA</span> - Chuyên gia khảo thí IELTS Academic với hơn 13 năm kinh nghiệm thực chiến.
-            </p>
           </div>
 
           {/* Overall Band Banner */}
@@ -277,18 +274,6 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           >
             <Sparkles className="w-4 h-4" />
             <span>Thế Mạnh & Cải Thiện</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("upgrades")}
-            className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-              activeTab === "upgrades"
-                ? "border-blue-900 text-blue-900 bg-white"
-                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <Flame className="w-4 h-4" />
-            <span>Nâng Cấp Câu</span>
           </button>
 
           <button
@@ -467,57 +452,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </div>
         )}
 
-        {/* 3. Nâng Cấp Câu Trực Quan */}
-        {activeTab === "upgrades" && (
-          <div className="space-y-4" id="panel-upgrades">
-            <div className="flex items-center space-x-2 text-slate-700 mb-3">
-              <span className="w-1.5 h-4 bg-indigo-500 rounded-full"></span>
-              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
-                Đối Chiếu So Sánh & Nâng Cấp Câu Lỗi (Before vs After)
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              {activeReport.upgrades.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="border border-slate-100 rounded-xl overflow-hidden shadow-sm"
-                  id={`upgrade-item-${idx}`}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2">
-                    {/* Before */}
-                    <div className="bg-rose-50/40 p-4 border-b md:border-b-0 md:border-r border-slate-100">
-                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 mb-2 uppercase">
-                        Câu văn gốc của bạn
-                      </span>
-                      <p className="text-xs font-serif italic text-slate-700 leading-relaxed">
-                        "{item.before}"
-                      </p>
-                    </div>
-
-                    {/* After */}
-                    <div className="bg-emerald-50/40 p-4">
-                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 mb-2 uppercase flex items-center w-fit space-x-1">
-                        <Sparkles className="w-3 h-3" />
-                        <span>AVA Nâng Cấp (Band 8.5+)</span>
-                      </span>
-                      <p className="text-xs font-serif font-semibold text-emerald-950 leading-relaxed">
-                        "{item.after}"
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Justification */}
-                  <div className="bg-slate-50 p-3 border-t border-slate-100 text-xs text-slate-600">
-                    <span className="font-bold text-slate-700">Lý do nâng cấp:</span> {item.explanation}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 4. Cẩm Nang Lên Band */}
+        {/* 3. Cẩm Nang Lên Band */}
         {activeTab === "roadmap" && (
           <div className="space-y-4" id="panel-roadmap">
             <div className="flex items-center space-x-2 text-slate-700 mb-3">

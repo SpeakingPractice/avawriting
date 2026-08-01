@@ -81,20 +81,6 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
     )
     .join("");
 
-  // Upgrades
-  const upgradesHtml = (report.upgrades || [])
-    .map(
-      (u, idx) => `
-    <div style="margin-bottom: 12pt; border-left: 4px solid #e11d48; background-color: #fff1f2; padding: 10pt 14pt;">
-      <p style="margin-bottom: 4pt; font-weight: bold; color: #9f1239; font-size: 12pt;">Điểm Nâng Cấp #${idx + 1}</p>
-      <p style="margin-bottom: 4pt; font-size: 11pt; color: #881337;"><strong>Câu gốc của bạn:</strong> <span style="text-decoration: line-through;">${u.before}</span></p>
-      <p style="margin-bottom: 6pt; font-size: 12pt; color: #15803d; font-weight: bold;"><strong>Câu nâng cấp Band 8.0+:</strong> ${u.after}</p>
-      <p style="margin-bottom: 0; font-size: 11pt; color: #475569;"><strong>Lý do &amp; Cách áp dụng:</strong> ${u.explanation}</p>
-    </div>
-  `
-    )
-    .join("");
-
   // Next steps
   const nextStepsHtml = (report.nextBandSteps || [])
     .map(
@@ -156,17 +142,12 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
       ${formattedEssayHtml}
     </div>
 
-    <!-- SECTION 2: 5 Điểm Cần Sửa Đổi -->
-    <h2>2. Top 5 Điểm Cần Sửa Đổi Để Bứt Phá (${taskName})</h2>
-    <p style="margin-bottom: 10pt; font-size: 11pt; color: #475569;">Dưới đây là 5 vị trí trọng yếu trong bài làm gốc đã được tái cấu trúc thành phiên bản sắc bén chuẩn Band 8.0+:</p>
-    ${upgradesHtml}
-
-    <!-- SECTION 3: 4 Tiêu chí -->
-    <h2>3. Nhận Xét Chi Tiết Theo 4 Tiêu Chí IELTS Band Descriptors (${taskName})</h2>
+    <!-- SECTION 2: 4 Tiêu chí -->
+    <h2>2. Nhận Xét Chi Tiết Theo 4 Tiêu Chí IELTS Band Descriptors (${taskName})</h2>
     ${criteriaHtml}
 
-    <!-- SECTION 4: Cẩm nang lên band -->
-    <h2>4. Cẩm Nang Lên Band (${taskName})</h2>
+    <!-- SECTION 3: Cẩm nang lên band -->
+    <h2>3. Cẩm Nang Lên Band (${taskName})</h2>
     <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 12pt; margin-bottom: 20pt;">
       <ol style="margin-top: 0; margin-bottom: 0; padding-left: 20pt;">
         ${nextStepsHtml}

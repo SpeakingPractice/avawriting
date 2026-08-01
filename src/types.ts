@@ -35,7 +35,7 @@ export interface GradingReport {
   };
   strengths: StrengthDetail[];
   improvements: ImprovementDetail[];
-  upgrades: UpgradeDetail[];
+  upgrades?: UpgradeDetail[];
   nextBandSteps: string[];
   fullUpgradeEssay: string;
   vietnameseGreeting?: string;

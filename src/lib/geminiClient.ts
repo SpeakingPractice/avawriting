@@ -340,18 +340,6 @@ Cấu trúc JSON phản hồi bắt buộc:
       "impact": "Tại sao cải thiện điểm này giúp tăng điểm"
     }
   ],
-  "upgrades": [
-    {
-      "before": "Trích dẫn một câu văn gốc còn yếu hoặc có lỗi của thí sinh",
-      "after": "Phiên bản nâng cấp hoàn hảo hơn (Band 8.0/9.0) của câu văn đó",
-      "explanation": "Giải thích lý do nâng cấp (về ngữ pháp, sự chính xác, tính mạch lạc hoặc từ vựng cao cấp)"
-    },
-    {
-      "before": "Một câu văn gốc khác còn hạn chế",
-      "after": "Phiên bản nâng cấp hoàn hảo hơn",
-      "explanation": "Giải thích lý do nâng cấp"
-    }
-  ],
   "nextBandSteps": [
     "Các bước hành động cụ thể, chi tiết 1 để tăng băng điểm (thiết kế riêng cho bài viết này)",
     "Các bước hành động cụ thể, chi tiết 2",
@@ -400,6 +388,7 @@ ${trimmedEssay}
 
   parsedResult.overallBand = finalRoundedScore;
   parsedResult.wordCount = wordCount;
+  parsedResult.upgrades = parsedResult.upgrades || [];
   parsedResult.wordCountRequirement =
     (taskType === "task1" && wordCount >= 150) || (taskType === "task2" && wordCount >= 250)
       ? "meets"

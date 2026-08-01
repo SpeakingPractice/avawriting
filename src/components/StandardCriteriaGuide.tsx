@@ -88,7 +88,7 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
       return;
     }
 
-    const titleText = `BẢNG TIẾN HÓA TIÊU CHÍ CẤP ĐỘ IELTS WRITING (${taskType.toUpperCase()})`;
+    const titleText = `BẢNG TIÊU CHÍ IELTS WRITING (${taskType.toUpperCase()})`;
 
     let rowsHtml = "";
 
@@ -366,6 +366,12 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
           minBand: "B1",
         },
         {
+          id: "cc1_3_b1",
+          title: "Bố cục logic giữa các phần (Intro - Overview - Body)",
+          description: "Sắp xếp thông tin theo trình tự hợp lý, diễn đạt mạch lạc dễ theo dõi.",
+          minBand: "B1",
+        },
+        {
           id: "cc1_3",
           title: "Sử dụng từ nối học thuật đa dạng (Academic Connectors)",
           description: "Áp dụng linh hoạt các từ nối (looking first at, turning to, while, whereas, meanwhile, however, by contrast, in comparison, compared with, similarly, likewise, notably, respectively, although, initially, subsequently, following this, once, after which, before being V3…).",
@@ -425,6 +431,12 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
           minBand: "B1",
         },
         {
+          id: "lr1_3_b1",
+          title: "Sử dụng từ vựng số liệu & xu hướng cơ bản",
+          description: "Mô tả sự tăng/giảm hoặc con số đơn giản chính xác không bị sai lệch.",
+          minBand: "B1",
+        },
+        {
           id: "lr1_3",
           title: "Sử dụng đúng từ vựng theo từng dạng",
           description: "Chart: peak, bottom out, level off, fluctuate, account for, represent, proportion, figure… Map: residential area, industrial zone, facilities, demolish, construct, redevelop, remove… Process: raw materials, manufacture, remove impurities, filter, package, transport, deliver…",
@@ -481,6 +493,12 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
           id: "gra1_2",
           title: "Chia đúng thì cơ bản & Hòa hợp Chủ - Vị",
           description: "Sử dụng đúng thì Hiện tại đơn, Quá khứ đơn, sự hòa hợp giữa chủ ngữ và động từ (số ít / số nhiều), và sử dụng đúng số ít/số nhiều của danh từ.",
+          minBand: "B1",
+        },
+        {
+          id: "gra1_3_b1",
+          title: "Cấu trúc câu rõ nghĩa & kiểm soát lỗi cơ bản",
+          description: "Mắc ít lỗi ngữ pháp nghiêm trọng, đảm bảo ý nghĩa truyền đạt không bị hiểu sai.",
           minBand: "B1",
         },
         {
@@ -605,6 +623,12 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
           minBand: "B1",
         },
         {
+          id: "cc2_3_b1",
+          title: "Bố cục logic giữa các đoạn văn",
+          description: "Sắp xếp các ý tưởng theo trình tự mạch lạc, phân chia đoạn văn hợp lý.",
+          minBand: "B1",
+        },
+        {
           id: "cc2_3",
           title: "Sử dụng từ nối học thuật đa dạng (Academic Connectors)",
           description: "Áp dụng linh hoạt On the one hand, On the other hand, Furthermore, As a result, Consequently.",
@@ -664,6 +688,12 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
           minBand: "B1",
         },
         {
+          id: "lr2_3_b1",
+          title: "Diễn đạt ý tưởng rõ ràng theo chủ đề",
+          description: "Sử dụng từ vựng phù hợp với đề bài, truyền đạt thông điệp chính không gây hiểu nhầm.",
+          minBand: "B1",
+        },
+        {
           id: "lr2_3",
           title: "Sử dụng từ vựng theo chủ đề (Topic-specific vocabulary)",
           description: "Dùng từ vựng học thuật thuộc chủ đề bài viết chính xác ngữ cảnh.",
@@ -720,6 +750,12 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
           id: "gra2_2",
           title: "Chia đúng thì cơ bản & Hòa hợp Chủ - Vị",
           description: "Sử dụng đúng thì Hiện tại đơn, Quá khứ đơn và hòa hợp số ít / số nhiều.",
+          minBand: "B1",
+        },
+        {
+          id: "gra2_3_b1",
+          title: "Cấu trúc câu rõ nghĩa & kiểm soát lỗi cơ bản",
+          description: "Viết được các câu hoàn chỉnh, các lỗi mắc phải không gây cản trở người đọc tiếp thu ý chính.",
           minBand: "B1",
         },
         {
@@ -1860,23 +1896,19 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
 
       {/* BẢNG SO SÁNH SỰ TIẾN HÓA TIÊU CHÍ THEO TỪNG BAND (PROGRESSION MATRIX) */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div className="flex items-start space-x-3">
-            <div className="p-2.5 bg-gradient-to-br from-indigo-900 to-blue-900 text-white rounded-xl shadow-xs shrink-0 mt-0.5">
+        <div className="border-b border-slate-100 pb-4 space-y-3">
+          {/* Title Row */}
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-900 to-blue-900 text-white rounded-xl shadow-xs shrink-0">
               <Table className="w-5 h-5 text-yellow-300" />
             </div>
-            <div>
-              <h3 className="font-extrabold text-blue-950 text-base sm:text-lg flex items-center gap-2">
-                BẢNG TIẾN HÓA TIÊU CHÍ TỪNG CẤP ĐỘ (BAND PROGRESSION MATRIX)
-              </h3>
-              <p className="text-xs text-slate-600 font-medium mt-0.5">
-                Xem sự tích lũy kỹ năng: Cấp độ sau kế thừa nền tảng cấp độ trước và bổ sung thêm các kỹ năng chuyên sâu mới.
-              </p>
-            </div>
+            <h3 className="font-extrabold text-blue-950 text-base sm:text-lg tracking-tight">
+              BẢNG TIÊU CHÍ IELTS WRITING
+            </h3>
           </div>
 
-          {/* Action Buttons: PDF Download, CSV Download, Collapse Toggle */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Action Buttons Row */}
+          <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
             {/* Export PDF Button */}
             <button
               type="button"
@@ -1886,41 +1918,6 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
             >
               <Printer className="w-4 h-4 text-yellow-300" />
               <span>Tải Bảng (PDF)</span>
-            </button>
-
-            {/* Export CSV Button */}
-            <button
-              type="button"
-              onClick={() => {
-                let csv = "\uFEFF";
-                csv += "Mã Tiêu Chí,Tên Tiêu Chí,Đặc Tính / Kỹ Năng Yêu Cầu,Mô Tả Chi Tiết,Nền Tảng Đạt (Min Band),Band B1 (5.0+),Band B2 (6.0+),Band C1 (7.0+),Band C2 (7.5+)\n";
-
-                progressionCategories.forEach((cat) => {
-                  cat.features.forEach((feat) => {
-                    const isB1 = isFeatureSatisfied("B1", feat.minBand) ? "ĐẠT [✓]" : "-";
-                    const isB2 = isFeatureSatisfied("B2", feat.minBand) ? "ĐẠT [✓]" : "-";
-                    const isC1 = isFeatureSatisfied("C1", feat.minBand) ? "ĐẠT [✓]" : "-";
-                    const isC2 = isFeatureSatisfied("C2", feat.minBand) ? "ĐẠT [✓]" : "-";
-
-                    csv += `"${cat.code}","${cat.categoryName}","${feat.title.replace(/"/g, '""')}","${feat.description.replace(/"/g, '""')}","${feat.minBand}","${isB1}","${isB2}","${isC1}","${isC2}"\n`;
-                  });
-                });
-
-                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `IELTS_Writing_Progression_Matrix_${taskType.toUpperCase()}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-              }}
-              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-800"
-              title="Tải bảng dữ liệu CSV"
-            >
-              <Download className="w-4 h-4 text-emerald-200" />
-              <span>Tải CSV</span>
             </button>
 
             {/* Collapse / Expand Toggle Button */}
@@ -2024,23 +2021,23 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
 
             {/* MATRIX TABLE */}
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
-              <table className="w-full text-left border-collapse min-w-[720px]">
+              <table className="w-full text-left border-collapse table-fixed">
                 <thead>
-                  <tr className="bg-slate-900 text-white text-xs font-black uppercase tracking-wider divide-x divide-slate-800">
-                    <th className="p-3.5 w-2/5">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
-                    <th className="p-3.5 text-center bg-amber-950/60 text-amber-200 w-1/7">
+                  <tr className="bg-slate-900 text-white text-[11px] sm:text-xs font-black uppercase tracking-wider divide-x divide-slate-800">
+                    <th className="p-2.5 sm:p-3 w-[50%]">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
+                    <th className="p-2 sm:p-2.5 text-center bg-amber-950/60 text-amber-200 w-[12.5%]">
                       <div>B1 (5.0+)</div>
                       <div className="text-[9px] text-amber-300/80 font-normal normal-case">Nền tảng</div>
                     </th>
-                    <th className="p-3.5 text-center bg-blue-950/60 text-blue-200 w-1/7">
+                    <th className="p-2 sm:p-2.5 text-center bg-blue-950/60 text-blue-200 w-[12.5%]">
                       <div>B2 (6.0+)</div>
                       <div className="text-[9px] text-blue-300/80 font-normal normal-case">+Tích lũy B1</div>
                     </th>
-                    <th className="p-3.5 text-center bg-indigo-950/60 text-indigo-200 w-1/7">
+                    <th className="p-2 sm:p-2.5 text-center bg-indigo-950/60 text-indigo-200 w-[12.5%]">
                       <div>C1 (7.0+)</div>
                       <div className="text-[9px] text-indigo-300/80 font-normal normal-case">+Tích lũy B1+B2</div>
                     </th>
-                    <th className="p-3.5 text-center bg-purple-950/60 text-purple-200 w-1/7">
+                    <th className="p-2 sm:p-2.5 text-center bg-purple-950/60 text-purple-200 w-[12.5%]">
                       <div>C2 (7.5+)</div>
                       <div className="text-[9px] text-purple-300/80 font-normal normal-case">+Tích lũy B1+B2+C1</div>
                     </th>
@@ -2051,7 +2048,7 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                     <React.Fragment key={cat.code}>
                       {/* Category Section Header */}
                       <tr className={`${cat.headerBg} border-t-2 border-slate-300`}>
-                        <td colSpan={5} className="p-2.5 px-3.5 font-black uppercase tracking-wide">
+                        <td colSpan={5} className="p-2 px-3 font-black uppercase tracking-wide text-xs">
                           <div className="flex items-center justify-between">
                             <span className={`flex items-center gap-2 ${cat.textColor}`}>
                               <span>{cat.categoryName}</span>
@@ -2067,68 +2064,68 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                       {cat.features.map((feat, idx) => (
                         <tr key={feat.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/60"}>
                           {/* Feature Title & Description */}
-                          <td className="p-3.5 align-top border-r border-slate-200">
-                            <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-start gap-1.5">
-                              <span className="text-slate-400 font-mono text-[11px] shrink-0 mt-0.5">#{idx + 1}</span>
+                          <td className="p-2.5 sm:p-3 align-top border-r border-slate-200 break-words">
+                            <div className="font-bold text-slate-900 text-xs flex items-start gap-1">
+                              <span className="text-slate-400 font-mono text-[10px] shrink-0 mt-0.5">#{idx + 1}</span>
                               <span>{feat.title}</span>
                             </div>
-                            <p className="text-[11px] text-slate-600 mt-1 leading-relaxed pl-5 font-normal">
+                            <p className="text-[11px] text-slate-600 mt-0.5 leading-tight pl-3 font-normal">
                               {feat.description}
                             </p>
                           </td>
 
                           {/* B1 Column */}
-                          <td className="p-3.5 align-middle text-center border-r border-slate-200">
+                          <td className="p-2 align-middle text-center border-r border-slate-200">
                             {isFeatureSatisfied("B1", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs font-extrabold text-[11px] gap-1">
-                                <Check className="w-3.5 h-3.5 text-amber-800 stroke-[3]" />
+                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3 h-3 text-amber-800 stroke-[3]" />
                                 <span>Đạt</span>
                               </div>
                             ) : (
-                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
-                                <Minus className="w-4 h-4" />
+                              <div className="inline-flex items-center justify-center text-slate-300">
+                                <Minus className="w-3.5 h-3.5" />
                               </div>
                             )}
                           </td>
 
                           {/* B2 Column */}
-                          <td className="p-3.5 align-middle text-center border-r border-slate-200">
+                          <td className="p-2 align-middle text-center border-r border-slate-200">
                             {isFeatureSatisfied("B2", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs font-extrabold text-[11px] gap-1">
-                                <Check className="w-3.5 h-3.5 text-blue-800 stroke-[3]" />
+                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3 h-3 text-blue-800 stroke-[3]" />
                                 <span>Đạt</span>
                               </div>
                             ) : (
-                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
-                                <Minus className="w-4 h-4" />
+                              <div className="inline-flex items-center justify-center text-slate-300">
+                                <Minus className="w-3.5 h-3.5" />
                               </div>
                             )}
                           </td>
 
                           {/* C1 Column */}
-                          <td className="p-3.5 align-middle text-center border-r border-slate-200">
+                          <td className="p-2 align-middle text-center border-r border-slate-200">
                             {isFeatureSatisfied("C1", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-indigo-100 text-indigo-900 border border-indigo-300 shadow-2xs font-extrabold text-[11px] gap-1">
-                                <Check className="w-3.5 h-3.5 text-indigo-800 stroke-[3]" />
+                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-indigo-100 text-indigo-900 border border-indigo-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3 h-3 text-indigo-800 stroke-[3]" />
                                 <span>Đạt</span>
                               </div>
                             ) : (
-                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
-                                <Minus className="w-4 h-4" />
+                              <div className="inline-flex items-center justify-center text-slate-300">
+                                <Minus className="w-3.5 h-3.5" />
                               </div>
                             )}
                           </td>
 
                           {/* C2 Column */}
-                          <td className="p-3.5 align-middle text-center">
+                          <td className="p-2 align-middle text-center">
                             {isFeatureSatisfied("C2", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center p-1.5 rounded-lg bg-purple-100 text-purple-900 border border-purple-300 shadow-2xs font-extrabold text-[11px] gap-1">
-                                <Check className="w-3.5 h-3.5 text-purple-800 stroke-[3]" />
+                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-purple-100 text-purple-900 border border-purple-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3 h-3 text-purple-800 stroke-[3]" />
                                 <span>Đạt</span>
                               </div>
                             ) : (
-                              <div className="inline-flex items-center justify-center p-1 rounded-md text-slate-300">
-                                <Minus className="w-4 h-4" />
+                              <div className="inline-flex items-center justify-center text-slate-300">
+                                <Minus className="w-3.5 h-3.5" />
                               </div>
                             )}
                           </td>
