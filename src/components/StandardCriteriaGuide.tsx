@@ -1947,7 +1947,7 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
             <div className="flex items-center space-x-2 text-blue-950 font-medium">
               <Table className="w-4 h-4 text-blue-800 shrink-0" />
               <span>
-                Bảng đang được thu gọn để tiết kiệm không gian. Nhấn <strong>"Mở rộng Bảng"</strong> để xem đầy đủ 32 kỹ năng tích lũy từ Band B1 đến C2.
+                Bảng đang được thu gọn để tiết kiệm không gian. Nhấn <strong>"Mở rộng Bảng"</strong> để xem đầy đủ các kỹ năng tích lũy từ Band B1 đến C2.
               </span>
             </div>
             <button
@@ -2023,23 +2023,23 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
               <table className="w-full text-left border-collapse table-fixed">
                 <thead>
-                  <tr className="bg-slate-900 text-white text-[11px] sm:text-xs font-black uppercase tracking-wider divide-x divide-slate-800">
-                    <th className="p-2.5 sm:p-3 w-[50%]">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
-                    <th className="p-2 sm:p-2.5 text-center bg-amber-950/60 text-amber-200 w-[12.5%]">
-                      <div>B1 (5.0+)</div>
-                      <div className="text-[9px] text-amber-300/80 font-normal normal-case">Nền tảng</div>
+                  <tr className="bg-slate-900 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider divide-x divide-slate-800">
+                    <th className="p-2 sm:p-3 w-[40%] sm:w-[50%]">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
+                    <th className="p-1 sm:p-2.5 text-center bg-amber-950/60 text-amber-200 w-[15%] sm:w-[12.5%]">
+                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">B1 (5.0+)</div>
+                      <div className="text-[7px] sm:text-[9px] text-amber-300/80 font-normal normal-case leading-tight">Nền tảng</div>
                     </th>
-                    <th className="p-2 sm:p-2.5 text-center bg-blue-950/60 text-blue-200 w-[12.5%]">
-                      <div>B2 (6.0+)</div>
-                      <div className="text-[9px] text-blue-300/80 font-normal normal-case">+Tích lũy B1</div>
+                    <th className="p-1 sm:p-2.5 text-center bg-blue-950/60 text-blue-200 w-[15%] sm:w-[12.5%]">
+                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">B2 (6.0+)</div>
+                      <div className="text-[7px] sm:text-[9px] text-blue-300/80 font-normal normal-case leading-tight">+Tích lũy B1</div>
                     </th>
-                    <th className="p-2 sm:p-2.5 text-center bg-indigo-950/60 text-indigo-200 w-[12.5%]">
-                      <div>C1 (7.0+)</div>
-                      <div className="text-[9px] text-indigo-300/80 font-normal normal-case">+Tích lũy B1+B2</div>
+                    <th className="p-1 sm:p-2.5 text-center bg-indigo-950/60 text-indigo-200 w-[15%] sm:w-[12.5%]">
+                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">C1 (7.0+)</div>
+                      <div className="text-[7px] sm:text-[9px] text-indigo-300/80 font-normal normal-case leading-tight">+Tích lũy B1+B2</div>
                     </th>
-                    <th className="p-2 sm:p-2.5 text-center bg-purple-950/60 text-purple-200 w-[12.5%]">
-                      <div>C2 (7.5+)</div>
-                      <div className="text-[9px] text-purple-300/80 font-normal normal-case">+Tích lũy B1+B2+C1</div>
+                    <th className="p-1 sm:p-2.5 text-center bg-purple-950/60 text-purple-200 w-[15%] sm:w-[12.5%]">
+                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">C2 (7.5+)</div>
+                      <div className="text-[7px] sm:text-[9px] text-purple-300/80 font-normal normal-case leading-tight">+Tích lũy B1+B2+C1</div>
                     </th>
                   </tr>
                 </thead>
@@ -2075,11 +2075,11 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                           </td>
 
                           {/* B1 Column */}
-                          <td className="p-2 align-middle text-center border-r border-slate-200">
+                          <td className="p-1 sm:p-2 align-middle text-center border-r border-slate-200">
                             {isFeatureSatisfied("B1", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs font-extrabold text-[10px] gap-1">
-                                <Check className="w-3 h-3 text-amber-800 stroke-[3]" />
-                                <span>Đạt</span>
+                              <div className="inline-flex items-center justify-center p-1 sm:px-2 sm:py-1 rounded-md bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-amber-800 stroke-[3]" />
+                                <span className="hidden sm:inline">Đạt</span>
                               </div>
                             ) : (
                               <div className="inline-flex items-center justify-center text-slate-300">
@@ -2089,11 +2089,11 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                           </td>
 
                           {/* B2 Column */}
-                          <td className="p-2 align-middle text-center border-r border-slate-200">
+                          <td className="p-1 sm:p-2 align-middle text-center border-r border-slate-200">
                             {isFeatureSatisfied("B2", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs font-extrabold text-[10px] gap-1">
-                                <Check className="w-3 h-3 text-blue-800 stroke-[3]" />
-                                <span>Đạt</span>
+                              <div className="inline-flex items-center justify-center p-1 sm:px-2 sm:py-1 rounded-md bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-blue-800 stroke-[3]" />
+                                <span className="hidden sm:inline">Đạt</span>
                               </div>
                             ) : (
                               <div className="inline-flex items-center justify-center text-slate-300">
@@ -2103,11 +2103,11 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                           </td>
 
                           {/* C1 Column */}
-                          <td className="p-2 align-middle text-center border-r border-slate-200">
+                          <td className="p-1 sm:p-2 align-middle text-center border-r border-slate-200">
                             {isFeatureSatisfied("C1", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-indigo-100 text-indigo-900 border border-indigo-300 shadow-2xs font-extrabold text-[10px] gap-1">
-                                <Check className="w-3 h-3 text-indigo-800 stroke-[3]" />
-                                <span>Đạt</span>
+                              <div className="inline-flex items-center justify-center p-1 sm:px-2 sm:py-1 rounded-md bg-indigo-100 text-indigo-900 border border-indigo-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-indigo-800 stroke-[3]" />
+                                <span className="hidden sm:inline">Đạt</span>
                               </div>
                             ) : (
                               <div className="inline-flex items-center justify-center text-slate-300">
@@ -2117,11 +2117,11 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                           </td>
 
                           {/* C2 Column */}
-                          <td className="p-2 align-middle text-center">
+                          <td className="p-1 sm:p-2 align-middle text-center">
                             {isFeatureSatisfied("C2", feat.minBand) ? (
-                              <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-purple-100 text-purple-900 border border-purple-300 shadow-2xs font-extrabold text-[10px] gap-1">
-                                <Check className="w-3 h-3 text-purple-800 stroke-[3]" />
-                                <span>Đạt</span>
+                              <div className="inline-flex items-center justify-center p-1 sm:px-2 sm:py-1 rounded-md bg-purple-100 text-purple-900 border border-purple-300 shadow-2xs font-extrabold text-[10px] gap-1">
+                                <Check className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-purple-800 stroke-[3]" />
+                                <span className="hidden sm:inline">Đạt</span>
                               </div>
                             ) : (
                               <div className="inline-flex items-center justify-center text-slate-300">
