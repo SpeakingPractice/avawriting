@@ -5,6 +5,7 @@ export interface TaskExportData {
   promptText: string;
   originalEssay: string;
   report: GradingReport;
+  task1Image?: string | null;
 }
 
 /**
@@ -134,6 +135,16 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
 
     <!-- SECTION 1: Upgraded Model Essay -->
     <h2>1. Bài Viết Mẫu Hoàn Chỉnh (${taskName} Band 8.0+) - Nâng Cấp Từ Bài Gốc</h2>
+    ${
+      task.task1Image
+        ? `
+    <div style="text-align: center; margin-top: 10pt; margin-bottom: 12pt; background-color: #ffffff; border: 1px solid #cbd5e1; padding: 8pt; border-radius: 4pt;">
+      <p style="font-size: 10pt !important; color: #64748b; margin-top: 0; margin-bottom: 6pt; font-weight: bold; text-align: center;">[Hình Ảnh / Sơ Đồ Đề Bài Task 1 được tải lên]</p>
+      <img src="${task.task1Image}" style="max-width: 100%; max-height: 400pt; width: auto; height: auto; margin: 0 auto; display: block; border: 1px solid #e2e8f0;" />
+    </div>
+    `
+        : ""
+    }
     <div style="background-color: #fff1f2; border: 1px solid #fecdd3; padding: 8pt 12pt; margin-bottom: 12pt; font-size: 11pt; color: #9f1239;">
       <strong>Ghi chú đọc bài:</strong> Các vị trí được <span style="background-color: #ffe4e6; color: #881337; font-weight: bold; padding: 2px 4px;">tô màu đỏ nhạt</span> là các câu, cụm từ hoặc đoạn văn đã được chỉnh sửa &amp; nâng cấp từ bài viết gốc của bạn để đạt chuẩn Band 8.0+. Những phần không tô màu là cấu trúc tốt được giữ nguyên.
     </div>

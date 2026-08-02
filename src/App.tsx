@@ -330,6 +330,7 @@ export default function App() {
           taskType: "task1",
           prompt,
           report: res1,
+          image: task1Image,
         };
 
         const historyItem2: EssayHistoryItem = {
@@ -339,6 +340,7 @@ export default function App() {
           taskType: "task2",
           prompt: task2Prompt,
           report: res2,
+          image: null,
         };
 
         const updatedHistory = [historyItem2, historyItem1, ...history];
@@ -364,6 +366,7 @@ export default function App() {
           taskType,
           prompt,
           report: data,
+          image: taskType === "task1" ? task1Image : null,
         };
 
         const updatedHistory = [historyItem, ...history];
@@ -415,6 +418,11 @@ export default function App() {
     setTaskType(item.taskType);
     setPrompt(item.prompt);
     setReport(item.report);
+    if (item.image) {
+      setTask1Image(item.image);
+    } else if (item.taskType === "task1") {
+      setTask1Image(null);
+    }
     setActiveHistoryId(item.id);
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1069,6 +1077,7 @@ export default function App() {
                   promptText: prompt,
                   originalEssay: essay,
                   report,
+                  task1Image: taskType === "task1" ? task1Image : null,
                 };
 
                 const latestTask1Item = history.find((item) => item.taskType === "task1");
@@ -1078,14 +1087,26 @@ export default function App() {
                   taskType === "task1"
                     ? activeTaskData
                     : latestTask1Item
-                    ? { taskType: "task1", promptText: latestTask1Item.prompt, originalEssay: latestTask1Item.essay, report: latestTask1Item.report }
+                    ? {
+                        taskType: "task1",
+                        promptText: latestTask1Item.prompt,
+                        originalEssay: latestTask1Item.essay,
+                        report: latestTask1Item.report,
+                        task1Image: latestTask1Item.image || (taskType === "task1" ? task1Image : null),
+                      }
                     : null;
 
                 const t2Data: TaskExportData | null =
                   taskType === "task2"
                     ? activeTaskData
                     : latestTask2Item
-                    ? { taskType: "task2", promptText: latestTask2Item.prompt, originalEssay: latestTask2Item.essay, report: latestTask2Item.report }
+                    ? {
+                        taskType: "task2",
+                        promptText: latestTask2Item.prompt,
+                        originalEssay: latestTask2Item.essay,
+                        report: latestTask2Item.report,
+                        task1Image: null,
+                      }
                     : null;
 
                 const availableTasks: TaskExportData[] = [];
@@ -1100,6 +1121,7 @@ export default function App() {
                     taskType={taskType}
                     promptText={prompt}
                     allAvailableTasks={availableTasks}
+                    task1Image={task1Image}
                   />
                 );
               })()

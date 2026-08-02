@@ -48,4 +48,5 @@ export interface EssayHistoryItem {
   taskType: 'task1' | 'task2';
   prompt: string;
   report: GradingReport;
+  image?: string | null;
 }

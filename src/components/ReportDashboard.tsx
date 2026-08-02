@@ -30,6 +30,7 @@ interface ReportDashboardProps {
   taskType?: "task1" | "task2" | "combo";
   promptText?: string;
   allAvailableTasks?: TaskExportData[];
+  task1Image?: string | null;
 }
 
 export const ReportDashboard: React.FC<ReportDashboardProps> = ({
@@ -39,6 +40,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   taskType = "task2",
   promptText = "",
   allAvailableTasks = [],
+  task1Image = null,
 }) => {
   const [activeTab, setActiveTab] = useState<"criteria" | "criteriaGuide" | "strengths" | "model" | "roadmap">("criteriaGuide");
   const [copied, setCopied] = useState(false);
@@ -64,6 +66,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
         promptText,
         originalEssay,
         report,
+        task1Image: task1Image || (taskType === "task1" ? t1Task?.task1Image : null),
       };
 
   const activeReport = activeTaskData.report;
@@ -570,6 +573,18 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                 = Vị trí đã được sửa đổi & nâng cấp từ bài viết gốc của bạn. Những đoạn không tô màu là phần viết tốt được giữ nguyên.
               </span>
             </div>
+
+            {/* Task 1 Image Preview if present */}
+            {activeTaskData.task1Image && activeTaskType === "task1" && (
+              <div className="bg-white border border-slate-200 rounded-xl p-3 text-center my-2 shadow-2xs">
+                <p className="text-[11px] font-bold text-slate-500 mb-2 uppercase tracking-wider">[Hình Ảnh / Sơ Đồ Đề Bài Task 1 được tải lên]</p>
+                <img
+                  src={activeTaskData.task1Image}
+                  alt="Sơ đồ đề bài Task 1"
+                  className="max-h-72 mx-auto rounded-lg border border-slate-200 object-contain"
+                />
+              </div>
+            )}
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[420px] overflow-y-auto scrollbar-thin">
               {activeReport.fullUpgradeEssay.split("\n\n").map((para, i) => (
