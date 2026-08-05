@@ -1,4 +1,9 @@
 import { GradingReport } from "../types";
+import {
+  task1ProgressionCategories,
+  task2ProgressionCategories,
+  ProgressionFeatureItem,
+} from "../data/criteriaData";
 
 export interface TaskExportData {
   taskType: "task1" | "task2" | string;
@@ -39,6 +44,110 @@ export function calculateCombinedIeltsBand(t1Score: number, t2Score: number): nu
   return floorVal + 1.0;
 }
 
+function getFeatureEval(
+  detail: any,
+  feat: ProgressionFeatureItem,
+  featIndex: number
+) {
+  const maxScore = parseFloat(feat.score) || 0;
+
+  if (detail?.featureScores && Array.isArray(detail.featureScores) && detail.featureScores.length > 0) {
+    const item = detail.featureScores.find((f: any) => f.id === feat.id);
+    if (item) {
+      const earned = Math.max(0, Math.min(maxScore, Number(item.scoreEarned) || 0));
+      if (earned <= 0) {
+        return { earned: 0, maxScore, status: "none", reasoning: item.reasoning };
+      }
+      if (item.status === "partial" || (earned > 0 && earned < maxScore)) {
+        return { earned, maxScore, status: "partial", reasoning: item.reasoning };
+      }
+      return { earned, maxScore, status: "full", reasoning: item.reasoning };
+    }
+  }
+
+  // Heuristic fallback for legacy reports
+  const thresholds = [1.0, 3.0, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0];
+  const targetThreshold = thresholds[featIndex - 1] || 9.0;
+  const prevThreshold = featIndex > 1 ? thresholds[featIndex - 2] : 0;
+  const b = detail?.band || 0;
+
+  if (b >= targetThreshold) {
+    return { earned: maxScore, maxScore, status: "full" };
+  } else if (b > prevThreshold) {
+    const partial = Math.min(maxScore, Math.max(0.5, b - prevThreshold));
+    return { earned: partial, maxScore, status: "partial" };
+  }
+  return { earned: 0, maxScore, status: "none" };
+}
+
+function renderFeatureTableHtml(catCode: "TA_TR" | "CC" | "LR" | "GRA", detail: any, isTask1: boolean) {
+  const categories = isTask1 ? task1ProgressionCategories : task2ProgressionCategories;
+  const group = categories.find((g) => g.code === catCode);
+  if (!group) return "";
+
+  const rows = group.features
+    .map((feat, idx) => {
+      const featIndex = idx + 1;
+      const res = getFeatureEval(detail, feat, featIndex);
+      const maxScore = parseFloat(feat.score) || 0;
+
+      let statusBadge = "";
+      const rowBg =
+        feat.minBand === "B1" ? "#edf7f2" :
+        feat.minBand === "B2" ? "#f0f6fc" :
+        feat.minBand === "C1" ? "#fffde8" :
+        "#fde8e8";
+
+      if (res.status === "full") {
+        statusBadge =
+          '<span style="color: #15803d; font-weight: bold; background-color: #dcfce7; padding: 2pt 6pt; border-radius: 3pt; border: 1px solid #86efac; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Đạt trọn vẹn</span>';
+      } else if (res.status === "partial") {
+        statusBadge = `<span style="color: #b45309; font-weight: bold; background-color: #fef3c7; padding: 2pt 6pt; border-radius: 3pt; border: 1px solid #fde68a; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Đạt 1 phần</span>`;
+      } else {
+        statusBadge =
+          '<span style="color: #64748b; font-weight: normal; background-color: #f1f5f9; padding: 2pt 6pt; border-radius: 3pt; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Chưa đạt</span>';
+      }
+
+      return `
+      <tr style="background-color: ${rowBg}; border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 6pt; text-align: center; font-weight: bold; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #334155; border: 1px solid #e2e8f0;">#${featIndex}</td>
+        <td style="padding: 6pt; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #1e293b; border: 1px solid #e2e8f0;">
+          <strong style="font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">${feat.title}</strong>
+          <div style="font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #475569; margin-top: 2pt;">${feat.description}</div>
+          ${
+            res.reasoning
+              ? `<div style="font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #1e40af; font-style: italic; margin-top: 3pt; background-color: #eff6ff; padding: 3pt 6pt; border-left: 2px solid #3b82f6;"><strong>Ghi chú AVA:</strong> ${res.reasoning}</div>`
+              : ""
+          }
+        </td>
+        <td style="padding: 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #475569; border: 1px solid #e2e8f0;">${feat.minBand}</td>
+        <td style="padding: 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #1e3a8a; border: 1px solid #e2e8f0;">+${res.earned} / ${maxScore}</td>
+        <td style="padding: 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; border: 1px solid #e2e8f0;">${statusBadge}</td>
+      </tr>
+    `;
+    })
+    .join("");
+
+  return `
+    <div style="margin-top: 10pt; margin-bottom: 10pt;">
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; margin-bottom: 8pt; background-color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">
+        <thead>
+          <tr style="background-color: #e2e8f0; color: #0f172a; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; text-align: center; font-weight: bold;">
+            <th style="padding: 6pt; border: 1px solid #cbd5e1; width: 6%; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">#</th>
+            <th style="padding: 6pt; border: 1px solid #cbd5e1; width: 52%; text-align: left; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">Đặc Tính Chi Tiết</th>
+            <th style="padding: 6pt; border: 1px solid #cbd5e1; width: 12%; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">Target Band</th>
+            <th style="padding: 6pt; border: 1px solid #cbd5e1; width: 14%; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">Điểm Số</th>
+            <th style="padding: 6pt; border: 1px solid #cbd5e1; width: 16%; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">Trạng Thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
   const { report, taskType, promptText } = task;
   const isTask1 = taskType === "task1";
@@ -58,25 +167,26 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
 
   // Criteria
   const criteriaList = [
-    { title: isTask1 ? "Task Achievement (TA)" : "Task Response (TR)", detail: report.criteria.taOrTr },
-    { title: "Coherence & Cohesion (CC)", detail: report.criteria.cc },
-    { title: "Lexical Resource (LR)", detail: report.criteria.lr },
-    { title: "Grammatical Range & Accuracy (GRA)", detail: report.criteria.gra },
+    { title: isTask1 ? "Task Achievement (TA)" : "Task Response (TR)", code: "TA_TR" as const, detail: report.criteria.taOrTr },
+    { title: "Coherence & Cohesion (CC)", code: "CC" as const, detail: report.criteria.cc },
+    { title: "Lexical Resource (LR)", code: "LR" as const, detail: report.criteria.lr },
+    { title: "Grammatical Range & Accuracy (GRA)", code: "GRA" as const, detail: report.criteria.gra },
   ];
 
   const criteriaHtml = criteriaList
     .map(
       (c) => `
-    <div style="margin-bottom: 14pt; border: 1px solid #cbd5e1; padding: 12pt; background-color: #ffffff;">
+    <div style="margin-bottom: 18pt; border: 1px solid #cbd5e1; padding: 12pt; background-color: #ffffff;">
       <div style="font-size: 13pt; font-weight: bold; color: #1e3a8a; margin-bottom: 6pt;">
         ${c.title} &mdash; <span style="background-color: #dbeafe; color: #1e40af; padding: 2pt 8pt; font-size: 11pt;">Band ${formatBandScore(c.detail.band)}</span>
       </div>
       <p style="margin-bottom: 6pt; font-size: 12pt; color: #334155;"><strong>Phân tích chi tiết:</strong> ${c.detail.feedback}</p>
       ${
         c.detail.example
-          ? `<p style="margin-bottom: 0; font-size: 11pt; color: #475569; background-color: #f8fafc; padding: 8pt; border-left: 3px solid #3b82f6;"><strong>Ví dụ &amp; Ghi chú:</strong> ${c.detail.example}</p>`
+          ? `<p style="margin-bottom: 8pt; font-size: 11pt; color: #475569; background-color: #f8fafc; padding: 8pt; border-left: 3px solid #3b82f6;"><strong>Ví dụ &amp; Ghi chú:</strong> ${c.detail.example}</p>`
           : ""
       }
+      ${renderFeatureTableHtml(c.code, c.detail, isTask1)}
     </div>
   `
     )

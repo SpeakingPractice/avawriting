@@ -1,8 +1,16 @@
+export interface FeatureScoreDetail {
+  id: string;
+  scoreEarned: number;
+  status?: 'full' | 'partial' | 'none';
+  reasoning?: string;
+}
+
 export interface CriterionDetail {
   band: number;
   name: string;
   feedback: string;
   example: string;
+  featureScores?: FeatureScoreDetail[];
 }
 
 export interface StrengthDetail {

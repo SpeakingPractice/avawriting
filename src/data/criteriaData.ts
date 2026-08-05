@@ -1,0 +1,573 @@
+export type BandLevel = "B1" | "B2" | "C1" | "C2";
+
+export interface ProgressionFeatureItem {
+  id: string;
+  title: string;
+  description: string;
+  score: string;
+  minBand: BandLevel;
+}
+
+export interface ProgressionCategoryGroup {
+  code: "TA_TR" | "CC" | "LR" | "GRA";
+  categoryName: string;
+  badgeText: string;
+  headerBg: string;
+  badgeBg: string;
+  textColor: string;
+  borderColor: string;
+  features: ProgressionFeatureItem[];
+}
+
+export const BAND_ORDER: Record<BandLevel, number> = {
+  B1: 1,
+  B2: 2,
+  C1: 3,
+  C2: 4,
+};
+
+export const isFeatureSatisfied = (targetBand: BandLevel, minRequiredBand: BandLevel): boolean => {
+  return BAND_ORDER[targetBand] >= BAND_ORDER[minRequiredBand];
+};
+
+export const task1ProgressionCategories: ProgressionCategoryGroup[] = [
+  {
+    code: "TA_TR",
+    categoryName: "1. Task Achievement (TA) - Độ Hoàn Thành Task 1 - Nội Dung & Luận Điểm",
+    badgeText: "Nội Dung & Luận Điểm",
+    headerBg: "bg-blue-100/80",
+    badgeBg: "bg-blue-200/90",
+    textColor: "text-blue-950",
+    borderColor: "border-blue-300",
+    features: [
+      {
+        id: "ta1_1",
+        title: "Giới thiệu đúng biểu đồ và bố cục rõ ràng",
+        description: "Paraphrase đề bài chính xác và chia bài thành Introduction – Overview – Body.",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "ta1_2",
+        title: "Mô tả các đặc điểm chính của dữ liệu",
+        description: "Lựa chọn các số liệu hoặc xu hướng nổi bật thay vì liệt kê toàn bộ.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "ta1_3",
+        title: "Overview rõ ràng & Nhất quán",
+        description: "Nêu xu hướng chính (tăng/ giảm/ lớn nhất/ nhỏ nhất/ thay đổi nổi bật) ngay ở phần Overall.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "ta1_4",
+        title: "Mô tả và hỗ trợ bằng số liệu phù hợp",
+        description: "Mỗi đoạn thân bài tập trung vào một nhóm dữ liệu và sử dụng số liệu minh họa.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "ta1_5",
+        title: "Bao quát đầy đủ các đặc điểm chính",
+        description: "Không bỏ sót nhóm dữ liệu hoặc xu hướng quan trọng; tránh mô tả lan man các chi tiết nhỏ.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "ta1_6",
+        title: "So sánh và nhóm dữ liệu hợp lý",
+        description: "Biết nhóm các đối tượng có điểm tương đồng và đưa ra các cách so sánh hợp lý.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "ta1_7",
+        title: "Chọn lọc và tổng hợp thông tin hiệu quả",
+        description: "Ưu tiên mô tả xu hướng và đặc điểm nổi bật thay vì liệt kê từng con số.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "ta1_8",
+        title: "Phân tích dữ liệu tinh tế và khách quan",
+        description: "Nhận diện các mô hình phức tạp, ngoại lệ hoặc mối quan hệ giữa các nhóm dữ liệu mà không suy diễn nguyên nhân.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+  {
+    code: "CC",
+    categoryName: "2. Coherence & Cohesion (CC) - Mạch Lạc & Liên Kết Ý Tưởng - Bố Cục & Chuyển Ý",
+    badgeText: "Bố Cục & Chuyển Ý",
+    headerBg: "bg-indigo-100/80",
+    badgeBg: "bg-indigo-200/90",
+    textColor: "text-indigo-950",
+    borderColor: "border-indigo-300",
+    features: [
+      {
+        id: "cc1_1",
+        title: "Phân chia đoạn văn rõ ràng (Paragraphing)",
+        description: "Chia bài viết thành các đoạn văn riêng biệt có nhiệm vụ rõ ràng (Ví dụ: nhiệm vụ Intro là giới thiệu, Overall là phần đặc điểm nổi bật, không số liệu…)",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "cc1_2",
+        title: "Sử dụng từ nối cơ bản (Basic Linkers)",
+        description: "Dùng các liên từ thông dụng (and, but, also, besides, first, second, then, next, finally…).",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "cc1_3",
+        title: "Sử dụng từ nối học thuật đa dạng (Academic Connectors)",
+        description: "Áp dụng linh hoạt các từ nối (looking first at, turning to, while, whereas, meanwhile, however, by contrast, in comparison, compared with, similarly, likewise, notably, respectively, although, initially, subsequently, following this, once, after which, before being V3…)",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "cc1_4",
+        title: "Câu chủ đề (Topic Sentence) rõ ràng định hướng đoạn",
+        description: "Mỗi đoạn thân bài mở đầu bằng câu chủ đề tóm tắt ý chính của cả đoạn.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "cc1_5",
+        title: "Mạch triển khai thông tin tự nhiên (mạch đọc không đứt gãy)",
+        description: "Các đoạn được liên kết mượt mà theo một trình tự rõ ràng, giúp người đọc dễ dàng theo dõi.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "cc1_6",
+        title: "Liên kết tự nhiên bằng phép thế và từ thay thế (referencing/ substitution)",
+        description: "Dùng linh hoạt this figure, this value, this area/site, the former, the latter, this trend, respectively…",
+        score: "1",
+        minBand: "B2",
+      },
+      {
+        id: "cc1_7",
+        title: "Cách nhóm thông tin và chia đoạn hợp lý (chiến lược grouping hiệu quả)",
+        description: "Biết lựa chọn tiêu chí phù hợp để nhóm các thông tin liên quan và phân chia chúng vào các đoạn hợp lý.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "cc1_8",
+        title: "Tổng hợp và liên kết thông tin một cách tự nhiên",
+        description: "Biết kết nối các xu hướng hoặc đặc điểm có liên quan để làm nổi bật bức tranh tổng thể.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+  {
+    code: "LR",
+    categoryName: "3. Lexical Resource (LR) - Vốn Từ Vựng & Diễn Đạt - Từ Vựng & Collocations",
+    badgeText: "Từ Vựng & Collocations",
+    headerBg: "bg-emerald-100/80",
+    badgeBg: "bg-emerald-200/90",
+    textColor: "text-emerald-950",
+    borderColor: "border-emerald-300",
+    features: [
+      {
+        id: "lr1_1",
+        title: "Từ vựng thông dụng đủ diễn đạt ý tưởng",
+        description: "Dùng được từ vựng đơn giản (cho phép lặp từ) nhưng đủ để truyền tải nội dung bài viết.",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "lr1_2",
+        title: "Chính tả và dạng từ cơ bản chính xác",
+        description: "Mắc rất ít lỗi chính tả nghiêm trọng ở các từ vựng cơ bản.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "lr1_3",
+        title: "Sử dụng đúng từ vựng theo từng dạng",
+        description: "Sử dụng từ vựng đặc trưng cho biểu đồ, bản đồ hoặc quy trình (peak, level off, demolish, manufacture...).",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "lr1_4",
+        title: "Collocations quen thuộc & Dạng từ chính xác",
+        description: "Sử dụng cụm từ kết hợp tự nhiên (experience a rise, record a decline, remain unchanged...) và đúng loại từ.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "lr1_5",
+        title: "Biết Paraphrase linh hoạt tránh lặp từ",
+        description: "Thay thế từ vựng đề bài bằng từ đồng nghĩa hoặc cấu trúc diễn đạt khác.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "lr1_6",
+        title: "Vốn từ học thuật chính xác và collocations nâng cao",
+        description: "Sử dụng sắc bén các collocations nâng cao (record a sharp increase, undergo substantial redevelopment...).",
+        score: "1",
+        minBand: "B2",
+      },
+      {
+        id: "lr1_7",
+        title: "Paraphrase chính xác tuyệt đối sắc thái nghĩa",
+        description: "Diễn đạt linh hoạt bằng nhiều cách mà không bị chệch sắc thái hay gượng ép.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "lr1_8",
+        title: "Vốn từ miêu tả dữ liệu tự nhiên như người bản ngữ",
+        description: "Sử dụng linh hoạt các cách diễn đạt học thuật, collocations và paraphrase tự nhiên.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+  {
+    code: "GRA",
+    categoryName: "4. Grammatical Range & Accuracy (GRA) - Ngữ Pháp & Độ Chính Xác - Cấu Trúc & Ngữ Pháp",
+    badgeText: "Cấu Trúc & Ngữ Pháp",
+    headerBg: "bg-purple-100/80",
+    badgeBg: "bg-purple-200/90",
+    textColor: "text-purple-950",
+    borderColor: "border-purple-300",
+    features: [
+      {
+        id: "gra1_1",
+        title: "Thành thạo câu đơn & Câu ghép cơ bản",
+        description: "Viết đúng các câu đơn và câu ghép, có thể sử dụng từ nối cơ bản and, but, yet…",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "gra1_2",
+        title: "Chia đúng thì cơ bản & Hòa hợp Chủ - Vị",
+        description: "Sử dụng đúng thì Hiện tại đơn, Quá khứ đơn, sự hòa hợp giữa chủ ngữ và động từ.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "gra1_3",
+        title: "Sử dụng linh hoạt các câu phức (Complex Sentences)",
+        description: "Sử dụng linh hoạt mệnh đề quan hệ, thời gian, so sánh, nhượng bộ...",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "gra1_4",
+        title: "Đa dạng hoá cấu trúc câu (câu đơn → ghép → phức)",
+        description: "Kết hợp linh hoạt các dạng câu và sử dụng thể bị động phù hợp.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "gra1_5",
+        title: "Kiểm soát tốt ngữ pháp, ít lỗi nghiêm trọng",
+        description: "Các lỗi ngữ pháp nếu có không ảnh hưởng đáng kể đến sự rõ ràng.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "gra1_6",
+        title: "Cấu trúc phức nâng cao",
+        description: "Sử dụng bị động, mệnh đề quan hệ rút gọn, mệnh đề phân từ nâng cao.",
+        score: "1",
+        minBand: "B2",
+      },
+      {
+        id: "gra1_7",
+        title: "Độ chính xác ngữ pháp cao (~90-95%+)",
+        description: "Hầu như không mắc lỗi ngữ pháp, làm chủ hoàn toàn dấu câu.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "gra1_8",
+        title: "Làm chủ ngữ pháp phức với độ chính xác gần như tuyệt đối",
+        description: "Sử dụng đa dạng các cấu trúc ngữ pháp phức một cách tự nhiên; lỗi rất hiếm.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+];
+
+export const task2ProgressionCategories: ProgressionCategoryGroup[] = [
+  {
+    code: "TA_TR",
+    categoryName: "1. Task Response (TR) - Trả Lời Trực Tiếp Đề Bài Task 2 - Nội Dung & Luận Điểm",
+    badgeText: "Nội Dung & Luận Điểm",
+    headerBg: "bg-blue-100/80",
+    badgeBg: "bg-blue-200/90",
+    textColor: "text-blue-950",
+    borderColor: "border-blue-300",
+    features: [
+      {
+        id: "tr2_1",
+        title: "Nêu lập trường cơ bản & bố cục đoạn rõ ràng",
+        description: "Trả lời trực tiếp câu hỏi chính của đề, chia bài thành Mở - Thân - Kết rõ ràng.",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "tr2_2",
+        title: "Cung cấp 2-3 ý chính hỗ trợ bài viết",
+        description: "Nêu được các ý chính và có giải thích.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "tr2_3",
+        title: "Thesis Statement rõ ràng & nhất quán",
+        description: "Nêu bật quan điểm cá nhân ngay ở phần mở bài.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "tr2_4",
+        title: "Phát triển luận điểm đầy đủ (Ý chính -> Giải thích -> Ví dụ)",
+        description: "Mỗi đoạn thân bài tập trung 1 ý chủ đạo với lập luận logic kèm ví dụ minh hoạ.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "tr2_5",
+        title: "Bao phủ trọn vẹn tất cả các yêu cầu đề bài",
+        description: "Giải quyết triệt để mọi vế câu hỏi hoặc nhóm thông tin then chốt không bị bỏ sót.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "tr2_6",
+        title: "Lập luận sắc bén chiều sâu (Mô hình PEEL / Phân tích tác động vĩ mô)",
+        description: "Phân tích nguyên nhân gốc rễ, tác động kinh tế - xã hội, có ví dụ tốt và liên kết lại chủ đề đoạn.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "tr2_7",
+        title: "Xử lý phản biện & nhượng bộ (Counter-argument) mượt mà",
+        description: "Nhượng bộ góc nhìn đối lập và phản biện đanh thép để củng cố lập trường chính.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "tr2_8",
+        title: "Phân tích đanh thép & có chiều sâu / thực tiễn cao",
+        description: "Bảo vệ lập trường bằng tư duy phân tích, giải quyết góc nhìn đa chiều với ý tưởng khó có thể bị bác bỏ. Các giải thích và ví dụ không có sự tuyệt đối hay đánh đồng (tránh được lỗi overgeneralization).",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+  {
+    code: "CC",
+    categoryName: "2. Coherence & Cohesion (CC) - Mạch Lạc & Liên Kết Ý Tưởng - Bố Cục & Chuyển Ý",
+    badgeText: "Bố Cục & Chuyển Ý",
+    headerBg: "bg-indigo-100/80",
+    badgeBg: "bg-indigo-200/90",
+    textColor: "text-indigo-950",
+    borderColor: "border-indigo-300",
+    features: [
+      {
+        id: "cc2_1",
+        title: "Phân chia đoạn văn rõ ràng (Paragraphing)",
+        description: "Chia bài viết thành các đoạn văn riêng biệt có nhiệm vụ rõ ràng.",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "cc2_2",
+        title: "Sử dụng từ nối cơ bản (Basic Linkers)",
+        description: "Dùng các liên từ thông dụng (First, Second, Then, Also, Because, In conclusion).",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "cc2_3",
+        title: "Sử dụng từ nối học thuật đa dạng (Academic Connectors)",
+        description: "Áp dụng linh hoạt On the one hand, On the other hand, Furthermore, As a result, Consequently.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "cc2_4",
+        title: "Câu chủ đề (Topic Sentence) rõ ràng định hướng đoạn",
+        description: "Mỗi đoạn thân bài mở đầu bằng câu chủ đề tóm tắt ý chính của cả đoạn.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "cc2_5",
+        title: "Mạch chuyển ý trôi chảy giữa các đoạn văn",
+        description: "Liên kết giữa các đoạn mượt mà, không bị cứng nhắc hay lạm dụng liên từ.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "cc2_6",
+        title: "Liên kết bằng phép thế đại từ & Danh từ hóa (Nominalization)",
+        description: "Sử dụng tự nhiên “it, this policy, these measures, the former/latter” và biến đổi danh từ.",
+        score: "1",
+        minBand: "B2",
+      },
+      {
+        id: "cc2_7",
+        title: "Mạch suy luận logic không lạm dụng liên từ đầu câu",
+        description: "Tự bản thân các câu nối tiếp nhau bằng tư duy logic tự nhiên.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "cc2_8",
+        title: "Mạch liên kết trôi chảy tuyệt đối",
+        description: "Sự kết nối giữa các ý tưởng mượt mà hơn, ưu tiên sử dụng được quy tắc Diễn Tiến Đề Ngữ (Theme–Rheme progression) HOẶC sử dụng kết hợp giữa Diễn Tiến Cố Định (Constant progression) và Linear Thinking trong giai đoạn này.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+  {
+    code: "LR",
+    categoryName: "3. Lexical Resource (LR) - Vốn Từ Vựng & Diễn Đạt - Từ Vựng & Collocations",
+    badgeText: "Từ Vựng & Collocations",
+    headerBg: "bg-emerald-100/80",
+    badgeBg: "bg-emerald-200/90",
+    textColor: "text-emerald-950",
+    borderColor: "border-emerald-300",
+    features: [
+      {
+        id: "lr2_1",
+        title: "Từ vựng thông dụng đủ diễn đạt ý tưởng",
+        description: "Dùng được từ vựng đơn giản (cho phép lặp từ) nhưng đủ để truyền tải nội dung bài viết.",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "lr2_2",
+        title: "Chính tả đúng ở các từ vựng phổ thông",
+        description: "Mắc rất ít lỗi chính tả nghiêm trọng ở các từ vựng cơ bản.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "lr2_3",
+        title: "Sử dụng từ vựng theo chủ đề (Topic-specific vocabulary)",
+        description: "Dùng từ vựng học thuật thuộc chủ đề bài viết chính xác ngữ cảnh.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "lr2_4",
+        title: "Collocations quen thuộc & Dạng từ chính xác",
+        description: "Dùng cụm từ kết hợp (play a key role, make a contribution, have an effect...) và đúng loại từ.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "lr2_5",
+        title: "Biết Paraphrase linh hoạt tránh lặp từ",
+        description: "Thay thế từ vựng đề bài bằng từ đồng nghĩa phù hợp hoặc cấu trúc diễn đạt khác.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "lr2_6",
+        title: "Vốn từ học thuật sâu rộng & Collocations đắt giá",
+        description: "Sử dụng các từ vựng đắt giá (lucrative opportunity, far-reaching impact, root cause, alleviate…).",
+        score: "1",
+        minBand: "B2",
+      },
+      {
+        id: "lr2_7",
+        title: "Paraphrase chính xác tuyệt đối sắc thái nghĩa",
+        description: "Diễn đạt linh hoạt/ kết hợp bằng nhiều cách mà không làm thay đổi ý nghĩa.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "lr2_8",
+        title: "Ngôn ngữ bản xứ tinh tế & High-level Idiomatic Collocations",
+        description: "Nắm rõ sắc thái từ khi viết, thuật ngữ và collocations chính xác gần như tuyệt đối.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+  {
+    code: "GRA",
+    categoryName: "4. Grammatical Range & Accuracy (GRA) - Ngữ Pháp & Độ Chính Xác - Cấu Trúc & Ngữ Pháp",
+    badgeText: "Cấu Trúc & Ngữ Pháp",
+    headerBg: "bg-purple-100/80",
+    badgeBg: "bg-purple-200/90",
+    textColor: "text-purple-950",
+    borderColor: "border-purple-300",
+    features: [
+      {
+        id: "gra2_1",
+        title: "Thành thạo câu đơn & Câu ghép cơ bản",
+        description: "Viết đúng các câu đơn và câu ghép sử dụng and, but, so, or.",
+        score: "1",
+        minBand: "B1",
+      },
+      {
+        id: "gra2_2",
+        title: "Chia đúng thì cơ bản & Hòa hợp Chủ - Vị",
+        description: "Sử dụng đúng thì Hiện tại đơn, Quá khứ đơn và hòa hợp số ít / số nhiều.",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "gra2_3",
+        title: "Sử dụng linh hoạt các câu phức (Complex Sentences)",
+        description: "Áp dụng tốt mệnh đề nguyên nhân kết quả (because/ as/ since), câu nhượng bộ (although/ while)...",
+        score: "2",
+        minBand: "B1",
+      },
+      {
+        id: "gra2_4",
+        title: "Kết hợp câu đơn và câu phức",
+        description: "Biết sử dụng xen kẽ câu đơn và câu phức để diễn đạt ý.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "gra2_5",
+        title: "Kiểm soát tốt ngữ pháp, ít lỗi nghiêm trọng",
+        description: "Đảm bảo câu văn luôn rõ nghĩa về mặt ngữ pháp.",
+        score: "0.5",
+        minBand: "B2",
+      },
+      {
+        id: "gra2_6",
+        title: "Cấu trúc phức nâng cao (Phân từ rút gọn, Đảo ngữ)",
+        description: "Thành thạo đa dạng ngữ pháp: mệnh đề phân từ chỉ nguyên nhân/kết quả (V-ing, V3, have V3 đầu câu), MĐQH rút gọn (V-ing/ V3), đảo ngữ, cấu trúc nhượng bộ phức tạp (admittedly, granted, it is true that… Nevertheless …), câu điều kiện (if), bị động (be V3/ed)…",
+        score: "1",
+        minBand: "B2",
+      },
+      {
+        id: "gra2_7",
+        title: "Độ chính xác ngữ pháp cao (~90-95%+)",
+        description: "Lỗi ngữ pháp gần như không có, làm chủ hoàn toàn dấu câu.",
+        score: "1",
+        minBand: "C1",
+      },
+      {
+        id: "gra2_8",
+        title: "Làm chủ ngữ pháp phức với độ chính xác gần như tuyệt đối",
+        description: "Sử dụng đa dạng các cấu trúc ngữ pháp phức tạp một cách chính xác.",
+        score: "1",
+        minBand: "C2",
+      },
+    ],
+  },
+];

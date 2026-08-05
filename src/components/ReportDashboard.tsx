@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
 import { StandardCriteriaGuide } from "./StandardCriteriaGuide";
+import { EssayEvaluationView } from "./EssayEvaluationView";
 import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData } from "../lib/exportDoc";
 import {
   Sparkles,
@@ -21,6 +22,7 @@ import {
   Download,
   FileCheck,
   Target,
+  CheckCircle2,
 } from "lucide-react";
 
 interface ReportDashboardProps {
@@ -42,7 +44,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   allAvailableTasks = [],
   task1Image = null,
 }) => {
-  const [activeTab, setActiveTab] = useState<"criteria" | "criteriaGuide" | "strengths" | "model" | "roadmap">("criteriaGuide");
+  const [activeTab, setActiveTab] = useState<"criteriaGuide" | "essayEvaluation" | "strengths" | "model" | "roadmap">("criteriaGuide");
   const [copied, setCopied] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -256,15 +258,15 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab("criteria")}
+            onClick={() => setActiveTab("essayEvaluation")}
             className={`shrink-0 min-w-max py-3 px-4 sm:px-5 text-xs font-bold border-b-2 whitespace-nowrap transition-all flex items-center justify-center space-x-1.5 ${
-              activeTab === "criteria"
+              activeTab === "essayEvaluation"
                 ? "border-blue-900 text-blue-900 bg-white"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
             }`}
           >
-            <Award className="w-4 h-4" />
-            <span>Chi Tiết 4 Tiêu Chí</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Đánh Giá Bài Viết</span>
           </button>
 
           <button
@@ -324,64 +326,17 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           />
         )}
 
-        {/* 1. Chi Tiết 4 Tiêu Chí */}
-        {activeTab === "criteria" && (
-          <div className="space-y-6" id="panel-criteria">
-            <div className="flex items-center space-x-2 text-slate-700 mb-2">
-              <span className="w-1.5 h-4 bg-blue-700 rounded-full"></span>
-              <h3 className="font-bold text-sm tracking-tight text-slate-800 uppercase">
-                Phân Tích Chuyên Sâu Từng Tiêu Chí Chấm Thi
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {[taOrTr, cc, lr, gra].map((criterion, idx) => {
-                if (!criterion) return null;
-                const colors = idx % 2 === 0
-                  ? "border-l-4 border-l-blue-900 border-y-slate-200 border-r-slate-200 bg-white"
-                  : "border-l-4 border-l-yellow-400 border-y-slate-200 border-r-slate-200 bg-white";
-
-                const textColors = idx % 2 === 0
-                  ? "text-blue-900 bg-blue-100"
-                  : "text-yellow-900 bg-yellow-100";
-
-                return (
-                  <div
-                    key={idx}
-                    className={`border rounded-xl p-5 shadow-sm transition-all hover:shadow-md ${colors}`}
-                    id={`criterion-card-${idx}`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-slate-800 tracking-tight">
-                        {criterion.name}
-                      </span>
-                      <span className={`text-[11px] font-black px-2.5 py-1 rounded ${textColors}`}>
-                        Band {criterion.band.toFixed(1)}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                      {criterion.feedback}
-                    </p>
-
-                    {criterion.example && (
-                      <div className="mt-3 bg-slate-50 border border-slate-100 rounded-lg p-2.5">
-                        <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                          Trích câu lỗi / cần cải thiện:
-                        </span>
-                        <p className="text-xs font-serif italic text-slate-700 border-l-2 border-slate-300 pl-2">
-                          "{criterion.example}"
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {/* 0.5. Đánh Giá Bài Viết Theo Bảng Tiêu Chí Standard */}
+        {activeTab === "essayEvaluation" && (
+          <EssayEvaluationView
+            report={activeReport}
+            taskType={activeTaskType}
+            essayText={activeTaskData.originalEssay}
+            promptText={activeTaskData.promptText}
+          />
         )}
 
-        {/* 2. Thế Mạnh & Điểm Cải Thiện */}
+        {/* 1. Thế Mạnh & Điểm Cải Thiện */}
         {activeTab === "strengths" && (
           <div className="space-y-6 animate-fadeIn" id="panel-strengths">
             {/* Strengths */}
