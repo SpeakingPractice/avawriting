@@ -102,7 +102,7 @@ function renderFeatureTableHtml(catCode: "TA_TR" | "CC" | "LR" | "GRA", detail: 
         statusBadge =
           '<span style="color: #15803d; font-weight: bold; background-color: #dcfce7; padding: 2pt 6pt; border-radius: 3pt; border: 1px solid #86efac; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Đạt trọn vẹn</span>';
       } else if (res.status === "partial") {
-        statusBadge = `<span style="color: #b45309; font-weight: bold; background-color: #fef3c7; padding: 2pt 6pt; border-radius: 3pt; border: 1px solid #fde68a; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Đạt 1 phần</span>`;
+        statusBadge = `<span style="color: #b45309; font-weight: bold; background-color: #fef3c7; padding: 2pt 6pt; border-radius: 3pt; border: 1px solid #fde68a; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Đạt một phần</span>`;
       } else {
         statusBadge =
           '<span style="color: #64748b; font-weight: normal; background-color: #f1f5f9; padding: 2pt 6pt; border-radius: 3pt; display: inline-block; font-family: Calibri, Arial, sans-serif; font-size: 10pt !important;">Chưa đạt</span>';
@@ -419,7 +419,7 @@ export function exportReportToDoc(
   }
   
   h1 { font-size: 18pt !important; font-family: 'Calibri', sans-serif !important; color: #1e3a8a; font-weight: bold; margin-bottom: 4pt; }
-  h2 { font-size: 14pt !important; font-family: 'Calibri', sans-serif !important; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 4pt; margin-top: 20pt; margin-bottom: 10pt; font-weight: bold; }
+  h2 { font-size: 13pt !important; font-family: 'Calibri', sans-serif !important; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 4pt; margin-top: 20pt; margin-bottom: 10pt; font-weight: bold; }
   
   mark {
     background-color: #ffe4e6 !important;

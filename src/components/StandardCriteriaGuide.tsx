@@ -187,7 +187,7 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
       <body>
         <div class="header">
           <h1>${titleText}</h1>
-          <p>Hệ thống Tiến Hoá Kỹ Năng IELTS Writing - Tích Luỹ Theo Band Score (B1 5.0+ ➔ B2 6.0+ ➔ C1 7.0+ ➔ C2 8.0+ - Max 9.0)</p>
+          <p>Hệ thống Tiến Hoá Kỹ Năng IELTS Writing - Tích Luỹ Theo Band Score (B1 5.0+ ➔ B2 6.0+ ➔ C1 7.0+ ➔ C2 8.0+)</p>
         </div>
         <table>
           <thead>
@@ -356,9 +356,9 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                 <thead>
                   <tr className="bg-slate-900 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider divide-x divide-slate-800">
                     <th className="p-2 sm:p-3 w-[35%] sm:w-[42%]">Đặc Tính / Kỹ Năng Yêu Cầu (Feature)</th>
-                    <th className="p-1 sm:p-2.5 text-center bg-slate-800 text-slate-200 w-[10%] sm:w-[8%]">
-                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">SCORE</div>
-                      <div className="text-[7px] sm:text-[9px] text-slate-400 font-normal normal-case leading-tight">Max 9.0</div>
+                    <th className="p-0.5 sm:p-2 text-center bg-slate-800 text-slate-200 w-[10%] sm:w-[8%]">
+                      <div className="text-[8px] sm:text-xs font-black leading-tight text-center tracking-tight">SCORE</div>
+                      <div className="text-[7px] sm:text-[9px] text-slate-400 font-normal normal-case leading-tight text-center tracking-tight">Max 9.0</div>
                     </th>
                     <th className="p-1 sm:p-2.5 text-center bg-amber-950/60 text-amber-200 w-[13.75%] sm:w-[12.5%]">
                       <div className="text-[8.5px] sm:text-xs font-black leading-tight">B1 (5.0+)</div>
@@ -373,7 +373,7 @@ export const StandardCriteriaGuide: React.FC<StandardCriteriaGuideProps> = ({
                       <div className="text-[7px] sm:text-[9px] text-indigo-300/80 font-normal normal-case leading-tight">+Tích lũy B1+B2</div>
                     </th>
                     <th className="p-1 sm:p-2.5 text-center bg-purple-950/60 text-purple-200 w-[13.75%] sm:w-[12.5%]">
-                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">C2 (8.0+ - Max 9.0)</div>
+                      <div className="text-[8.5px] sm:text-xs font-black leading-tight">C2 (8.0+)</div>
                       <div className="text-[7px] sm:text-[9px] text-purple-300/80 font-normal normal-case leading-tight">+Tích lũy B1+B2+C1</div>
                     </th>
                   </tr>

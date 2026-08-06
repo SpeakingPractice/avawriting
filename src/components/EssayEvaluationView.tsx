@@ -387,7 +387,7 @@ export const EssayEvaluationView: React.FC<EssayEvaluationViewProps> = ({
                               Yêu cầu: {style.label}
                             </span>
                             <span className={`font-extrabold px-2 py-0.5 rounded ${isPartial ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'}`}>
-                              {isPartial ? `Đạt 1 phần: +${evalRes.earned} / ${maxFeatScore}` : `Đạt trọn vẹn: +${evalRes.earned}`}
+                              {isPartial ? `Đạt một phần: +${evalRes.earned} / ${maxFeatScore}` : `Đạt trọn vẹn: +${evalRes.earned}`}
                             </span>
                           </div>
                         </div>
