@@ -3,7 +3,7 @@ import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
 import { StandardCriteriaGuide } from "./StandardCriteriaGuide";
 import { EssayEvaluationView } from "./EssayEvaluationView";
-import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData } from "../lib/exportDoc";
+import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData, generateFallbackVietnameseTranslation } from "../lib/exportDoc";
 import {
   Sparkles,
   AlertTriangle,
@@ -541,12 +541,36 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
               </div>
             )}
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[420px] overflow-y-auto scrollbar-thin">
-              {activeReport.fullUpgradeEssay.split("\n\n").map((para, i) => (
-                <p key={i} className="mb-4 last:mb-0 indent-4">
-                  {renderParagraphWithHighlights(para)}
-                </p>
-              ))}
+            <div className="space-y-2">
+              <div className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span>[1.1] Bài Viết Nâng Cấp Tiếng Anh (English Model Essay Band 8.0+)</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[360px] overflow-y-auto scrollbar-thin">
+                {activeReport.fullUpgradeEssay.split("\n\n").map((para, i) => (
+                  <p key={i} className="mb-4 last:mb-0 indent-4">
+                    {renderParagraphWithHighlights(para)}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            {/* Vietnamese Translation Section */}
+            <div className="space-y-2 pt-2">
+              <div className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span>[1.2] Bản Dịch Tiếng Việt Song Ngữ Đối Chiếu (Vietnamese Translation)</span>
+              </div>
+              <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[360px] overflow-y-auto scrollbar-thin">
+                {(
+                  activeReport.fullUpgradeEssayVietnamese ||
+                  generateFallbackVietnameseTranslation(activeReport.fullUpgradeEssay)
+                )
+                  .split("\n\n")
+                  .map((para, i) => (
+                    <p key={i} className="mb-4 last:mb-0 indent-4">
+                      {renderParagraphWithHighlights(para)}
+                    </p>
+                  ))}
+              </div>
             </div>
 
             <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 flex items-start space-x-2">

@@ -46,6 +46,7 @@ export interface GradingReport {
   upgrades?: UpgradeDetail[];
   nextBandSteps: string[];
   fullUpgradeEssay: string;
+  fullUpgradeEssayVietnamese?: string;
   vietnameseGreeting?: string;
 }
 

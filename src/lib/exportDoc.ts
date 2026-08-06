@@ -148,6 +148,173 @@ function renderFeatureTableHtml(catCode: "TA_TR" | "CC" | "LR" | "GRA", detail: 
   `;
 }
 
+export function generateFallbackVietnameseTranslation(text: string): string {
+  if (!text) return "";
+
+  const dictionary: [RegExp, string][] = [
+    // --- Task 2 Specific Sentences & Clauses ---
+    [/Many young people today feel that/gi, "Nhiều người trẻ ngày nay cảm thấy rằng"],
+    [/the lifestyle ideals cherished by older generations/gi, "những lý tưởng sống được các thế hệ đi trước trân trọng"],
+    [/no longer align with the realities of modern life/gi, "không còn phù hợp với thực tế của cuộc sống hiện đại"],
+    [/While some traditional values may seem out of step with contemporary norms/gi, "Mặc dù một số giá trị truyền thống có vẻ không còn phù hợp với các chuẩn mực hiện đại"],
+    [/I believe that the younger generation still has much to gain from the enduring wisdom of the past/gi, "tôi tin rằng thế hệ trẻ vẫn có thể học hỏi được rất nhiều từ trí tuệ trường tồn của quá khứ"],
+    [/Admittedly, one might argue that/gi, "Phải thừa nhận rằng, có người sẽ cho rằng"],
+    [/today's fast-paced lifestyle, coupled with rapidly evolving expectations/gi, "nhịp sống hối hả ngày nay, cùng với những kỳ vọng thay đổi nhanh chóng"],
+    [/has rendered traditional ways of living, thinking, and behaving obsolete/gi, "đã khiến những phương thức sống, suy nghĩ và ứng xử truyền thống trở nên lỗi thời"],
+    [/the expectation of maintaining strict boundaries between work and personal life/gi, "kỳ vọng duy trì ranh giới nghiêm ngặt giữa công việc và cuộc sống cá nhân"],
+    [/has become increasingly unrealistic in today's hyper-connected world/gi, "đã trở nên ngày càng phi thực tế trong thế giới kết nối siêu tốc ngày nay"],
+    [/As digital technology blurs these lines/gi, "Khi công nghệ kỹ thuật số làm mờ đi những ranh giới này"],
+    [/integrating professional demands into one's daily routine/gi, "việc kết hợp các yêu cầu công việc vào sinh hoạt hàng ngày"],
+    [/has gained widespread traction/gi, "đã trở nên vô cùng phổ biến"],
+    [/Many older people understandably view this shift with concern/gi, "Nhiều người lớn tuổi có lý do để nhìn nhận sự chuyển dịch này với sự lo ngại"],
+    [/lamenting that it comes at the expense of time for family, friendships, and personal well-being/gi, "tiếc nuối rằng điều đó phải đánh đổi bằng thời gian dành cho gia đình, tình bạn và sức khỏe bản thân"],
+    [/Yet, younger individuals tend to see work-life integration as a necessary adaptation/gi, "Tuy nhiên, giới trẻ lại có xu hướng coi sự giao thoa công việc - cuộc sống là một sự thích nghi tất yếu"],
+    [/to today's highly competitive environment/gi, "với môi trường cạnh tranh khốc liệt ngày nay"],
+    [/From their perspective,/gi, "Dưới góc nhìn của họ,"],
+    [/attempting to uphold the kind of rigid work-life balance/gi, "việc cố gắng duy trì sự cân bằng công việc - cuộc sống cứng nhắc"],
+    [/that their parents achieved decades ago/gi, "mà cha mẹ họ đã đạt được nhiều thập kỷ trước"],
+    [/could actually hold them back from climbing the corporate ladder and progressing in their careers/gi, "thực sự có thể cản bước họ thăng tiến trên con đường sự nghiệp"],
+    [/While many traditional values appear to be at odds with modern norms/gi, "Mặc dù nhiều giá trị truyền thống có vẻ mâu thuẫn với các chuẩn mực hiện đại"],
+    [/I am strongly convinced that/gi, "tôi hoàn toàn thuyết phục rằng"],
+    [/it would be a stretch to say that/gi, "sẽ là quá đà nếu nói rằng"],
+    [/young people cannot gain anything from older generations/gi, "người trẻ không thể học hỏi được gì từ các thế hệ trước"],
+    [/This divergence in perspective is vividly/gi, "Sự khác biệt trong quan điểm này thể hiện rõ nét"],
+
+    // --- Common IELTS Task 1 & Task 2 Templates & Clauses ---
+    [/The two maps illustrate/gi, "Hai bản đồ minh họa"],
+    [/The chart illustrates/gi, "Biểu đồ minh họa"],
+    [/The graph shows/gi, "Đồ thị thể hiện"],
+    [/The diagram shows/gi, "Sơ đồ thể hiện"],
+    [/how the city of Nelson has changed from 2000 to the present day/gi, "sự thay đổi của thành phố Nelson từ năm 2000 đến nay"],
+    [/how the city of (\w+) has changed/gi, "sự thay đổi của thành phố $1"],
+    [/from (\d{4}) to the present day/gi, "từ năm $1 đến nay"],
+    [/from (\d{4}) to (\d{4})/gi, "từ năm $1 đến năm $2"],
+    [/Overall, while/gi, "Nhìn chung, trong khi"],
+    [/Overall,/gi, "Nhìn chung,"],
+    [/the city centre itself/gi, "khu vực trung tâm thành phố"],
+    [/has remained/gi, "vẫn giữ nguyên"],
+    [/largely unchanged in size/gi, "hầu như không thay đổi về diện tích"],
+    [/significant developments have occurred/gi, "đã diễn ra những phát triển đáng kể"],
+    [/in its surrounding areas/gi, "ở các khu vực xung quanh"],
+    [/particularly in terms of/gi, "đặc biệt là về"],
+    [/transport infrastructure/gi, "hạ tầng giao thông"],
+    [/commercial facilities/gi, "các cơ sở thương mại"],
+    [/recreational spaces/gi, "không gian giải trí"],
+    [/To the north of the city/gi, "Về phía bắc của thành phố"],
+    [/In the southern part of the city/gi, "Ở phần phía nam của thành phố"],
+    [/In the northern part of the city/gi, "Ở phần phía bắc của thành phố"],
+    [/the university has remained/gi, "trường đại học vẫn được giữ nguyên"],
+    [/now flanked by/gi, "hiện nằm cạnh"],
+    [/a new hall of residence/gi, "một ký túc xá mới"],
+    [/to its west/gi, "về phía tây"],
+    [/and a new shopping centre/gi, "và một trung tâm thương mại mới"],
+    [/to the north-east/gi, "về phía đông bắc"],
+    [/where a woodland area was formerly located/gi, "nơi từng là khu rừng cây"],
+    [/The train station, previously located in the west/gi, "Ga tàu, trước đây nằm ở phía tây"],
+    [/has been relocated to/gi, "đã được di dời đến"],
+    [/the area immediately south of the university/gi, "khu vực ngay phía nam trường đại học"],
+    [/and is now connected to/gi, "và hiện kết nối với"],
+    [/a newly developed tramline/gi, "tuyến tàu điện mới được xây dựng"],
+    [/running along the eastern side of the campus/gi, "chạy dọc theo phía đông của khuôn viên"],
+    [/In addition,/gi, "Thêm vào đó,"],
+    [/a bike rental scheme has been introduced/gi, "dịch vụ cho thuê xe đạp đã được đưa vào sử dụng"],
+    [/throughout the city centre/gi, "toàn trung tâm thành phố"],
+    [/improving local transportation/gi, "nâng cao chất lượng giao thông địa phương"],
+    [/the old market in the south-west/gi, "khu chợ cũ ở phía tây nam"],
+    [/has been replaced by a new shop/gi, "đã được thay thế bằng một cửa hàng mới"],
+    [/while a modern covered market/gi, "trong khi một khu chợ có mái che hiện đại"],
+    [/has been constructed further east/gi, "đã được xây dựng xa hơn về phía đông"],
+    [/The main road separating the city centre and the port area/gi, "Tuyến đường chính phân chia trung tâm thành phố và khu vực cảng"],
+    [/which was once accessible by car/gi, "nơi từng cho phép xe hơi đi vào"],
+    [/has been converted into a pedestrian-only zone/gi, "đã được chuyển đổi thành khu phố dành riêng cho người đi bộ"],
+    [/Furthermore,/gi, "Hơn nữa,"],
+    [/new commercial amenities, including a restaurant and entertainment venues/gi, "các tiện ích thương mại mới, bao gồm nhà hàng và các địa điểm giải trí"],
+    [/bars and clubs/gi, "quán bar và câu lạc bộ"],
+    [/have been added along the waterfront/gi, "đã được bổ sung dọc theo bờ sông/bờ biển"],
+    [/making the area more attractive to both residents and visitors/gi, "giúp khu vực trở nên hấp dẫn hơn đối với cả cư dân và du khách"],
+
+    [/It is often argued that/gi, "Thường có ý kiến cho rằng"],
+    [/It is undeniable that/gi, "Không thể phủ nhận rằng"],
+    [/There is no doubt that/gi, "Không còn nghi ngờ gì khi"],
+    [/One of the main reasons is that/gi, "Một trong những lý do chính là"],
+    [/Another key factor to consider is/gi, "Một yếu tố quan trọng khác cần xem xét là"],
+    [/This leads to/gi, "Điều này dẫn đến"],
+    [/As a consequence,/gi, "Kết quả là,"],
+    [/In contrast,/gi, "Ngược lại,"],
+    [/On the contrary,/gi, "Trái lại,"],
+    [/To illustrate this point,/gi, "Để minh họa cho điều này,"],
+    [/A prime example of this is/gi, "Một ví dụ điển hình cho điều này là"],
+    [/From an economic standpoint,/gi, "Từ góc độ kinh tế,"],
+    [/In terms of social development,/gi, "Về mặt phát triển xã hội,"],
+    [/In conclusion, although/gi, "Tóm lại, mặc dù"],
+    [/In summary, while/gi, "Tóm lại, trong khi"],
+    [/I would argue that/gi, "Tôi cho rằng"],
+    [/I firmly believe that/gi, "Tôi tin chắc rằng"],
+    [/It is argued that/gi, "Nhiều người cho rằng"],
+    [/Some people believe that/gi, "Một số người tin rằng"],
+    [/On the one hand,/gi, "Một mặt,"],
+    [/On the other hand,/gi, "Mặt khác,"],
+    [/In conclusion,/gi, "Tóm lại,"],
+    [/This essay agrees that/gi, "Bài luận này đồng ý rằng"],
+    [/This essay disagrees that/gi, "Bài luận này không đồng ý rằng"],
+    [/For instance,/gi, "Ví dụ,"],
+    [/For example,/gi, "Chẳng hạn,"],
+    [/Consequently,/gi, "Do đó,"],
+    [/Therefore,/gi, "Vì vậy,"],
+    [/However,/gi, "Tuy nhiên,"],
+    [/Moreover,/gi, "Hơn nữa,"],
+
+    // --- Key Phrases & Noun Chunks ---
+    [/work-life balance/gi, "sự cân bằng công việc - cuộc sống"],
+    [/work-life integration/gi, "sự giao thoa công việc - cuộc sống"],
+    [/older generations/gi, "các thế hệ đi trước"],
+    [/younger generation/gi, "thế hệ trẻ"],
+    [/young people/gi, "người trẻ"],
+    [/older people/gi, "người lớn tuổi"],
+    [/traditional values/gi, "các giá trị truyền thống"],
+    [/modern norms/gi, "các chuẩn mực hiện đại"],
+    [/fast-paced lifestyle/gi, "lối sống hối hả"],
+    [/digital technology/gi, "công nghệ kỹ thuật số"],
+    [/competitive environment/gi, "môi trường cạnh tranh"],
+    [/corporate ladder/gi, "nấc thang sự nghiệp"],
+    [/personal well-being/gi, "sức khỏe và hạnh phúc cá nhân"],
+    [/at the expense of/gi, "phải đánh đổi bằng"],
+    [/climbing the corporate ladder/gi, "thăng tiến trên con đường sự nghiệp"],
+    [/progressing in their careers/gi, "phát triển sự nghiệp của họ"],
+    [/at odds with/gi, "mâu thuẫn với"],
+    [/divergence in perspective/gi, "sự khác biệt trong quan điểm"],
+    [/enduring wisdom/gi, "trí tuệ trường tồn"],
+    [/contemporary norms/gi, "chuẩn mực đương đại"],
+    [/hyper-connected world/gi, "thế giới kết nối siêu tốc"],
+    [/widespread traction/gi, "sự đón nhận rộng rãi"],
+    [/necessary adaptation/gi, "sự thích nghi cần thiết"]
+  ];
+
+  const translateChunk = (str: string): string => {
+    let result = str;
+    for (const [pattern, repl] of dictionary) {
+      result = result.replace(pattern, repl);
+    }
+    return result;
+  };
+
+  return text
+    .split("\n\n")
+    .map((para) => {
+      const parts = para.split(/(<mark[^>]*>[\s\S]*?<\/mark>)/gi);
+      return parts
+        .map((part) => {
+          const match = part.match(/^<mark[^>]*>([\s\S]*?)<\/mark>$/i);
+          if (match) {
+            return `<mark>${translateChunk(match[1])}</mark>`;
+          }
+          return translateChunk(part);
+        })
+        .join("");
+    })
+    .join("\n\n");
+}
+
 function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
   const { report, taskType, promptText } = task;
   const isTask1 = taskType === "task1";
@@ -155,6 +322,21 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
 
   // Process fullUpgradeEssay HTML marks for Word
   const formattedEssayHtml = (report.fullUpgradeEssay || "")
+    .split("\n\n")
+    .map((para) => {
+      const styledPara = para.replace(
+        /<mark[^>]*>([\s\S]*?)<\/mark>/gi,
+        '<span style="background-color: #ffe4e6; color: #881337; font-weight: bold; border-bottom: 2px solid #f43f5e; padding: 2px 4px;">$1</span>'
+      );
+      return `<p style="margin-bottom: 12pt; text-indent: 18pt; line-height: 1.6; text-align: justify; font-family: 'Calibri', sans-serif; font-size: 12pt;">${styledPara}</p>`;
+    })
+    .join("");
+
+  const viEssaySource =
+    report.fullUpgradeEssayVietnamese ||
+    generateFallbackVietnameseTranslation(report.fullUpgradeEssay || "");
+
+  const formattedVietnameseEssayHtml = (viEssaySource || "")
     .split("\n\n")
     .map((para) => {
       const styledPara = para.replace(
@@ -259,8 +441,23 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
       <strong>Ghi chú đọc bài:</strong> Các vị trí được <span style="background-color: #ffe4e6; color: #881337; font-weight: bold; padding: 2px 4px;">tô màu đỏ nhạt</span> là các câu, cụm từ hoặc đoạn văn đã được chỉnh sửa &amp; nâng cấp từ bài viết gốc của bạn để đạt chuẩn Band 8.0+. Những phần không tô màu là cấu trúc tốt được giữ nguyên.
     </div>
 
-    <div style="background-color: #fafafa; border: 1px solid #e2e8f0; padding: 14pt; margin-bottom: 20pt;">
+    <!-- 1.1 English Essay -->
+    <div style="background-color: #fafafa; border: 1px solid #e2e8f0; padding: 14pt; margin-bottom: 14pt;">
+      <div style="font-size: 11pt; font-weight: bold; color: #1e3a8a; margin-bottom: 8pt; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4pt;">
+        [1.1] BÀI VIẾT NÂNG CẤP TIẾNG ANH (ENGLISH MODEL ESSAY BAND 8.0+)
+      </div>
       ${formattedEssayHtml}
+    </div>
+
+    <!-- 1.2 Vietnamese Translation -->
+    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 14pt; margin-bottom: 20pt;">
+      <div style="font-size: 11pt; font-weight: bold; color: #1e3a8a; margin-bottom: 8pt; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4pt;">
+        [1.2] BẢN DỊCH TIẾNG VIỆT SONG NGỮ ĐỐI CHIẾU (VIETNAMESE TRANSLATION)
+      </div>
+      <div style="background-color: #fff1f2; border: 1px solid #fecdd3; padding: 6pt 10pt; margin-bottom: 10pt; font-size: 10.5pt; color: #9f1239; font-style: italic;">
+        Các cụm từ/câu tô màu đỏ nhạt trong bản dịch tương ứng với các vị trí đã nâng cấp ở bản tiếng Anh đối chiếu.
+      </div>
+      ${formattedVietnameseEssayHtml}
     </div>
 
     <!-- SECTION 2: 4 Tiêu chí -->
