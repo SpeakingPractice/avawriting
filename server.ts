@@ -126,10 +126,10 @@ async function generateContentWithFallback(
   }
 ) {
   const models = [
+    "gemini-3.6-flash",
     "gemini-2.5-flash",
     "gemini-flash-latest",
     "gemini-3.1-flash-lite",
-    "gemini-3.6-flash",
   ];
 
   let lastError: any = null;
@@ -158,6 +158,13 @@ async function generateContentWithFallback(
             },
           });
         } catch (thinkingErr: any) {
+          const thinkingErrMsg = String(thinkingErr?.message || thinkingErr);
+          const isQuota =
+            thinkingErrMsg.includes("429") ||
+            thinkingErrMsg.includes("RESOURCE_EXHAUSTED") ||
+            thinkingErrMsg.includes("quota");
+          if (isQuota) throw thinkingErr;
+
           // If model doesn't support thinkingConfig, fallback without it
           response = await ai.models.generateContent({
             model,
@@ -187,13 +194,22 @@ async function generateContentWithFallback(
         lastError = err;
         const errMsg = String(err?.message || err);
         console.warn(`[AVA Gemini] Model ${model} (attempt ${attempt + 1}) error: ${errMsg}`);
+
+        const isQuota =
+          errMsg.includes("429") ||
+          errMsg.includes("RESOURCE_EXHAUSTED") ||
+          errMsg.includes("quota");
+
+        if (isQuota) {
+          console.warn(`[AVA Gemini] Model ${model} quota exhausted. Switching to next fallback model immediately.`);
+          break;
+        }
+
         const isTransient =
           errMsg.includes("503") ||
           errMsg.includes("UNAVAILABLE") ||
           errMsg.includes("high demand") ||
-          errMsg.includes("overloaded") ||
-          errMsg.includes("429") ||
-          errMsg.includes("RESOURCE_EXHAUSTED");
+          errMsg.includes("overloaded");
 
         if (isTransient) {
           await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
@@ -413,7 +429,8 @@ Cấu trúc JSON phản hồi bắt buộc:
     "Các bước hành động cụ thể, chi tiết 2",
     "Các bước hành động cụ thể, chi tiết 3"
   ],
-  "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. QUY TẮC BẮT BUỘC: Nâng cấp trực tiếp từ bài làm gốc của thí sinh. Những phần/câu/đoạn nào trong bài gốc đã viết tốt, không bị lỗi nặng thì BẮT BUỘC GIỮ NGUYÊN. Những chỗ nào bị lỗi hoặc ảnh hưởng tiêu cực đến điểm số thì sửa lại/nâng cấp. TẤT CẢ các câu/cụm từ/đoạn văn ĐÃ ĐƯỢC CHỈNH SỬA HOẶC BỔ SUNG NÂNG CẤP BẮT BUỘC BỌC TRONG THẺ <mark>câu/từ đã sửa/nâng cấp</mark> (Ví dụ: <mark>While urban connectivity surged, rural access fell sharply.</mark>) để thí sinh nhận biết chính xác những vị trí đã được thay đổi. Đồng thời bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band (nextBandSteps)."
+  "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. QUY TẮC BẮT BUỘC: Nâng cấp trực tiếp từ bài làm gốc của thí sinh. Những phần/câu/đoạn nào trong bài gốc đã viết tốt, không bị lỗi nặng thì BẮT BUỘC GIỮ NGUYÊN. Những chỗ nào bị lỗi hoặc ảnh hưởng tiêu cực đến điểm số thì sửa lại/nâng cấp. TẤT CẢ các câu/cụm từ/đoạn văn ĐÃ ĐƯỢC CHỈNH SỬA HOẶC BỔ SUNG NÂNG CẤP BẮT BUỘC BỌC TRONG THẺ <mark>câu/từ đã sửa/nâng cấp</mark> (Ví dụ: <mark>While urban connectivity surged, rural access fell sharply.</mark>) để thí sinh nhận biết chính xác những vị trí đã được thay đổi. Đồng thời bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band (nextBandSteps).",
+  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT HOÀN CHỈNH 100%, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT MẪU (fullUpgradeEssay) Ở TRÊN. QUY TẮC BẮT BUỘC DÀNH CHO CẢ TASK 1 VÀ TASK 2: DỊCH TOÀN BỘ 100% TẤT CẢ CÁC CÂU SANG TIẾNG VIỆT (bao gồm mở bài, tổng quan overview, các câu báo cáo số liệu/xu hướng/so sánh của Task 1 cũng như bài luận Task 2). TUYỆT ĐỐI KHÔNG BỎ SÓT HAY ĐỂ LẠI BẤT KỲ CÂU HOẶC CỤM TỪ TIẾNG ANH NÀO TRONG BẢN DỊCH. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với vị trí đã được sửa/nâng cấp (<mark>...</mark>) trong bài tiếng Anh BẮT BUỘC BỌC TRONG THẺ <mark>câu/cụm từ tiếng Việt dịch tương ứng</mark> (Ví dụ: <mark>Trong khi tính kết nối đô thị tăng mạnh, khả năng tiếp cận ở nông thôn lại giảm sâu.</mark>) để thí sinh dễ dàng đối chiếu song ngữ."
 }`;
 
     const promptText = `

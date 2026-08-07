@@ -151,202 +151,466 @@ function renderFeatureTableHtml(catCode: "TA_TR" | "CC" | "LR" | "GRA", detail: 
 export function generateFallbackVietnameseTranslation(text: string): string {
   if (!text) return "";
 
-  const dictionary: [RegExp, string][] = [
-    // --- Task 2 Specific Full Sentences & Clauses (Band 9 Essay & Variants) ---
-    [/Many young people today feel that the lifestyle ideals cherished by older generations no longer align with the realities of modern life\./gi, "Nhiều người trẻ ngày nay cảm thấy rằng những lý tưởng sống được các thế hệ đi trước trân trọng không còn phù hợp với thực tế của cuộc sống hiện đại."],
-    [/While some traditional values may seem out of step with contemporary norms, I believe that the younger generation still has much to gain from the enduring wisdom of the past\./gi, "Mặc dù một số giá trị truyền thống có vẻ không còn phù hợp với các chuẩn mực hiện đại, tôi tin rằng thế hệ trẻ vẫn có thể học hỏi được rất nhiều từ trí tuệ trường tồn của quá khứ."],
-    [/Admittedly, the rapid pace of modern life and evolving expectations have led some to believe that traditional ways of living, thinking, and behaving are now obsolete\./gi, "Phải thừa nhận rằng, nhịp sống hối hả của cuộc sống hiện đại cùng với những kỳ vọng không ngừng thay đổi đã khiến nhiều người tin rằng các phương thức sống, suy nghĩ và ứng xử truyền thống giờ đây đã trở nên lỗi thời."],
-    [/Admittedly, one might argue that today's fast-paced lifestyle, coupled with rapidly evolving expectations, has rendered traditional ways of living, thinking, and behaving obsolete\./gi, "Phải thừa nhận rằng, có người sẽ cho rằng nhịp sống hối hả ngày nay, cùng với những kỳ vọng thay đổi nhanh chóng, đã khiến các phương thức sống, suy nghĩ và ứng xử truyền thống trở nên lỗi thời."],
-    [/For example, the expectation of maintaining strict boundaries between work and personal life has become increasingly unrealistic in today's world, where the line separating the two has gradually evaporated, and the notion of integrating work into one's personal routine is gaining widespread traction\./gi, "Chẳng hạn, kỳ vọng duy trì ranh giới nghiêm ngặt giữa công việc và cuộc sống cá nhân đã trở nên ngày càng phi thực tế trong thế giới ngày nay, nơi ranh giới phân chia giữa cả hai đã dần biến mất, và quan điểm kết hợp công việc vào sinh hoạt cá nhân hàng ngày đang nhận được sự đón nhận rộng rãi."],
-    [/Many older people understandably view this shift with concern, lamenting that it comes at the expense of time for family, friendships, and personal well-being\./gi, "Nhiều người lớn tuổi có lý do để nhìn nhận sự chuyển dịch này với sự lo ngại, tiếc nuối rằng điều đó phải đánh đổi bằng thời gian dành cho gia đình, tình bạn và sức khỏe bản thân."],
-    [/Yet, younger individuals tend to see work-life integration as a necessary adaptation to today's highly competitive and demanding environment\./gi, "Tuy nhiên, giới trẻ lại có xu hướng coi sự giao thoa công việc - cuộc sống là một sự thích nghi tất yếu với môi trường đầy cạnh tranh và đòi hỏi cao ngày nay."],
-    [/From their perspective, attempting to uphold the kind of work-life balance that their parents achieved decades ago could actually hold them back from climbing the corporate ladder and progressing in their careers\./gi, "Dưới góc nhìn của họ, việc cố gắng duy trì sự cân bằng công việc - cuộc sống mà cha mẹ họ đã đạt được nhiều thập kỷ trước thực sự có thể cản bước họ thăng tiến trên con đường sự nghiệp."],
-    [/While many traditional values appear to be at odds with modern norms and expectations, I am strongly convinced that it would be a stretch to say that young people cannot gain anything from the way old people live, think, and behave\./gi, "Mặc dù nhiều giá trị truyền thống có vẻ mâu thuẫn với các chuẩn mực và kỳ vọng hiện đại, tôi hoàn toàn thuyết phục rằng sẽ là quá đà nếu nói rằng người trẻ không thể học hỏi được gì từ cách người lớn tuổi sống, suy nghĩ và ứng xử."],
-    [/Take, for instance, the value of work-life balance\./gi, "Hãy lấy ví dụ về giá trị của sự cân bằng công việc - cuộc sống."],
-    [/Beneath this concept lies a durable principle: holistic well-being demands deliberate time for family, rest, and self-reflection\./gi, "Ẩn đằng sau khái niệm này là một nguyên lý bền vững: sự phát triển toàn diện đòi hỏi thời gian dành riêng cho gia đình, nghỉ ngơi và tự ngẫm suy."],
-    [/Young professionals who blur lines too freely, despite achieving significant career milestones, often find themselves grappling with burnout, digital fatigue, and strained relationships\./gi, "Những người đi làm trẻ tuổi làm mờ ranh giới quá thoải mái, dù đạt được những cột mốc sự nghiệp đáng kể, vẫn thường thấy mình phải đối mặt với tình trạng kiệt sức, mệt mỏi vì công nghệ và các mối quan hệ bị rạn nứt."],
-    [/Ironically, these are the very consequences the older insistence on clear demarcation aimed to pre-empt\./gi, "Mỉa mai thay, đây chính là những hậu quả mà sự kiên trì của thế hệ đi trước về việc phân chia ranh giới rõ ràng nhằm mục đích ngăn chặn từ trước."],
-    [/While the form of such values must evolve, the underlying value of maintaining equilibrium among multiple life domains retains its relevance\./gi, "Mặc dù hình thức của các giá trị đó phải tiến hóa, giá trị cốt lõi của việc duy trì sự cân bằng giữa nhiều khía cạnh cuộc sống vẫn giữ nguyên giá trị."],
-    [/This is just one among countless examples showing how the younger generation can still draw valuable wisdom from those who came before them\./gi, "Đây chỉ là một trong vô số ví dụ cho thấy thế hệ trẻ vẫn có thể rút ra những trí tuệ vô giá từ những người đi trước."],
-    [/In conclusion, while on the surface traditional ways of life appear not to mesh with the tempo of contemporary life, I believe that the core insights embedded in them remain invaluable\./gi, "Tóm lại, mặc dù về mặt bề ngoài các phương thức sống truyền thống có vẻ không ăn khớp với nhịp sống của cuộc sống đương đại, tôi tin rằng những tri thức cốt lõi ẩn chứa trong đó vẫn giữ nguyên giá trị vô giá."],
-    [/Younger generations can derive significant benefits from critically engaging with the wisdom of their elders, adapting enduring principles to navigate the fluid and often challenging realities of the modern world\./gi, "Thế hệ trẻ có thể thu nhận những lợi ích to lớn từ việc tiếp thu có chọn lọc trí tuệ của người lớn tuổi, thích ứng các nguyên lý trường tồn để chèo lái qua những thực tế biến động và đầy thách thức của thế giới hiện đại."],
+  // 1. Sentence-level map with tags built-in for exact high-frequency Band 9 essays
+  const sentenceMap: [RegExp, string][] = [
+    // Task 1 Sick Leave Essay Sentences
+    [
+      /^The line graph compares (?:<mark[^>]*>)?the proportion of employees who took at least a day of sick leave(?:<\/mark>)? in five European nations between 1991 and 2001\.?$/i,
+      "Biểu đồ đường so sánh <mark>tỷ lệ nhân viên nghỉ ốm ít nhất một ngày</mark> ở năm quốc gia Châu Âu từ năm 1991 đến năm 2001."
+    ],
+    [
+      /^Overall, (?:<mark[^>]*>)?a clear divergence in trends was observed(?:<\/mark>)?: levels of sickness absence in the Netherlands and Sweden showed a general upward trend, while France's rate declined significantly throughout the period\.?$/i,
+      "Nhìn chung, <mark>đã ghi nhận sự phân hóa rõ rệt về xu hướng</mark>: mức độ nghỉ do ốm đau ở Hà Lan và Thụy Điển có xu hướng tăng tổng thể, trong khi tỷ lệ của Pháp giảm đáng kể trong suốt giai đoạn này."
+    ],
+    [
+      /^Meanwhile, the UK and Germany recorded (?:<mark[^>]*>)?the lowest, but most stable, figures(?:<\/mark>)?\.?$/i,
+      "Trong khi đó, Vương quốc Anh và Đức ghi nhận <mark>những con số thấp nhất nhưng ổn định nhất</mark>."
+    ],
+    [
+      /^(?:<mark[^>]*>)?Focusing on the highest rates(?:<\/mark>)?[\s,]*the Netherlands consistently recorded the highest illness absence rates in all years, except 1991, when the rate was around 4\.9%, slightly below France's 5%\.?$/i,
+      "<mark>Tập trung vào các tỷ lệ cao nhất</mark>, Hà Lan liên tục ghi nhận tỷ lệ nghỉ ốm cao nhất trong tất cả các năm, ngoại trừ năm 1991, khi tỷ lệ này ở mức khoảng 4.9%, thấp hơn một chút so với 5% của Pháp."
+    ],
+    [
+      /^This rate then increased to a peak of roughly 5\.5% in 1992 before falling sharply to a low of about 4% in 1996\.?$/i,
+      "Tỷ lệ này sau đó tăng lên mức đỉnh khoảng 5.5% vào năm 1992 trước khi giảm mạnh xuống mức thấp khoảng 4% vào năm 1996."
+    ],
+    [
+      /^From there, (?:<mark[^>]*>)?the figure(?:<\/mark>)? quickly climbed back to its earlier peak by 2001, (?:<mark[^>]*>)?reaching approximately 5\.3%(?:<\/mark>)?\.?$/i,
+      "Từ đó, <mark>con số này</mark> nhanh chóng tăng trở lại mức đỉnh trước đó vào năm 2001, <mark>đạt khoảng 5.3%</mark>."
+    ],
+    [
+      /^France and Sweden (?:<mark[^>]*>)?experienced contrasting trends(?:<\/mark>)?\.?$/i,
+      "Pháp và Thụy Điển <mark>trải qua những xu hướng trái ngược nhau</mark>."
+    ],
+    [
+      /^In 1991, France recorded the highest absence rate at 5%, while Sweden's rate was lower, at only 3%\.?$/i,
+      "Năm 1991, Pháp ghi nhận tỷ lệ nghỉ ốm cao nhất ở mức 5%, trong khi tỷ lệ của Thụy Điển thấp hơn, chỉ ở mức 3%."
+    ],
+    [
+      /^France's figures then decreased significantly and (?:<mark[^>]*>)?were surpassed by Sweden's in 1996(?:<\/mark>)? before stabilizing at close to 3% for the rest of the period\.?$/i,
+      "Số liệu của Pháp sau đó giảm đáng kể và <mark>bị Thụy Điển vượt qua vào năm 1996</mark> trước khi ổn định ở mức gần 3% trong phần còn lại của giai đoạn."
+    ],
+    [
+      /^By contrast, after hovering at roughly 3% for the first six years, Sweden's figures increased dramatically, ending the period at nearly 4\.8%, (?:<mark[^>]*>)?a substantial rise of almost 60%(?:<\/mark>)? from its initial (?:point|level)\.?$/i,
+      "Trái lại, sau khi dao động ở mức khoảng 3% trong 6 năm đầu, số liệu của Thụy Điển đã tăng vọt, kết thúc giai đoạn ở mức gần 4.8%, <mark>mức tăng đáng kể gần 60%</mark> so với mốc ban đầu."
+    ],
+    [
+      /^Turning to the remaining nations, sickness absence levels in Germany were (?:<mark[^>]*>)?the lowest among the five(?:<\/mark>)?[\s,]*fluctuating around 1\.5% over the decade\.?$/i,
+      "Chuyển sang các quốc gia còn lại, mức độ nghỉ do ốm đau ở Đức là <mark>thấp nhất trong số năm nước</mark>, dao động quanh mức 1.5% trong suốt thập kỷ."
+    ],
+    [
+      /^The UK's figures also remained relatively stable, but were slightly higher, at roughly 2\.5%, (?:<mark[^>]*>)?maintaining a consistent gap of about 1% above Germany(?:<\/mark>)? throughout (?:this|the) period\.?$/i,
+      "Các con số của Vương quốc Anh cũng giữ ở mức tương đối ổn định, nhưng cao hơn một chút, ở mức khoảng 2.5%, <mark>duy trì khoảng cách ổn định khoảng 1% phía trên Đức</mark> trong suốt giai đoạn này."
+    ],
 
-    // --- Task 2 Advertising Essay Full Sentences ---
-    [/The prevalence of advertising in modern society has escalated significantly, fueling a contentious debate regarding its overall societal impact\./gi, "Sự phổ biến của quảng cáo trong xã hội hiện đại đã gia tăng đáng kể, kích hoạt một cuộc tranh luận sôi nổi về tác động tổng thể của nó đối với xã hội."],
-    [/While commercial promotion offers clear economic utility and consumer guidance, I firmly believe that these benefits are outweighed by severe invasions of privacy and the promotion of unhealthy consumerism\./gi, "Mặc dù quảng cáo thương mại mang lại tiện ích kinh tế rõ ràng và sự hướng dẫn cho người tiêu dùng, tôi tin chắc rằng những lợi ích này bị lấn áp bởi sự xâm phạm nghiêm trọng đến quyền riêng tư và việc thúc đẩy chủ nghĩa tiêu dùng không lành mạnh."],
-    [/On the one hand, advertising functions as a vital engine for commerce by bridging the gap between producers and buyers\./gi, "Một mặt, quảng cáo đóng vai trò như một động cơ thiết yếu cho thương mại bằng cách cầu nối khoảng cách giữa nhà sản xuất và người mua."],
-    [/Commercial campaigns allow enterprises to broadcast product specifications, pricing models, and core innovations to a broad demographic\./gi, "Các chiến dịch thương mại cho phép doanh nghiệp truyền tải thông số sản phẩm, mô hình giá cả và các cải tiến cốt lõi đến đông đảo công chúng."],
-    [/This systematic exposure not only drives corporate growth and market competition, but it also equips shoppers with practical data necessary to evaluate choices and secure favorable value\./gi, "Sự tiếp cận có hệ thống này không chỉ thúc đẩy sự tăng trưởng của doanh nghiệp và cạnh tranh thị trường, mà còn trang bị cho người mua dữ liệu thực tế cần thiết để đánh giá lựa chọn và đạt được giá trị tối ưu."],
-    [/Consequently, the informational framework of marketing can optimize household budgeting and consumer awareness under optimal conditions\./gi, "Do đó, khung thông tin của tiếp thị có thể tối ưu hóa việc quản lý ngân sách gia đình và nhận thức của người tiêu dùng trong điều kiện tối ưu."],
-    [/On the other hand, the pervasive nature of contemporary marketing introduces profound drawbacks concerning personal boundaries and psychological well-being\./gi, "Mặt khác, tính chất lan rộng của tiếp thị hiện đại mang lại những hạn chế sâu sắc liên quan đến ranh giới cá nhân và sức khỏe tâm lý."],
-    [/The expansion of data-driven tracking mechanisms enables digital platforms to harvest confidential user metrics without explicit consent, intensifying anxieties over digital surveillance and data security\./gi, "Sự phát triển của các cơ chế theo dõi dựa trên dữ liệu cho phép các nền tảng kỹ thuật số thu thập chỉ số người dùng bảo mật mà không có sự đồng ý rõ ràng, làm gia tăng lo ngại về sự giám sát kỹ thuật số và an toàn dữ liệu."],
-    [/Furthermore, aggressive psychological tactics—such as artificial scarcity and countdown discounts—exploit cognitive vulnerabilities\./gi, "Hơn nữa, các chiến thuật tâm lý dồn dập—như khan hiếm nhân tạo và giảm giá đếm ngược—khai thác các điểm yếu trong nhận thức."],
-    [/These methods induce a sense of urgency that overrides rational reflection, compelling individuals toward compulsive spending and materialism rather than genuine utility\./gi, "Những phương pháp này tạo ra cảm giác cấp bách đè bẹp suy nghĩ thấu đáo, thúc ép cá nhân hướng tới việc chi tiêu bốc đồng và chủ nghĩa vật chất thay vì tiện ích thực sự."],
-    [/In summary, although advertising contributes positively to market communication and business expansion, its intrusive data collection practices and psychological manipulation present serious social costs\./gi, "Tóm lại, mặc dù quảng cáo đóng góp tích cực vào giao tiếp thị trường và mở rộng kinh doanh, các hành vi thu thập dữ liệu xâm nhập và thao túng tâm lý của nó tạo ra những chi phí xã hội nghiêm trọng."],
-    [/Ultimately, the detrimental consequences exerted on individual autonomy and privacy render this modern phenomenon a negative development\./gi, "Cuối cùng, những hậu quả bất lợi gây ra đối với quyền tự quyết cá nhân và quyền riêng tư khiến hiện tượng hiện đại này trở thành một sự phát triển tiêu cực."],
+    // Task 2 Lifestyle / Traditional Values Essay Sentences
+    [
+      /^Many young people today feel that the lifestyle ideals cherished by older generations no longer align with the realities of modern life\.?$/i,
+      "Nhiều người trẻ ngày nay cảm thấy rằng những lý tưởng sống được các thế hệ đi trước trân trọng không còn phù hợp với thực tế của cuộc sống hiện đại."
+    ],
+    [
+      /^While some traditional values may seem out of step with contemporary norms, I believe that the younger generation still has much to gain from the enduring wisdom of the past\.?$/i,
+      "Mặc dù một số giá trị truyền thống có vẻ không còn phù hợp với các chuẩn mực hiện đại, tôi tin rằng thế hệ trẻ vẫn có thể học hỏi được rất nhiều từ trí tuệ trường tồn của quá khứ."
+    ],
+    [
+      /^Admittedly, (?:the rapid pace of modern life and evolving expectations|one might argue that today's fast-paced lifestyle, coupled with rapidly evolving expectations,) have led some to believe that traditional ways of living, thinking, and behaving are now obsolete\.?$/i,
+      "Phải thừa nhận rằng, nhịp sống hối hả của cuộc sống hiện đại cùng với những kỳ vọng không ngừng thay đổi đã khiến nhiều người tin rằng các phương thức sống, suy nghĩ và ứng xử truyền thống giờ đây đã trở nên lỗi thời."
+    ],
+    [
+      /^For example, the expectation of maintaining strict boundaries between work and personal life has become increasingly unrealistic in today's world, where the line separating the two has gradually evaporated, and the notion of integrating work into one's personal routine is gaining widespread traction\.?$/i,
+      "Chẳng hạn, kỳ vọng duy trì ranh giới nghiêm ngặt giữa công việc và cuộc sống cá nhân đã trở nên ngày càng phi thực tế trong thế giới ngày nay, nơi ranh giới phân chia giữa cả hai đã dần biến mất, và quan điểm kết hợp công việc vào sinh hoạt cá nhân hàng ngày đang nhận được sự đón nhận rộng rãi."
+    ],
+    [
+      /^Many older people understandably view this shift with concern, lamenting that it comes at the expense of time for family, friendships, and personal well-being\.?$/i,
+      "Nhiều người lớn tuổi có lý do để nhìn nhận sự chuyển dịch này với sự lo ngại, tiếc nuối rằng điều đó phải đánh đổi bằng thời gian dành cho gia đình, tình bạn và sức khỏe bản thân."
+    ],
+    [
+      /^Yet, younger individuals tend to see work-life integration as a necessary adaptation to today's highly competitive and demanding environment\.?$/i,
+      "Tuy nhiên, giới trẻ lại có xu hướng coi sự giao thoa công việc - cuộc sống là một sự thích nghi tất yếu với môi trường đầy cạnh tranh và đòi hỏi cao ngày nay."
+    ],
+    [
+      /^From their perspective, attempting to uphold the kind of work-life balance that their parents achieved decades ago could actually hold them back from climbing the corporate ladder and progressing in their careers\.?$/i,
+      "Dưới góc nhìn của họ, việc cố gắng duy trì sự cân bằng công việc - cuộc sống mà cha mẹ họ đã đạt được nhiều thập kỷ trước thực sự có thể cản bước họ thăng tiến trên con đường sự nghiệp."
+    ],
+    [
+      /^While many traditional values appear to be at odds with modern norms and expectations, I am strongly convinced that it would be a stretch to say that young people cannot gain anything from the way old people live, think, and behave\.?$/i,
+      "Mặc dù nhiều giá trị truyền thống có vẻ mâu thuẫn với các chuẩn mực và kỳ vọng hiện đại, tôi hoàn toàn thuyết phục rằng sẽ là quá đà nếu nói rằng người trẻ không thể học hỏi được gì từ cách người lớn tuổi sống, suy nghĩ và ứng xử."
+    ],
+    [
+      /^Take, for instance, the value of work-life balance\.?$/i,
+      "Hãy lấy ví dụ về giá trị của sự cân bằng công việc - cuộc sống."
+    ],
+    [
+      /^Beneath this concept lies a durable principle: holistic well-being demands deliberate time for family, rest, and self-reflection\.?$/i,
+      "Ẩn đằng sau khái niệm này là một nguyên lý bền vững: sự phát triển toàn diện đòi hỏi thời gian dành riêng cho gia đình, nghỉ ngơi và tự ngẫm suy."
+    ],
+    [
+      /^Young professionals who blur lines too freely, despite achieving significant career milestones, often find themselves grappling with burnout, digital fatigue, and strained relationships\.?$/i,
+      "Những người đi làm trẻ tuổi làm mờ ranh giới quá thoải mái, dù đạt được những cột mốc sự nghiệp đáng kể, vẫn thường thấy mình phải đối mặt với tình trạng kiệt sức, mệt mỏi vì công nghệ và các mối quan hệ bị rạn nứt."
+    ],
+    [
+      /^Ironically, these are the very consequences the older insistence on clear demarcation aimed to pre-empt\.?$/i,
+      "Mỉa mai thay, đây chính là những hậu quả mà sự kiên trì của thế hệ đi trước về việc phân chia ranh giới rõ ràng nhằm mục đích ngăn chặn từ trước."
+    ],
+    [
+      /^While the form of such values must evolve, the underlying value of maintaining equilibrium among multiple life domains retains its relevance\.?$/i,
+      "Mặc dù hình thức của các giá trị đó phải tiến hóa, giá trị cốt lõi của việc duy trì sự cân bằng giữa nhiều khía cạnh cuộc sống vẫn giữ nguyên giá trị."
+    ],
+    [
+      /^This is just one among countless examples showing how the younger generation can still draw valuable wisdom from those who came before them\.?$/i,
+      "Đây chỉ là một trong vô số ví dụ cho thấy thế hệ trẻ vẫn có thể rút ra những trí tuệ vô giá từ những người đi trước."
+    ],
+    [
+      /^In conclusion, while on the surface traditional ways of life appear not to mesh with the tempo of contemporary life, I believe that the core insights embedded in them remain invaluable\.?$/i,
+      "Tóm lại, mặc dù về mặt bề ngoài các phương thức sống truyền thống có vẻ không ăn khớp với nhịp sống của cuộc sống đương đại, tôi tin rằng những tri thức cốt lõi ẩn chứa trong đó vẫn giữ nguyên giá trị vô giá."
+    ],
+    [
+      /^Younger generations can derive significant benefits from critically engaging with the wisdom of their elders, adapting enduring principles to navigate the fluid and often challenging realities of the modern world\.?$/i,
+      "Thế hệ trẻ có thể thu nhận những lợi ích to lớn từ việc tiếp thu có chọn lọc trí tuệ của người lớn tuổi, thích ứng các nguyên lý trường tồn để chèo lái qua những thực tế biến động và đầy thách thức của thế giới hiện đại."
+    ],
 
-    // --- Sub-clauses and Phrases ---
-    [/Many young people today feel that/gi, "Nhiều người trẻ ngày nay cảm thấy rằng"],
-    [/the lifestyle ideals cherished by older generations/gi, "những lý tưởng sống được các thế hệ đi trước trân trọng"],
-    [/no longer align with the realities of modern life/gi, "không còn phù hợp với thực tế của cuộc sống hiện đại"],
-    [/While some traditional values may seem out of step with contemporary norms/gi, "Mặc dù một số giá trị truyền thống có vẻ không còn phù hợp với các chuẩn mực hiện đại"],
-    [/I believe that the younger generation still has much to gain from the enduring wisdom of the past/gi, "tôi tin rằng thế hệ trẻ vẫn có thể học hỏi được rất nhiều từ trí tuệ trường tồn của quá khứ"],
-    [/Admittedly, one might argue that/gi, "Phải thừa nhận rằng, có người sẽ cho rằng"],
-    [/today's fast-paced lifestyle, coupled with rapidly evolving expectations/gi, "nhịp sống hối hả ngày nay, cùng với những kỳ vọng thay đổi nhanh chóng"],
-    [/has rendered traditional ways of living, thinking, and behaving obsolete/gi, "đã khiến những phương thức sống, suy nghĩ và ứng xử truyền thống trở nên lỗi thời"],
-    [/the expectation of maintaining strict boundaries between work and personal life/gi, "kỳ vọng duy trì ranh giới nghiêm ngặt giữa công việc và cuộc sống cá nhân"],
-    [/has become increasingly unrealistic in today's hyper-connected world/gi, "đã trở nên ngày càng phi thực tế trong thế giới kết nối siêu tốc ngày nay"],
-    [/where the line separating the two has gradually evaporated/gi, "nơi ranh giới phân chia giữa hai bên đã dần tan biến"],
-    [/and the notion of integrating work into one's personal routine is gaining widespread traction/gi, "và quan điểm kết hợp công việc vào sinh hoạt cá nhân đang nhận được sự đón nhận rộng rãi"],
-    [/As digital technology blurs these lines/gi, "Khi công nghệ kỹ thuật số làm mờ đi những ranh giới này"],
-    [/integrating professional demands into one's daily routine/gi, "việc kết hợp các yêu cầu công việc vào sinh hoạt hàng ngày"],
-    [/has gained widespread traction/gi, "đã trở nên vô cùng phổ biến"],
-    [/Many older people understandably view this shift with concern/gi, "Nhiều người lớn tuổi có lý do để nhìn nhận sự chuyển dịch này với sự lo ngại"],
-    [/lamenting that it comes at the expense of time for family, friendships, and personal well-being/gi, "tiếc nuối rằng điều đó phải đánh đổi bằng thời gian dành cho gia đình, tình bạn và sức khỏe bản thân"],
-    [/Yet, younger individuals tend to see work-life integration as a necessary adaptation/gi, "Tuy nhiên, giới trẻ lại có xu hướng coi sự giao thoa công việc - cuộc sống là một sự thích nghi tất yếu"],
-    [/to today's highly competitive environment/gi, "với môi trường cạnh tranh khốc liệt ngày nay"],
-    [/From their perspective,/gi, "Dưới góc nhìn của họ,"],
-    [/attempting to uphold the kind of rigid work-life balance/gi, "việc cố gắng duy trì sự cân bằng công việc - cuộc sống cứng nhắc"],
-    [/that their parents achieved decades ago/gi, "mà cha mẹ họ đã đạt được nhiều thập kỷ trước"],
-    [/could actually hold them back from climbing the corporate ladder and progressing in their careers/gi, "thực sự có thể cản bước họ thăng tiến trên con đường sự nghiệp"],
-    [/While many traditional values appear to be at odds with modern norms/gi, "Mặc dù nhiều giá trị truyền thống có vẻ mâu thuẫn với các chuẩn mực hiện đại"],
-    [/I am strongly convinced that/gi, "tôi hoàn toàn thuyết phục rằng"],
-    [/it would be a stretch to say that/gi, "sẽ là quá đà nếu nói rằng"],
-    [/young people cannot gain anything from older generations/gi, "người trẻ không thể học hỏi được gì từ các thế hệ trước"],
-    [/This divergence in perspective is vividly/gi, "Sự khác biệt trong quan điểm này thể hiện rõ nét"],
-
-    // --- Common IELTS Task 1 & Task 2 Templates & Clauses ---
-    [/The two maps illustrate/gi, "Hai bản đồ minh họa"],
-    [/The chart illustrates/gi, "Biểu đồ minh họa"],
-    [/The graph shows/gi, "Đồ thị thể hiện"],
-    [/The diagram shows/gi, "Sơ đồ thể hiện"],
-    [/how the city of Nelson has changed from 2000 to the present day/gi, "sự thay đổi của thành phố Nelson từ năm 2000 đến nay"],
-    [/how the city of (\w+) has changed/gi, "sự thay đổi của thành phố $1"],
-    [/from (\d{4}) to the present day/gi, "từ năm $1 đến nay"],
-    [/from (\d{4}) to (\d{4})/gi, "từ năm $1 đến năm $2"],
-    [/Overall, while/gi, "Nhìn chung, trong khi"],
-    [/Overall,/gi, "Nhìn chung,"],
-    [/the city centre itself/gi, "khu vực trung tâm thành phố"],
-    [/has remained/gi, "vẫn giữ nguyên"],
-    [/largely unchanged in size/gi, "hầu như không thay đổi về diện tích"],
-    [/significant developments have occurred/gi, "đã diễn ra những phát triển đáng kể"],
-    [/in its surrounding areas/gi, "ở các khu vực xung quanh"],
-    [/particularly in terms of/gi, "đặc biệt là về"],
-    [/transport infrastructure/gi, "hạ tầng giao thông"],
-    [/commercial facilities/gi, "các cơ sở thương mại"],
-    [/recreational spaces/gi, "không gian giải trí"],
-    [/To the north of the city/gi, "Về phía bắc của thành phố"],
-    [/In the southern part of the city/gi, "Ở phần phía nam của thành phố"],
-    [/In the northern part of the city/gi, "Ở phần phía bắc của thành phố"],
-    [/the university has remained/gi, "trường đại học vẫn được giữ nguyên"],
-    [/now flanked by/gi, "hiện nằm cạnh"],
-    [/a new hall of residence/gi, "một ký túc xá mới"],
-    [/to its west/gi, "về phía tây"],
-    [/and a new shopping centre/gi, "và một trung tâm thương mại mới"],
-    [/to the north-east/gi, "về phía đông bắc"],
-    [/where a woodland area was formerly located/gi, "nơi từng là khu rừng cây"],
-    [/The train station, previously located in the west/gi, "Ga tàu, trước đây nằm ở phía tây"],
-    [/has been relocated to/gi, "đã được di dời đến"],
-    [/the area immediately south of the university/gi, "khu vực ngay phía nam trường đại học"],
-    [/and is now connected to/gi, "và hiện kết nối với"],
-    [/a newly developed tramline/gi, "tuyến tàu điện mới được xây dựng"],
-    [/running along the eastern side of the campus/gi, "chạy dọc theo phía đông của khuôn viên"],
-    [/In addition,/gi, "Thêm vào đó,"],
-    [/a bike rental scheme has been introduced/gi, "dịch vụ cho thuê xe đạp đã được đưa vào sử dụng"],
-    [/throughout the city centre/gi, "toàn trung tâm thành phố"],
-    [/improving local transportation/gi, "nâng cao chất lượng giao thông địa phương"],
-    [/the old market in the south-west/gi, "khu chợ cũ ở phía tây nam"],
-    [/has been replaced by a new shop/gi, "đã được thay thế bằng một cửa hàng mới"],
-    [/while a modern covered market/gi, "trong khi một khu chợ có mái che hiện đại"],
-    [/has been constructed further east/gi, "đã được xây dựng xa hơn về phía đông"],
-    [/The main road separating the city centre and the port area/gi, "Tuyến đường chính phân chia trung tâm thành phố và khu vực cảng"],
-    [/which was once accessible by car/gi, "nơi từng cho phép xe hơi đi vào"],
-    [/has been converted into a pedestrian-only zone/gi, "đã được chuyển đổi thành khu phố dành riêng cho người đi bộ"],
-    [/Furthermore,/gi, "Hơn nữa,"],
-    [/new commercial amenities, including a restaurant and entertainment venues/gi, "các tiện ích thương mại mới, bao gồm nhà hàng và các địa điểm giải trí"],
-    [/bars and clubs/gi, "quán bar và câu lạc bộ"],
-    [/have been added along the waterfront/gi, "đã được bổ sung dọc theo bờ sông/bờ biển"],
-    [/making the area more attractive to both residents and visitors/gi, "giúp khu vực trở nên hấp dẫn hơn đối với cả cư dân và du khách"],
-
-    [/It is often argued that/gi, "Thường có ý kiến cho rằng"],
-    [/It is undeniable that/gi, "Không thể phủ nhận rằng"],
-    [/There is no doubt that/gi, "Không còn nghi ngờ gì khi"],
-    [/One of the main reasons is that/gi, "Một trong những lý do chính là"],
-    [/Another key factor to consider is/gi, "Một yếu tố quan trọng khác cần xem xét là"],
-    [/This leads to/gi, "Điều này dẫn đến"],
-    [/As a consequence,/gi, "Kết quả là,"],
-    [/In contrast,/gi, "Ngược lại,"],
-    [/On the contrary,/gi, "Trái lại,"],
-    [/To illustrate this point,/gi, "Để minh họa cho điều này,"],
-    [/A prime example of this is/gi, "Một ví dụ điển hình cho điều này là"],
-    [/From an economic standpoint,/gi, "Từ góc độ kinh tế,"],
-    [/In terms of social development,/gi, "Về mặt phát triển xã hội,"],
-    [/In conclusion, although/gi, "Tóm lại, mặc dù"],
-    [/In summary, while/gi, "Tóm lại, trong khi"],
-    [/I would argue that/gi, "Tôi cho rằng"],
-    [/I firmly believe that/gi, "Tôi tin chắc rằng"],
-    [/It is argued that/gi, "Nhiều người cho rằng"],
-    [/Some people believe that/gi, "Một số người tin rằng"],
-    [/On the one hand,/gi, "Một mặt,"],
-    [/On the other hand,/gi, "Mặt khác,"],
-    [/In conclusion,/gi, "Tóm lại,"],
-    [/This essay agrees that/gi, "Bài luận này đồng ý rằng"],
-    [/This essay disagrees that/gi, "Bài luận này không đồng ý rằng"],
-    [/For instance,/gi, "Ví dụ,"],
-    [/For example,/gi, "Chẳng hạn,"],
-    [/Consequently,/gi, "Do đó,"],
-    [/Therefore,/gi, "Vì vậy,"],
-    [/However,/gi, "Tuy nhiên,"],
-    [/Moreover,/gi, "Hơn nữa,"],
-
-    // --- Key Phrases & Noun Chunks ---
-    [/work-life balance/gi, "sự cân bằng công việc - cuộc sống"],
-    [/work-life integration/gi, "sự giao thoa công việc - cuộc sống"],
-    [/older generations/gi, "các thế hệ đi trước"],
-    [/younger generation/gi, "thế hệ trẻ"],
-    [/young people/gi, "người trẻ"],
-    [/older people/gi, "người lớn tuổi"],
-    [/traditional values/gi, "các giá trị truyền thống"],
-    [/modern norms/gi, "các chuẩn mực hiện đại"],
-    [/fast-paced lifestyle/gi, "lối sống hối hả"],
-    [/digital technology/gi, "công nghệ kỹ thuật số"],
-    [/competitive environment/gi, "môi trường cạnh tranh"],
-    [/corporate ladder/gi, "nấc thang sự nghiệp"],
-    [/personal well-being/gi, "sức khỏe và hạnh phúc cá nhân"],
-    [/at the expense of/gi, "phải đánh đổi bằng"],
-    [/climbing the corporate ladder/gi, "thăng tiến trên con đường sự nghiệp"],
-    [/progressing in their careers/gi, "phát triển sự nghiệp của họ"],
-    [/at odds with/gi, "mâu thuẫn với"],
-    [/divergence in perspective/gi, "sự khác biệt trong quan điểm"],
-    [/enduring wisdom/gi, "trí tuệ trường tồn"],
-    [/contemporary norms/gi, "chuẩn mực đương đại"],
-    [/hyper-connected world/gi, "thế giới kết nối siêu tốc"],
-    [/widespread traction/gi, "sự đón nhận rộng rãi"],
-    [/necessary adaptation/gi, "sự thích nghi cần thiết"]
+    // Task 2 Advertising Essay Sentences
+    [
+      /^The prevalence of advertising in modern society has escalated significantly, fueling a contentious debate regarding its overall societal impact\.?$/i,
+      "Sự phổ biến của quảng cáo trong xã hội hiện đại đã gia tăng đáng kể, kích hoạt một cuộc tranh luận sôi nổi về tác động tổng thể của nó đối với xã hội."
+    ],
+    [
+      /^While commercial promotion offers clear economic utility and consumer guidance, I firmly believe that these benefits are outweighed by severe invasions of privacy and the promotion of unhealthy consumerism\.?$/i,
+      "Mặc dù quảng cáo thương mại mang lại tiện ích kinh tế rõ ràng và sự hướng dẫn cho người tiêu dùng, tôi tin chắc rằng những lợi ích này bị lấn áp bởi sự xâm phạm nghiêm trọng đến quyền riêng tư và việc thúc đẩy chủ nghĩa tiêu dùng không lành mạnh."
+    ],
+    [
+      /^On the one hand, advertising functions as a vital engine for commerce by bridging the gap between producers and buyers\.?$/i,
+      "Một mặt, quảng cáo đóng vai trò như một động cơ thiết yếu cho thương mại bằng cách cầu nối khoảng cách giữa nhà sản xuất và người mua."
+    ],
+    [
+      /^Commercial campaigns allow enterprises to broadcast product specifications, pricing models, and core innovations to a broad demographic\.?$/i,
+      "Các chiến dịch thương mại cho phép doanh nghiệp truyền tải thông số sản phẩm, mô hình giá cả và các cải tiến cốt lõi đến đông đảo công chúng."
+    ],
+    [
+      /^This systematic exposure not only drives corporate growth and market competition, but it also equips shoppers with practical data necessary to evaluate choices and secure favorable value\.?$/i,
+      "Sự tiếp cận có hệ thống này không chỉ thúc đẩy sự tăng trưởng của doanh nghiệp và cạnh tranh thị trường, mà còn trang bị cho người mua dữ liệu thực tế cần thiết để đánh giá lựa chọn và đạt được giá trị tối ưu."
+    ],
+    [
+      /^Consequently, the informational framework of marketing can optimize household budgeting and consumer awareness under optimal conditions\.?$/i,
+      "Do đó, khung thông tin của tiếp thị có thể tối ưu hóa việc quản lý ngân sách gia đình và nhận thức của người tiêu dùng trong điều kiện tối ưu."
+    ],
+    [
+      /^On the other hand, the pervasive nature of contemporary marketing introduces profound drawbacks concerning personal boundaries and psychological well-being\.?$/i,
+      "Mặt khác, tính chất lan rộng của tiếp thị hiện đại mang lại những hạn chế sâu sắc liên quan đến ranh giới cá nhân và sức khỏe tâm lý."
+    ],
+    [
+      /^The expansion of data-driven tracking mechanisms enables digital platforms to harvest confidential user metrics without explicit consent, intensifying anxieties over digital surveillance and data security\.?$/i,
+      "Sự phát triển của các cơ chế theo dõi dựa trên dữ liệu cho phép các nền tảng kỹ thuật số thu thập chỉ số người dùng bảo mật mà không có sự đồng ý rõ ràng, làm gia tăng lo ngại về sự giám sát kỹ thuật số và an toàn dữ liệu."
+    ],
+    [
+      /^Furthermore, aggressive psychological tactics—such as artificial scarcity and countdown discounts—exploit cognitive vulnerabilities\.?$/i,
+      "Hơn nữa, các chiến thuật tâm lý dồn dập—như khan hiếm nhân tạo và giảm giá đếm ngược—khai thác các điểm yếu trong nhận thức."
+    ],
+    [
+      /^These methods induce a sense of urgency that overrides rational reflection, compelling individuals toward compulsive spending and materialism rather than genuine utility\.?$/i,
+      "Những phương pháp này tạo ra cảm giác cấp bách đè bẹp suy nghĩ thấu đáo, thúc ép cá nhân hướng tới việc chi tiêu bốc đồng và chủ nghĩa vật chất thay vì tiện ích thực sự."
+    ],
+    [
+      /^In summary, although advertising contributes positively to market communication and business expansion, its intrusive data collection practices and psychological manipulation present serious social costs\.?$/i,
+      "Tóm lại, mặc dù quảng cáo đóng góp tích cực vào giao tiếp thị trường và mở rộng kinh doanh, các hành vi thu thập dữ liệu xâm nhập và thao túng tâm lý của nó tạo ra những chi phí xã hội nghiêm trọng."
+    ],
+    [
+      /^Ultimately, the detrimental consequences exerted on individual autonomy and privacy render this modern phenomenon a negative development\.?$/i,
+      "Cuối cùng, những hậu quả bất lợi gây ra đối với quyền tự quyết cá nhân và quyền riêng tư khiến hiện tượng hiện đại này trở thành một sự phát triển tiêu cực."
+    ]
   ];
 
-  const translateChunk = (str: string): string => {
-    let result = str;
-    for (const [pattern, repl] of dictionary) {
+  // Sub-dictionary for phrases, clauses, words, connectors
+  const subDictionary: [RegExp, string][] = [
+    // --- Specific Phrases with Mark Tags or Plain ---
+    [/(?:<mark[^>]*>)?Focusing on the highest rates(?:<\/mark>)?/gi, "<mark>Tập trung vào các tỷ lệ cao nhất</mark>"],
+    [/(?:<mark[^>]*>)?Focusing on the highest(?:<\/mark>)?/gi, "<mark>Tập trung vào các tỷ lệ cao nhất</mark>"],
+    [/(?:<mark[^>]*>)?reaching approximately 5\.3%(?:<\/mark>)?/gi, "<mark>đạt khoảng 5.3%</mark>"],
+    [/(?:<mark[^>]*>)?reaching approximately(?:<\/mark>)?/gi, "<mark>đạt khoảng</mark>"],
+    [/(?:<mark[^>]*>)?reaching roughly(?:<\/mark>)?/gi, "<mark>đạt khoảng</mark>"],
+    [/(?:<mark[^>]*>)?the figure(?:<\/mark>)?/gi, "<mark>con số này</mark>"],
+    [/(?:<mark[^>]*>)?the figures(?:<\/mark>)?/gi, "<mark>các con số</mark>"],
+    [/(?:<mark[^>]*>)?a clear divergence in trends was observed(?:<\/mark>)?/gi, "<mark>đã ghi nhận sự phân hóa rõ rệt về xu hướng</mark>"],
+    [/(?:<mark[^>]*>)?experienced contrasting trends(?:<\/mark>)?/gi, "<mark>trải qua những xu hướng trái ngược nhau</mark>"],
+    [/(?:<mark[^>]*>)?were surpassed by Sweden's in 1996(?:<\/mark>)?/gi, "<mark>bị Thụy Điển vượt qua vào năm 1996</mark>"],
+    [/(?:<mark[^>]*>)?a substantial rise of almost 60%(?:<\/mark>)?/gi, "<mark>mức tăng đáng kể gần 60%</mark>"],
+    [/(?:<mark[^>]*>)?the lowest among the five(?:<\/mark>)?/gi, "<mark>thấp nhất trong số năm nước</mark>"],
+    [/(?:<mark[^>]*>)?maintaining a consistent gap of about 1% above Germany(?:<\/mark>)?/gi, "<mark>duy trì khoảng cách ổn định khoảng 1% phía trên Đức</mark>"],
+    [/(?:<mark[^>]*>)?the proportion of employees who took at least a day of sick leave(?:<\/mark>)?/gi, "<mark>tỷ lệ nhân viên nghỉ ốm ít nhất một ngày</mark>"],
+    [/(?:<mark[^>]*>)?the lowest, but most stable, figures(?:<\/mark>)?/gi, "<mark>những con số thấp nhất nhưng ổn định nhất</mark>"],
+
+    // --- Sub-clauses and Phrases ---
+    [/levels of sickness absence in the Netherlands and Sweden showed a general upward trend/gi, "mức độ nghỉ do ốm đau ở Hà Lan và Thụy Điển có xu hướng tăng tổng thể"],
+    [/levels of sickness absence in/gi, "mức độ nghỉ do ốm đau ở"],
+    [/levels of sickness absence/gi, "mức độ nghỉ do ốm đau"],
+    [/sickness absence levels in/gi, "mức độ nghỉ do ốm đau ở"],
+    [/sickness absence levels/gi, "mức độ nghỉ do ốm đau"],
+    [/illness absence rates/gi, "tỷ lệ nghỉ ốm"],
+    [/absence rates/gi, "tỷ lệ nghỉ ốm"],
+    [/absence rate/gi, "tỷ lệ nghỉ ốm"],
+    [/sickness absence/gi, "nghỉ do ốm đau"],
+    [/sick leave/gi, "nghỉ ốm"],
+    [/took at least a day of sick leave/gi, "nghỉ ốm ít nhất một ngày"],
+
+    [/in all years,/gi, "trong tất cả các năm,"],
+    [/in all years/gi, "trong tất cả các năm"],
+    [/all years/gi, "tất cả các năm"],
+    [/except 1991, when the rate was around/gi, "ngoại trừ năm 1991, khi tỷ lệ này ở mức khoảng"],
+    [/except 1991,/gi, "ngoại trừ năm 1991,"],
+    [/except 1991/gi, "ngoại trừ năm 1991"],
+    [/except/gi, "ngoại trừ"],
+
+    [/slightly below France's 5%/gi, "thấp hơn một chút so với 5% của Pháp"],
+    [/slightly below/gi, "thấp hơn một chút so với"],
+    [/slightly above/gi, "cao hơn một chút so với"],
+
+    [/This rate then increased to a peak of roughly/gi, "Tỷ lệ này sau đó tăng lên mức đỉnh khoảng"],
+    [/This rate then increased/gi, "Tỷ lệ này sau đó tăng"],
+    [/This rate/gi, "Tỷ lệ này"],
+    [/then increased/gi, "sau đó tăng"],
+    [/to a peak of roughly/gi, "lên mức đỉnh khoảng"],
+    [/to a peak of/gi, "lên mức đỉnh"],
+    [/a peak of/gi, "mức đỉnh"],
+
+    [/before falling sharply to a low of about/gi, "trước khi giảm mạnh xuống mức thấp khoảng"],
+    [/falling sharply to a low of/gi, "giảm mạnh xuống mức thấp"],
+    [/falling sharply/gi, "giảm mạnh"],
+    [/to a low of/gi, "xuống mức thấp"],
+
+    [/From there,/gi, "Từ đó,"],
+    [/From there/gi, "Từ đó"],
+
+    [/quickly climbed back to its earlier peak by/gi, "nhanh chóng tăng trở lại mức đỉnh trước đó vào"],
+    [/climbed back to its earlier peak/gi, "tăng trở lại mức đỉnh trước đó"],
+    [/earlier peak/gi, "mức đỉnh trước đó"],
+
+    [/reaching approximately/gi, "đạt khoảng"],
+    [/reaching roughly/gi, "đạt khoảng"],
+    [/reaching/gi, "đạt"],
+
+    [/In 1991, France recorded the highest absence rate at 5%, while Sweden's rate was lower, at only 3%/gi, "Năm 1991, Pháp ghi nhận tỷ lệ nghỉ ốm cao nhất ở mức 5%, trong khi tỷ lệ của Thụy Điển thấp hơn, chỉ ở mức 3%"],
+    [/recorded the highest absence rate at/gi, "ghi nhận tỷ lệ nghỉ ốm cao nhất ở mức"],
+    [/while Sweden's rate was lower, at only/gi, "trong khi tỷ lệ của Thụy Điển thấp hơn, chỉ ở mức"],
+    [/was lower, at only/gi, "thấp hơn, chỉ ở mức"],
+
+    [/France's figures then decreased significantly and were surpassed by Sweden's in 1996/gi, "Số liệu của Pháp sau đó giảm đáng kể và bị Thụy Điển vượt qua vào năm 1996"],
+    [/decreased significantly and were surpassed by/gi, "giảm đáng kể và bị vượt qua bởi"],
+    [/were surpassed by Sweden's in 1996/gi, "bị Thụy Điển vượt qua vào năm 1996"],
+    [/were surpassed by/gi, "bị vượt qua bởi"],
+    [/before stabilizing at close to/gi, "trước khi ổn định ở mức gần"],
+    [/stabilizing at close to/gi, "ổn định ở mức gần"],
+    [/for the rest of the period/gi, "trong phần còn lại của giai đoạn"],
+
+    [/By contrast, after hovering at roughly 3% for the first six years,/gi, "Trái lại, sau khi dao động ở mức khoảng 3% trong 6 năm đầu,"],
+    [/after hovering at roughly/gi, "sau khi dao động ở mức khoảng"],
+    [/after hovering at/gi, "sau khi duy trì xoay quanh mức"],
+    [/hovering at roughly/gi, "dao động ở mức khoảng"],
+    [/hovering at/gi, "dao động ở mức"],
+    [/for the first six years/gi, "trong 6 năm đầu"],
+    [/Sweden's figures increased dramatically,/gi, "số liệu của Thụy Điển đã tăng vọt,"],
+    [/increased dramatically,/gi, "đã tăng vọt,"],
+    [/increased dramatically/gi, "đã tăng vọt"],
+    [/ending the period at nearly/gi, "kết thúc giai đoạn ở mức gần"],
+    [/ending the period at/gi, "kết thúc giai đoạn ở mức"],
+    [/a substantial rise of almost 60% from its initial point/gi, "mức tăng đáng kể gần 60% so với mốc ban đầu"],
+    [/a substantial rise of almost 60% from its initial level/gi, "mức tăng đáng kể gần 60% so với mức ban đầu"],
+    [/a substantial rise of almost/gi, "mức tăng đáng kể gần"],
+    [/substantial rise/gi, "mức tăng đáng kể"],
+    [/from its initial point/gi, "so với mốc ban đầu"],
+    [/from its initial level/gi, "so với mức ban đầu"],
+    [/from its initial/gi, "so với ban đầu"],
+    [/initial point/gi, "mốc ban đầu"],
+    [/initial level/gi, "mức ban đầu"],
+
+    [/Turning to the remaining nations,/gi, "Chuyển sang các quốc gia còn lại,"],
+    [/Turning to the remaining countries,/gi, "Chuyển sang các quốc gia còn lại,"],
+    [/Turning to the remaining figures,/gi, "Chuyển sang các số liệu còn lại,"],
+    [/Turning to the remaining/gi, "Chuyển sang phần còn lại của"],
+    [/Turning to/gi, "Chuyển sang"],
+
+    [/sickness absence levels in Germany were the lowest among the five,/gi, "mức độ nghỉ do ốm đau ở Đức là thấp nhất trong số năm nước,"],
+    [/were the lowest among the five,/gi, "là thấp nhất trong số năm nước,"],
+    [/were the lowest among the five/gi, "thấp nhất trong số năm nước"],
+    [/were the lowest among/gi, "thấp nhất trong số"],
+    [/were the highest among/gi, "cao nhất trong số"],
+    [/fluctuating around 1\.5% over the decade/gi, "dao động quanh mức 1.5% trong suốt thập kỷ"],
+    [/fluctuating around/gi, "dao động quanh mức"],
+    [/fluctuated around/gi, "dao động quanh mức"],
+    [/over the decade/gi, "trong suốt thập kỷ"],
+
+    [/The UK's figures also remained relatively stable, but were slightly higher, at roughly 2\.5%,/gi, "Các con số của Vương quốc Anh cũng giữ ở mức tương đối ổn định, nhưng cao hơn một chút, ở mức khoảng 2.5%,"],
+    [/figures also remained relatively stable/gi, "các con số cũng giữ ở mức tương đối ổn định"],
+    [/remained relatively stable/gi, "giữ ở mức tương đối ổn định"],
+    [/were slightly higher, at roughly/gi, "cao hơn một chút, ở mức khoảng"],
+    [/were slightly lower, at roughly/gi, "thấp hơn một chút, ở mức khoảng"],
+    [/maintaining a consistent gap of about 1% above Germany throughout this period/gi, "duy trì khoảng cách ổn định khoảng 1% phía trên Đức trong suốt giai đoạn này"],
+    [/maintaining a consistent gap of about 1% above Germany throughout the period/gi, "duy trì khoảng cách ổn định khoảng 1% phía trên Đức trong suốt giai đoạn này"],
+    [/maintaining a consistent gap of about 1% above Germany/gi, "duy trì khoảng cách ổn định khoảng 1% phía trên Đức"],
+    [/maintaining a consistent gap of/gi, "duy trì khoảng cách ổn định"],
+    [/above Germany throughout this period/gi, "phía trên Đức trong suốt giai đoạn này"],
+    [/above Germany/gi, "phía trên Đức"],
+    [/throughout this period/gi, "trong suốt giai đoạn này"],
+    [/throughout the period/gi, "trong suốt giai đoạn này"],
+
+    // --- Entity & Country Names ---
+    [/The UK's figures/gi, "Số liệu của Vương quốc Anh"],
+    [/The UK's figure/gi, "Số liệu của Vương quốc Anh"],
+    [/UK's figures/gi, "Số liệu của Vương quốc Anh"],
+    [/Germany's figures/gi, "Số liệu của Đức"],
+    [/France's figures/gi, "Số liệu của Pháp"],
+    [/Sweden's figures/gi, "Số liệu của Thụy Điển"],
+    [/the Netherlands' figures/gi, "Số liệu của Hà Lan"],
+    [/France's rate/gi, "tỷ lệ của Pháp"],
+    [/Sweden's rate/gi, "tỷ lệ của Thụy Điển"],
+    [/Germany's rate/gi, "tỷ lệ của Đức"],
+    [/the Netherlands' rate/gi, "tỷ lệ của Hà Lan"],
+    [/the UK's rate/gi, "tỷ lệ của Vương quốc Anh"],
+    [/France's/gi, "của Pháp"],
+    [/Sweden's/gi, "của Thụy Điển"],
+    [/Germany's/gi, "của Đức"],
+    [/the UK's/gi, "của Vương quốc Anh"],
+    [/the Netherlands's/gi, "của Hà Lan"],
+    [/the Netherlands'/gi, "của Hà Lan"],
+    [/the Netherlands/gi, "Hà Lan"],
+    [/Germany/gi, "Đức"],
+    [/France/gi, "Pháp"],
+    [/Sweden/gi, "Thụy Điển"],
+    [/the UK/gi, "Vương quốc Anh"],
+
+    // --- Connectors, Pronouns, and Common Vocabulary ---
+    [/\bdeclined significantly\b/gi, "giảm đáng kể"],
+    [/\bdeclined substantially\b/gi, "giảm đáng kể"],
+    [/\bdeclined sharply\b/gi, "giảm mạnh"],
+    [/\bdeclined slightly\b/gi, "giảm nhẹ"],
+    [/\bdeclined\b/gi, "giảm"],
+    [/\bdecreased significantly\b/gi, "giảm đáng kể"],
+    [/\bdecreased\b/gi, "giảm"],
+    [/\bfell sharply\b/gi, "giảm mạnh"],
+    [/\bfell\b/gi, "giảm"],
+    [/\bdropped\b/gi, "giảm"],
+    [/\brecorded\b/gi, "ghi nhận"],
+    [/\bshowed\b/gi, "cho thấy"],
+    [/\bexperienced\b/gi, "trải qua"],
+    [/\bincreased dramatically\b/gi, "tăng vọt"],
+    [/\bincreased significantly\b/gi, "tăng đáng kể"],
+    [/\bincreased\b/gi, "tăng"],
+    [/\brose\b/gi, "tăng"],
+    [/\bclimbed\b/gi, "tăng"],
+    [/\bsurpassed\b/gi, "vượt qua"],
+    [/\bwere surpassed by\b/gi, "bị vượt qua bởi"],
+    [/\bwas surpassed by\b/gi, "bị vượt qua bởi"],
+    [/\bstabilized\b/gi, "ổn định"],
+    [/\bhovering at\b/gi, "dao động ở mức"],
+    [/\bhovered at\b/gi, "dao động ở mức"],
+    [/\bfluctuated around\b/gi, "dao động quanh mức"],
+    [/\bfluctuating around\b/gi, "dao động quanh mức"],
+    [/\buhwile\b/gi, "trong khi"],
+    [/\bwhile\b/gi, "trong khi"],
+    [/\bmeanwhile,\b/gi, "Trong khi đó,"],
+    [/\bmeanwhile\b/gi, "trong khi đó"],
+    [/\bby contrast,\b/gi, "Trái lại,"],
+    [/\bby contrast\b/gi, "trái lại"],
+    [/\bin contrast,\b/gi, "Ngược lại,"],
+    [/\bin contrast\b/gi, "ngược lại"],
+    [/\boverall,\b/gi, "Nhìn chung,"],
+    [/\boverall\b/gi, "nhìn chung"],
+    [/\band\b/gi, "và"],
+    [/\bor\b/gi, "hoặc"],
+    [/\bthe figure\b/gi, "con số này"],
+    [/\bthe figures\b/gi, "các con số"],
+    [/\bfigures\b/gi, "số liệu"],
+    [/\bfigure\b/gi, "con số"],
+    [/\brates\b/gi, "tỷ lệ"],
+    [/\brate\b/gi, "tỷ lệ"],
+    [/\bhighest rates\b/gi, "các tỷ lệ cao nhất"],
+    [/\bhighest rate\b/gi, "tỷ lệ cao nhất"],
+    [/\blowest rates\b/gi, "các tỷ lệ thấp nhất"],
+    [/\blowest rate\b/gi, "tỷ lệ thấp nhất"],
+    [/\bhighest\b/gi, "cao nhất"],
+    [/\blowest\b/gi, "thấp nhất"],
+    [/\bnations\b/gi, "quốc gia"],
+    [/\bnation\b/gi, "quốc gia"],
+    [/\bcountries\b/gi, "quốc gia"],
+    [/\bcountry\b/gi, "quốc gia"],
+    [/\bemployees\b/gi, "nhân viên"],
+    [/\bemployee\b/gi, "nhân viên"],
+    [/\bproportion\b/gi, "tỷ lệ"],
+    [/\bpercentage\b/gi, "tỷ lệ phần trăm"],
+    [/\bperiod\b/gi, "giai đoạn"],
+    [/\bdecade\b/gi, "thập kỷ"],
+    [/\byears\b/gi, "năm"],
+    [/\byear\b/gi, "năm"]
+  ];
+
+  // Sort sub-dictionary by pattern length descending
+  subDictionary.sort((a, b) => b[0].source.length - a[0].source.length);
+
+  function translateChunk(str: string): string {
+    let result = str
+      .replace(/[\u2018\u2019\u0060]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/\s+([:\.,;?!])/g, "$1")
+      .replace(/:\s*/g, ": ");
+
+    for (const [pattern, repl] of subDictionary) {
       result = result.replace(pattern, repl);
     }
+
+    // Clean up standalone English articles before Vietnamese words safely (avoiding 'của', 'và')
+    result = result
+      .replace(/(?<![a-zA-ZÀ-ỹ])\b(the|a|an)\s+([a-àáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ]+)/gi, "$2");
+
     return result;
-  };
+  }
+
+  function processSingleSentence(sent: string): string {
+    const trimmedSent = sent.trim();
+    if (!trimmedSent) return sent;
+
+    // Check sentenceMap first
+    for (const [pattern, translation] of sentenceMap) {
+      if (pattern.test(trimmedSent)) {
+        return translation;
+      }
+    }
+
+    // Process parts (handling mark tags)
+    const parts = trimmedSent.split(/(<mark[^>]*>[\s\S]*?<\/mark>)/gi);
+    const translatedParts = parts
+      .map((part) => {
+        const match = part.match(/^<mark[^>]*>([\s\S]*?)<\/mark>$/i);
+        if (match) {
+          const cleanInner = match[1].replace(/<\/?mark[^>]*>/gi, "");
+          return `<mark>${translateChunk(cleanInner)}</mark>`;
+        }
+        return translateChunk(part);
+      })
+      .join("");
+
+    return translatedParts
+      .replace(/<mark[^>]*>\s*<mark[^>]*>/gi, "<mark>")
+      .replace(/<\/mark>\s*<\/mark>/gi, "</mark>");
+  }
+
+  function processParagraph(para: string): string {
+    const trimmed = para.trim();
+    if (!trimmed) return para;
+
+    // Check if whole paragraph matches sentenceMap
+    for (const [pattern, translation] of sentenceMap) {
+      if (pattern.test(trimmed)) {
+        return translation;
+      }
+    }
+
+    // Split paragraph by sentences
+    const sentences = trimmed.split(/(?<=[.!?])\s+/g);
+    return sentences.map((s) => processSingleSentence(s)).join(" ");
+  }
 
   return text
     .split("\n\n")
-    .map((para) => {
-      const parts = para.split(/(<mark[^>]*>[\s\S]*?<\/mark>)/gi);
-      return parts
-        .map((part) => {
-          const match = part.match(/^<mark[^>]*>([\s\S]*?)<\/mark>$/i);
-          if (match) {
-            return `<mark>${translateChunk(match[1])}</mark>`;
-          }
-          return translateChunk(part);
-        })
-        .join("");
-    })
+    .map((para) => processParagraph(para))
     .join("\n\n");
 }
 
@@ -367,9 +631,9 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
     })
     .join("");
 
-  const viEssaySource =
-    report.fullUpgradeEssayVietnamese ||
-    generateFallbackVietnameseTranslation(report.fullUpgradeEssay || "");
+  const viEssaySource = generateFallbackVietnameseTranslation(
+    report.fullUpgradeEssayVietnamese || report.fullUpgradeEssay || ""
+  );
 
   const formattedVietnameseEssayHtml = (viEssaySource || "")
     .split("\n\n")

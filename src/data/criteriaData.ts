@@ -63,8 +63,8 @@ export const task1ProgressionCategories: ProgressionCategoryGroup[] = [
       },
       {
         id: "ta1_4",
-        title: "Mô tả và hỗ trợ bằng số liệu phù hợp",
-        description: "Mỗi đoạn thân bài tập trung vào một nhóm dữ liệu và sử dụng số liệu minh họa.",
+        title: "Mô tả và hỗ trợ bằng số liệu phù hợp & dùng từ ước lượng",
+        description: "Mỗi đoạn thân bài tập trung vào một nhóm dữ liệu; sử dụng từ ước lượng (about, around, approximately, roughly, nearly...) khi báo cáo số liệu xấp xỉ.",
         score: "0.5",
         minBand: "B2",
       },

@@ -103,21 +103,32 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   };
 
   const renderParagraphWithHighlights = (text: string) => {
-    const parts = text.split(/(<mark[^>]*>[\s\S]*?<\/mark>)/gi);
+    if (!text) return null;
+    // Clean nested mark tags like <mark><mark>text</mark></mark>
+    let sanitizedText = text
+      .replace(/<mark[^>]*>\s*<mark[^>]*>/gi, "<mark>")
+      .replace(/<\/mark>\s*<\/mark>/gi, "</mark>");
+
+    const parts = sanitizedText.split(/(<mark[^>]*>[\s\S]*?<\/mark>)/gi);
     return parts.map((part, index) => {
       const match = part.match(/^<mark[^>]*>([\s\S]*?)<\/mark>$/i);
       if (match) {
+        // Strip any residual inner/outer mark tags from match[1]
+        const cleanContent = match[1].replace(/<\/?mark[^>]*>/gi, "").trim();
+        if (!cleanContent) return null;
         return (
           <mark
             key={index}
             className="bg-rose-100 text-rose-950 border-b-2 border-rose-400 font-medium px-1.5 py-0.5 rounded mx-0.5 inline shadow-2xs"
             title="Nội dung đã được chỉnh sửa / nâng cấp từ bài viết gốc"
           >
-            {match[1]}
+            {cleanContent}
           </mark>
         );
       }
-      return <React.Fragment key={index}>{part}</React.Fragment>;
+      // Strip any stray orphan <mark> or </mark> tags from non-highlight parts
+      const cleanPart = part.replace(/<\/?mark[^>]*>/gi, "");
+      return <React.Fragment key={index}>{cleanPart}</React.Fragment>;
     });
   };
 
@@ -560,9 +571,8 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                 <span>[1.2] Bản Dịch Tiếng Việt Song Ngữ Đối Chiếu (Vietnamese Translation)</span>
               </div>
               <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[360px] overflow-y-auto scrollbar-thin">
-                {(
-                  activeReport.fullUpgradeEssayVietnamese ||
-                  generateFallbackVietnameseTranslation(activeReport.fullUpgradeEssay)
+                {generateFallbackVietnameseTranslation(
+                  activeReport.fullUpgradeEssayVietnamese || activeReport.fullUpgradeEssay
                 )
                   .split("\n\n")
                   .map((para, i) => (

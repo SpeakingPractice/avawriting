@@ -92,10 +92,10 @@ async function generateWithFallbackClient(
   options: { contents: any; config?: any }
 ) {
   const models = [
+    "gemini-3.6-flash",
     "gemini-2.5-flash",
     "gemini-flash-latest",
     "gemini-3.1-flash-lite",
-    "gemini-3.6-flash",
   ];
 
   let lastError: any = null;
@@ -121,6 +121,13 @@ async function generateWithFallbackClient(
             },
           });
         } catch (thinkingErr: any) {
+          const thinkingErrMsg = String(thinkingErr?.message || thinkingErr);
+          const isQuota =
+            thinkingErrMsg.includes("429") ||
+            thinkingErrMsg.includes("RESOURCE_EXHAUSTED") ||
+            thinkingErrMsg.includes("quota");
+          if (isQuota) throw thinkingErr;
+
           response = await ai.models.generateContent({
             model,
             contents: options.contents,
@@ -147,13 +154,21 @@ async function generateWithFallbackClient(
       } catch (err: any) {
         lastError = err;
         const errMsg = String(err?.message || err);
+
+        const isQuota =
+          errMsg.includes("429") ||
+          errMsg.includes("RESOURCE_EXHAUSTED") ||
+          errMsg.includes("quota");
+
+        if (isQuota) {
+          break; // Move to next fallback model immediately
+        }
+
         const isTransient =
           errMsg.includes("503") ||
           errMsg.includes("UNAVAILABLE") ||
           errMsg.includes("high demand") ||
-          errMsg.includes("overloaded") ||
-          errMsg.includes("429") ||
-          errMsg.includes("RESOURCE_EXHAUSTED");
+          errMsg.includes("overloaded");
 
         if (isTransient) {
           await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
@@ -263,7 +278,10 @@ Quy tắc chấm điểm tiêu chí và làm tròn băng điểm (IELTS Band Des
 - QUY TẮC CHẤM MAX BAND 9.0 (DO NOT CAP AT BAND 8.0):
   + Nếu bài viết đáp ứng trọn vẹn tất cả các đặc tính tiêu chí thì điểm tiêu chí đó BẮT BUỘC LÀ 9.0 (không được tự áp trần ở Band 8.0 hay 8.5).
 - QUY TẮC CHẤM BAND 7 CHO TASK RESPONSE (TR) TASK 2: Ở Task 2, dù bài viết có mắc lỗi over-generalise hoặc thiếu tập trung hỗ trợ ý tưởng, NHƯNG bài viết VẪN ĐẢM BẢO ĐƯỢC 2 đặc trưng cốt lõi (1. Trả lời thích hợp các phần chính của đề bài & 2. Lập trường rõ ràng xuyên suốt) thì tiêu chí TR tối thiểu đạt điểm 7.0 trở lên.
-- QUY TẮC SỐ LIỆU XẤP XỈ Ở TASK 1: Đối với số liệu ước lượng hợp lý có kèm từ thể hiện sự xấp xỉ ("about", "around", "roughly", "approximately", "nearly", "just over", "just under"...), bắt buộc chấp nhận là chuẩn xác và đánh giá cao.
+- QUY TẮC BÁO CÁO SỐ LIỆU VÀ TỪ ƯỚC LƯỢNG Ở TASK 1 (TASK ACHIEVEMENT DATA ACCURACY):
+  + Đối với các số liệu trong biểu đồ không nằm ở mốc chính xác (xấp xỉ/khoảng), thí sinh BẮT BUỘC phải dùng các từ thể hiện sự ước lượng như "about", "around", "approximately", "roughly", "nearly", "just over", "just under", "almost", "close to", "in the region of"... thì báo cáo mới hợp lý và được tính điểm.
+  + Nếu số liệu là ước lượng mà thí sinh khẳng định như một con số tuyệt đối (không có từ chỉ sự xấp xỉ) -> Bị tính là báo cáo thiếu chính xác (inaccurate data reporting) và trừ điểm ở Task Achievement.
+  + Ngược lại, nếu thí sinh sử dụng đúng và linh hoạt các từ chỉ sự ước lượng đi kèm số liệu xấp xỉ hợp lý -> BẮT BUỘC ghi nhận đạt điểm cao (Full/Partial) cho các đặc tính minh họa số liệu của Task Achievement (ta1_2, ta1_4, ta1_7, ta1_8).
 - Điểm Tổng (Overall Band) là trung bình cộng của 4 tiêu chí thành phần, làm tròn theo quy tắc IELTS chuẩn (Ví dụ: 6.75 -> 7.0; 6.25 -> 6.5; 6.125 -> 6.0).
 
 Yêu cầu về số lượng từ (hãy kiểm tra số từ nhận được: ${wordCount} từ):
@@ -364,7 +382,7 @@ Cấu trúc JSON phản hồi bắt buộc:
     "Các bước hành động cụ thể, chi tiết 3"
   ],
   "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. QUY TẮC BẮT BUỘC: Nâng cấp trực tiếp từ bài làm gốc của thí sinh. Những phần/câu/đoạn nào trong bài gốc đã viết tốt, không bị lỗi nặng thì BẮT BUỘC GIỮ NGUYÊN. Những chỗ nào bị lỗi hoặc ảnh hưởng tiêu cực đến điểm số thì sửa lại/nâng cấp. TẤT CẢ các câu/cụm từ/đoạn văn ĐÃ ĐƯỢC CHỈNH SỬA HOẶC BỔ SUNG NÂNG CẤP BẮT BUỘC BỌC TRONG THẺ <mark>câu/từ đã sửa/nâng cấp</mark> (Ví dụ: <mark>While urban connectivity surged, rural access fell sharply.</mark>) để thí sinh nhận biết chính xác những vị trí đã được thay đổi. Đồng thời bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band (nextBandSteps).",
-  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT HOÀN CHỈNH 100%, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT MẪU (fullUpgradeEssay) Ở TRÊN. QUY TẮC BẮT BUỘC: DỊCH TOÀN BỘ 100% CÁC CÂU SANG TIẾNG VIỆT, TUYỆT ĐỐI KHÔNG BỎ SÓT HAY ĐỂ LẠI BẤT KỲ CÂU HOẶC CỤM TỪ TIẾNG ANH NÀO TRONG BẢN DỊCH. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với vị trí đã được sửa/nâng cấp (<mark>...</mark>) trong bài tiếng Anh BẮT BUỘC BỌC TRONG THẺ <mark>câu/cụm từ tiếng Việt dịch tương ứng</mark> (Ví dụ: <mark>Trong khi tính kết nối đô thị tăng mạnh, khả năng tiếp cận ở nông thôn lại giảm sâu.</mark>) để thí sinh dễ dàng đối chiếu song ngữ."
+  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT HOÀN CHỈNH 100%, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT MẪU (fullUpgradeEssay) Ở TRÊN. QUY TẮC BẮT BUỘC DÀNH CHO CẢ TASK 1 VÀ TASK 2: DỊCH TOÀN BỘ 100% TẤT CẢ CÁC CÂU SANG TIẾNG VIỆT (bao gồm mở bài, tổng quan overview, các câu báo cáo số liệu/xu hướng/so sánh của Task 1 cũng như bài luận Task 2). TUYỆT ĐỐI KHÔNG BỎ SÓT HAY ĐỂ LẠI BẤT KỲ CÂU HOẶC CỤM TỪ TIẾNG ANH NÀO TRONG BẢN DỊCH. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với vị trí đã được sửa/nâng cấp (<mark>...</mark>) trong bài tiếng Anh BẮT BUỘC BỌC TRONG THẺ <mark>câu/cụm từ tiếng Việt dịch tương ứng</mark> (Ví dụ: <mark>Trong khi tính kết nối đô thị tăng mạnh, khả năng tiếp cận ở nông thôn lại giảm sâu.</mark>) để thí sinh dễ dàng đối chiếu song ngữ."
 }`;
 
   const promptText = `
