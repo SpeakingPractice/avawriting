@@ -21,6 +21,7 @@ import {
   RefreshCw,
   Key,
   Image,
+  GraduationCap,
 } from "lucide-react";
 
 export default function App() {
@@ -464,11 +465,11 @@ export default function App() {
           <div className="flex items-center justify-between">
             {/* Logo and title */}
             <div className="flex items-center space-x-3">
-              {/* Interactive Custom Logo Circle */}
+              {/* Fixed Official Mỹ Du Avatar Badge */}
               <div
                 className="relative cursor-pointer group"
                 onClick={() => logoInputRef.current?.click()}
-                title="Bấm vào đây để tải logo cá nhân của bạn"
+                title="Logo Trường Anh Ngữ Mỹ Du (Bấm để đổi nếu cần)"
               >
                 <input
                   type="file"
@@ -484,15 +485,12 @@ export default function App() {
                       alt="Logo Mỹ Du"
                       className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-yellow-400 group-hover:opacity-90 transition-opacity"
                     />
-                    <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-blue-900 border border-blue-900 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-extrabold shadow-xs group-hover:scale-110 transition-transform">
-                      +
-                    </div>
                   </div>
                 ) : (
-                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center shadow-md relative group-hover:bg-yellow-300 transition-colors">
-                    <span className="text-blue-900 font-extrabold text-sm font-display">MD</span>
-                    <div className="absolute -bottom-1 -right-1 bg-blue-900 text-yellow-400 border border-yellow-400 rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-extrabold shadow-xs group-hover:scale-110 transition-transform">
-                      +
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-500 p-0.5 shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-full h-full rounded-full bg-blue-950 flex flex-col items-center justify-center relative overflow-hidden border border-yellow-300/50">
+                      <GraduationCap className="w-4 h-4 text-yellow-400 -mb-0.5" />
+                      <span className="text-[9px] font-black text-yellow-300 tracking-tighter leading-none font-display">MỸ DU</span>
                     </div>
                   </div>
                 )}
@@ -501,18 +499,46 @@ export default function App() {
               {/* Title & Slogan */}
               <div className="cursor-pointer" onClick={handleNewAttempt}>
                 <h1 className="text-lg font-bold tracking-tight uppercase font-display flex items-center space-x-2">
-                  <span>MỸ DU - BẬC THẦY WRITING IELTS</span>
+                  <span>BẬC THẦY WRITING IELTS</span>
                 </h1>
-                <p className="text-xs text-blue-200 uppercase tracking-widest font-medium italic">
-                  DARE TO DREAM, THINK AND DO
+                <p className="text-xs text-yellow-300 font-medium tracking-wide">
+                  Dare to dream, think &amp; do 🍃
                 </p>
               </div>
             </div>
 
-            {/* Senior Badge */}
+            {/* School Info */}
             <div className="hidden sm:flex flex-col items-end text-right">
-              <div className="text-xs opacity-80 uppercase tracking-wider">Phiên bản: #AVA-2026</div>
-              <div className="text-sm font-semibold text-yellow-400">British Council/IDP Standard</div>
+              <div className="text-sm font-bold uppercase tracking-wider text-white">TRƯỜNG ANH NGỮ MỸ DU</div>
+              <div className="text-xs font-medium text-yellow-300 flex items-center gap-2 mt-0.5">
+                <span>📍 51, Đường 2, Phước Long, HCM</span>
+                <span className="flex items-center gap-1">
+                  {/* Colored Desk Telephone Icon with Buttons */}
+                  <svg className="w-4 h-4 inline-block shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Phone Base */}
+                    <path d="M3 10C3 8.34315 4.34315 7 6 7H18C19.6569 7 21 8.34315 21 10V18C21 19.6569 19.6569 21 18 21H6C4.34315 21 3 19.6569 3 18V10Z" fill="#DC2626" />
+                    <path d="M5 11C5 9.89543 5.89543 9 7 9H17C18.1046 9 19 9.89543 19 11V18C19 19.1046 18.1046 20 17 20H7C5.89543 20 5 19.1046 5 18V11Z" fill="#991B1B" />
+                    {/* Keypad Display Box */}
+                    <rect x="7" y="11.5" width="10" height="6.5" rx="1" fill="#0F172A" />
+                    {/* Buttons Row 1 */}
+                    <rect x="8.2" y="12.4" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    <rect x="11" y="12.4" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    <rect x="13.8" y="12.4" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    {/* Buttons Row 2 */}
+                    <rect x="8.2" y="14.1" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    <rect x="11" y="14.1" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    <rect x="13.8" y="14.1" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    {/* Buttons Row 3 */}
+                    <rect x="8.2" y="15.8" width="2" height="1.3" rx="0.3" fill="#EF4444" />
+                    <rect x="11" y="15.8" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
+                    <rect x="13.8" y="15.8" width="2" height="1.3" rx="0.3" fill="#10B981" />
+                    {/* Handset Receiver on Cradle */}
+                    <path d="M2 7.5C2 6.11929 3.11929 5 4.5 5H19.5C20.8807 5 22 6.11929 22 7.5V8.5C22 9.32843 21.3284 10 20.5 10H18.5C17.6716 10 17 9.32843 17 8.5V7H7V8.5C7 9.32843 6.32843 10 5.5 10H3.5C2.67157 10 2 9.32843 2 8.5V7.5Z" fill="#F59E0B" />
+                    <path d="M3.5 5.5C3.5 4.67157 4.17157 4 5 4H19C19.8284 4 20.5 4.67157 20.5 5.5V6.5H3.5V5.5Z" fill="#FCD34D" />
+                  </svg>
+                  <span>0919309322</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
