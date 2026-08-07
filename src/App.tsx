@@ -24,6 +24,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 
+const DEFAULT_MYDU_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="58" fill="%231b365d" stroke="%23f59e0b" stroke-width="4"/><circle cx="60" cy="60" r="50" fill="none" stroke="%23fde047" stroke-width="1.5" stroke-dasharray="4,2"/><path d="M60 24 L90 40 L60 56 L30 40 Z" fill="%23fbbf24"/><path d="M42 47 V62 C42 70 78 70 78 62 V47" fill="none" stroke="%23fde047" stroke-width="3.2" stroke-linecap="round"/><path d="M84 43 V66" stroke="%23f59e0b" stroke-width="2.5" stroke-linecap="round"/><circle cx="84" cy="69" r="3" fill="%23f59e0b"/><text x="60" y="87" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="18" fill="%23ffffff" text-anchor="middle" letter-spacing="1">MỸ DU</text><text x="60" y="100" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" font-size="8.5" fill="%23fde047" text-anchor="middle" letter-spacing="0.8">ENGLISH SCHOOL</text></svg>`;
+
 export default function App() {
   const [essay, setEssay] = useState<string>("");
   const [taskType, setTaskType] = useState<"task1" | "task2" | "combo">("task2");
@@ -48,8 +50,8 @@ export default function App() {
   const [keyValidationMsg, setKeyValidationMsg] = useState<string | null>(null);
   const [forceShowConfig, setForceShowConfig] = useState<boolean>(false);
   const [isDraggingTask1Image, setIsDraggingTask1Image] = useState<boolean>(false);
-  const [customLogo, setCustomLogo] = useState<string | null>(() => {
-    return localStorage.getItem("mydu_custom_logo") || null;
+  const [customLogo, setCustomLogo] = useState<string>(() => {
+    return localStorage.getItem("mydu_custom_logo") || DEFAULT_MYDU_LOGO;
   });
   const logoInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -478,22 +480,13 @@ export default function App() {
                   accept="image/*"
                   className="hidden"
                 />
-                {customLogo ? (
-                  <div className="relative">
-                    <img
-                      src={customLogo}
-                      alt="Logo Mỹ Du"
-                      className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-yellow-400 group-hover:opacity-90 transition-opacity"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-500 p-0.5 shadow-md flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <div className="w-full h-full rounded-full bg-blue-950 flex flex-col items-center justify-center relative overflow-hidden border border-yellow-300/50">
-                      <GraduationCap className="w-4 h-4 text-yellow-400 -mb-0.5" />
-                      <span className="text-[9px] font-black text-yellow-300 tracking-tighter leading-none font-display">MỸ DU</span>
-                    </div>
-                  </div>
-                )}
+                <div className="relative">
+                  <img
+                    src={customLogo || DEFAULT_MYDU_LOGO}
+                    alt="Logo Trường Anh Ngữ Mỹ Du"
+                    className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-yellow-400 group-hover:scale-105 group-hover:border-yellow-300 transition-all bg-blue-950 shrink-0"
+                  />
+                </div>
               </div>
 
               {/* Title & Slogan */}
