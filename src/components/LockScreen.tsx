@@ -67,18 +67,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         return;
       }
 
-      if (/^\d{6}$/.test(cleanCode)) {
-        const userFallbackToken = "user_otp_token_" + Date.now();
-        sessionStorage.setItem("ava_session_token", userFallbackToken);
-        sessionStorage.setItem("ava_session_role", "user");
-        setSuccessMsg("Xác thực Mã OTP thành công!");
-        setTimeout(() => {
-          onUnlockSuccess("user", userFallbackToken);
-        }, 300);
-        return;
-      }
-
-      setError("Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!");
+      setError("Mã truy cập không hợp lệ hoặc không tồn tại. Vui lòng xin Mã từ Quản trị viên!");
       setLoading(false);
     } catch (err: any) {
       console.error("Auth verify network error:", err);
@@ -89,17 +78,6 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         setSuccessMsg("Xác thực Mã Quản trị thành công!");
         setTimeout(() => {
           onUnlockSuccess("admin", fallbackToken);
-        }, 300);
-        return;
-      }
-
-      if (/^\d{6}$/.test(cleanCode)) {
-        const userFallbackToken = "user_otp_token_" + Date.now();
-        sessionStorage.setItem("ava_session_token", userFallbackToken);
-        sessionStorage.setItem("ava_session_role", "user");
-        setSuccessMsg("Xác thực Mã OTP thành công!");
-        setTimeout(() => {
-          onUnlockSuccess("user", userFallbackToken);
         }, 300);
         return;
       }

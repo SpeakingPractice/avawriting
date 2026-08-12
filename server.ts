@@ -240,34 +240,9 @@ app.post("/api/auth/verify-code", (req, res) => {
       });
     }
 
-    // 3. Fallback for any 6-digit OTP code (e.g. 392151)
-    if (/^\d{6}$/.test(cleanCode)) {
-      const token = generateToken();
-      if (!config.activeSessions) config.activeSessions = {};
-      config.activeSessions[token] = { role: "user", createdAt: Date.now() };
-
-      config.oneTimeCodes.unshift({
-        id: "otp_" + Date.now(),
-        code: cleanCode,
-        createdAt: new Date().toISOString(),
-        used: true,
-        usedAt: new Date().toISOString(),
-        usedByIp: (req.headers["x-forwarded-for"] as string) || req.ip || "unknown",
-        note: "Mã OTP 1 lần",
-      });
-      saveSecurityConfig(config);
-
-      return res.json({
-        success: true,
-        role: "user",
-        token,
-        message: "Xác thực Mã OTP 1 lần thành công!",
-      });
-    }
-
     return res.status(401).json({
       success: false,
-      error: "Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!",
+      error: "Mã truy cập không hợp lệ hoặc không tồn tại. Vui lòng xin Mã từ Quản trị viên!",
     });
   } catch (err: any) {
     console.error("Error in verify-code endpoint:", err);
