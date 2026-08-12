@@ -11,6 +11,9 @@ export interface TaskExportData {
   originalEssay: string;
   report: GradingReport;
   task1Image?: string | null;
+  studentClass?: string;
+  teacherName?: string;
+  studentName?: string;
 }
 
 /**
@@ -110,19 +113,13 @@ function renderFeatureTableHtml(catCode: "TA_TR" | "CC" | "LR" | "GRA", detail: 
 
       return `
       <tr style="background-color: ${rowBg}; border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 6pt; text-align: center; font-weight: bold; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #334155; border: 1px solid #e2e8f0;">#${featIndex}</td>
-        <td style="padding: 6pt; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #1e293b; border: 1px solid #e2e8f0;">
+        <td style="padding: 5pt 6pt; text-align: center; font-weight: bold; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #334155; border: 1px solid #e2e8f0;">#${featIndex}</td>
+        <td style="padding: 5pt 6pt; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #1e293b; border: 1px solid #e2e8f0;">
           <strong style="font-size: 10pt !important; font-family: Calibri, Arial, sans-serif;">${feat.title}</strong>
-          <div style="font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #475569; margin-top: 2pt;">${feat.description}</div>
-          ${
-            res.reasoning
-              ? `<div style="font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #1e40af; font-style: italic; margin-top: 3pt; background-color: #eff6ff; padding: 3pt 6pt; border-left: 2px solid #3b82f6;"><strong>Ghi chú AVA:</strong> ${res.reasoning}</div>`
-              : ""
-          }
         </td>
-        <td style="padding: 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #475569; border: 1px solid #e2e8f0;">${feat.minBand}</td>
-        <td style="padding: 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #1e3a8a; border: 1px solid #e2e8f0;">+${res.earned} / ${maxScore}</td>
-        <td style="padding: 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; border: 1px solid #e2e8f0;">${statusBadge}</td>
+        <td style="padding: 5pt 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #475569; border: 1px solid #e2e8f0;">${feat.minBand}</td>
+        <td style="padding: 5pt 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; font-weight: bold; color: #1e3a8a; border: 1px solid #e2e8f0;">+${res.earned} / ${maxScore}</td>
+        <td style="padding: 5pt 6pt; text-align: center; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; border: 1px solid #e2e8f0;">${statusBadge}</td>
       </tr>
     `;
     })
@@ -614,6 +611,21 @@ export function generateFallbackVietnameseTranslation(text: string): string {
     .join("\n\n");
 }
 
+export function getVietnameseEssayText(report: GradingReport): string {
+  if (!report) return "";
+  const viText = report.fullUpgradeEssayVietnamese?.trim();
+  const enText = report.fullUpgradeEssay?.trim() || "";
+
+  if (viText && viText.length > 0) {
+    const hasVietnamese = /[àáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ]/i.test(viText);
+    if (hasVietnamese) {
+      return viText;
+    }
+  }
+
+  return generateFallbackVietnameseTranslation(enText);
+}
+
 function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
   const { report, taskType, promptText } = task;
   const isTask1 = taskType === "task1";
@@ -631,9 +643,7 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
     })
     .join("");
 
-  const viEssaySource = generateFallbackVietnameseTranslation(
-    report.fullUpgradeEssayVietnamese || report.fullUpgradeEssay || ""
-  );
+  const viEssaySource = getVietnameseEssayText(report);
 
   const formattedVietnameseEssayHtml = (viEssaySource || "")
     .split("\n\n")
@@ -677,7 +687,7 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
   const nextStepsHtml = (report.nextBandSteps || [])
     .map(
       (step, idx) => `
-    <li style="margin-bottom: 8pt; font-size: 12pt; color: #1e293b; line-height: 1.5;">
+    <li style="margin-bottom: 8pt; font-size: 11pt !important; font-family: Calibri, Arial, sans-serif; color: #1e293b; line-height: 1.5;">
       <strong>Bước ${idx + 1}:</strong> ${step}
     </li>
   `
@@ -827,6 +837,56 @@ export function exportReportToDoc(
   let bodyContentHtml = "";
   let fileName = "";
 
+  const studentClassVal = tasks.find((t) => t.studentClass)?.studentClass || "";
+  const teacherNameVal = tasks.find((t) => t.teacherName)?.teacherName || "";
+  const studentNameVal = tasks.find((t) => t.studentName)?.studentName || "";
+
+  // Dual Header (Left: BẬC THẦY WRITING IELTS, Right: Trường Anh Ngữ Mỹ Du + Địa chỉ + SĐT) + Solid Line + Student Info
+  const documentTopHeaderBlock = `
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; border: none;">
+      <tr>
+        <td style="width: 48%; vertical-align: top; text-align: left; padding: 0 0 4pt 0; border: none;">
+          <p style="font-size: 16pt !important; font-weight: bold; color: #1e3a8a; margin: 0; text-transform: uppercase; font-family: 'Calibri', Arial, sans-serif; letter-spacing: 0.5pt;">
+            BẬC THẦY WRITING IELTS
+          </p>
+        </td>
+        <td style="width: 52%; vertical-align: top; text-align: right; padding: 0 0 4pt 0; border: none;">
+          <p style="font-size: 13pt !important; font-weight: bold; color: #1e3a8a; margin: 0; text-transform: uppercase; font-family: 'Calibri', Arial, sans-serif;">
+            TRƯỜNG ANH NGỮ MỸ DU
+          </p>
+          <p style="font-size: 9.5pt !important; color: #475569; margin: 2pt 0 0 0; font-family: 'Calibri', Arial, sans-serif;">
+            Địa chỉ: 51, Đường 2, Phước Long, TP. Hồ Chí Minh
+          </p>
+          <p style="font-size: 9.5pt !important; color: #475569; margin: 1pt 0 0 0; font-family: 'Calibri', Arial, sans-serif;">
+            SĐT: 0919309322
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Solid line separator with compact spacing from phone number -->
+    <table style="width: 100%; border-collapse: collapse; margin-top: 4pt; margin-bottom: 8pt; border: none;">
+      <tr>
+        <td style="border-bottom: 2px solid #1e3a8a; font-size: 1pt; line-height: 1pt; padding: 0;">&nbsp;</td>
+      </tr>
+    </table>
+
+    <!-- Student & Class Info Box (Compact height) -->
+    <table class="meta-table" style="width: 100%; border-collapse: collapse; margin-bottom: 8pt; background-color: #f8fafc; border: 1.5px solid #1e3a8a;">
+      <tr>
+        <td style="width: 28%; padding: 4pt 6pt; border: 1px solid #cbd5e1; background-color: #eff6ff; font-size: 11pt !important; font-family: 'Calibri', Arial, sans-serif; vertical-align: middle;">
+          <strong style="color: #1e3a8a; font-size: 11pt !important;">1. Lớp:</strong> <span style="color: #0f172a; font-weight: bold; margin-left: 3pt; font-size: 11pt !important;">${studentClassVal || ".........................."}</span>
+        </td>
+        <td style="width: 36%; padding: 4pt 6pt; border: 1px solid #cbd5e1; background-color: #eff6ff; font-size: 11pt !important; font-family: 'Calibri', Arial, sans-serif; vertical-align: middle;">
+          <strong style="color: #1e3a8a; font-size: 11pt !important;">2. GV Hướng Dẫn:</strong> <span style="color: #0f172a; font-weight: bold; margin-left: 3pt; font-size: 11pt !important;">${teacherNameVal || ".........................."}</span>
+        </td>
+        <td style="width: 36%; padding: 4pt 6pt; border: 1px solid #cbd5e1; background-color: #eff6ff; font-size: 11pt !important; font-family: 'Calibri', Arial, sans-serif; vertical-align: middle;">
+          <strong style="color: #1e3a8a; font-size: 11pt !important;">3. Họ và tên:</strong> <span style="color: #0f172a; font-weight: bold; margin-left: 3pt; font-size: 11pt !important;">${studentNameVal || ".........................."}</span>
+        </td>
+      </tr>
+    </table>
+  `;
+
   if (isDualTask) {
     const t1 = tasks.find((t) => t.taskType === "task1") || tasks[0];
     const t2 = tasks.find((t) => t.taskType === "task2") || tasks[1];
@@ -839,10 +899,12 @@ export function exportReportToDoc(
     fileName = `Bao_Cao_Cham_IELTS_Writing_Task1_va_Task2_Truong_Anh_Ngu_My_Du_${Date.now()}.doc`;
 
     combinedHeaderSummaryHtml = `
-      <div style="text-align: center; margin-bottom: 20pt; border-bottom: 3px double #1e3a8a; padding-bottom: 12pt;">
-        <p style="font-size: 14pt; font-weight: bold; color: #1e3a8a; margin-bottom: 2pt;">TRƯỜNG ANH NGỮ MỸ DU</p>
-        <h1 style="font-size: 20pt !important; color: #0f172a; margin-bottom: 6pt;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP WRITING TASK 1 &amp; TASK 2</h1>
-        <p style="font-size: 11pt; color: #64748b; margin: 0;">Ngày xuất báo cáo: ${currentDate}</p>
+      ${documentTopHeaderBlock}
+
+      <div style="border-top: 2px dashed #94a3b8; margin-top: 12pt; margin-bottom: 12pt; width: 100%;"></div>
+
+      <div style="text-align: center; margin-bottom: 16pt;">
+        <h1 style="font-size: 18pt !important; color: #0f172a; margin: 0;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP WRITING TASK 1 &amp; TASK 2</h1>
       </div>
 
       <table class="meta-table" style="margin-bottom: 20pt; background-color: #eff6ff; border: 2px solid #1e3a8a;">
@@ -872,10 +934,12 @@ export function exportReportToDoc(
     fileName = `Bao_Cao_Cham_IELTS_${singleTask.taskType.toUpperCase()}_Truong_Anh_Ngu_My_Du_${Date.now()}.doc`;
 
     combinedHeaderSummaryHtml = `
-      <div style="text-align: center; margin-bottom: 20pt; border-bottom: 3px double #1e3a8a; padding-bottom: 12pt;">
-        <p style="font-size: 14pt; font-weight: bold; color: #1e3a8a; margin-bottom: 2pt;">TRƯỜNG ANH NGỮ MỸ DU</p>
-        <h1 style="font-size: 20pt !important; color: #0f172a; margin-bottom: 6pt;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP BÀI VIẾT ${taskTitle.toUpperCase()}</h1>
-        <p style="font-size: 11pt; color: #64748b; margin: 0;">Ngày xuất báo cáo: ${currentDate}</p>
+      ${documentTopHeaderBlock}
+
+      <div style="border-top: 2px dashed #94a3b8; margin-top: 12pt; margin-bottom: 12pt; width: 100%;"></div>
+
+      <div style="text-align: center; margin-bottom: 16pt;">
+        <h1 style="font-size: 18pt !important; color: #0f172a; margin: 0;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP BÀI VIẾT ${taskTitle.toUpperCase()}</h1>
       </div>
     `;
 
@@ -887,7 +951,7 @@ export function exportReportToDoc(
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
 <meta charset='utf-8'>
-<title>Trường Anh Ngữ Mỹ Du - Báo Cáo Chấm Bài IELTS</title>
+<title>BẬC THẦY WRITING IELTS - Trường Anh Ngữ Mỹ Du</title>
 <!--[if gte mso 9]>
 <xml>
  <w:WordDocument>
@@ -941,14 +1005,14 @@ export function exportReportToDoc(
 <body>
 <div class="Section1">
 
-  <!-- Header element for Microsoft Word pages -->
+  <!-- Header element for Microsoft Word running headers -->
   <table style="display:none; mso-element:header" id="h1">
     <tr>
-      <td style="border:none; border-bottom:2px solid #1e3a8a; font-family:'Calibri',sans-serif; font-size:12pt; font-weight:bold; color:#1e3a8a; text-align:left; padding-bottom:6pt;">
-        Trường Anh Ngữ Mỹ Du
+      <td style="border:none; border-bottom:2px solid #1e3a8a; font-family:'Calibri',sans-serif; font-size:11pt; font-weight:bold; color:#1e3a8a; text-align:left; padding-bottom:4pt;">
+        BẬC THẦY WRITING IELTS
       </td>
-      <td style="border:none; border-bottom:2px solid #1e3a8a; font-family:'Calibri',sans-serif; font-size:10pt; color:#64748b; text-align:right; padding-bottom:6pt;">
-        Báo Cáo Phân Tích &amp; NÂNG CẤP Bài Viết IELTS
+      <td style="border:none; border-bottom:2px solid #1e3a8a; font-family:'Calibri',sans-serif; font-size:9pt; color:#475569; text-align:right; padding-bottom:4pt;">
+        TRƯỜNG ANH NGỮ MỸ DU - 51, Đường 2, Phước Long, HCM - SĐT: 0919309322
       </td>
     </tr>
   </table>

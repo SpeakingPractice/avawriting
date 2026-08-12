@@ -24,7 +24,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-const DEFAULT_MYDU_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160"><circle cx="80" cy="80" r="76" fill="%231b365d" stroke="%23f59e0b" stroke-width="7"/><circle cx="80" cy="80" r="70" fill="%230284c7"/><circle cx="80" cy="80" r="69" fill="%230284c7" stroke="%23ffea00" stroke-width="2"/><path d="M 38 82 C 18 56, 38 24, 60 16 C 43 26, 31 56, 38 82 Z" fill="%23ffffff" opacity="0.95"/><g fill="%23ffea00"><path d="M 64 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 74 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 84 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 94 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 104 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/></g><g><path d="M 66 42 L 79 82 H 68.5 L 66.5 73.5 H 60 L 58 82 H 51.5 Z M 63.2 60 H 63.3 L 63.25 50.5 Z" fill="%23ffea00" stroke="%23ffea00" stroke-width="1.8" stroke-linejoin="round"/><path d="M 102 42 L 115 82 H 104.5 L 102.5 73.5 H 96 L 94 82 H 87.5 Z M 99.2 60 H 99.3 L 99.25 50.5 Z" fill="%23ffea00" stroke="%23ffea00" stroke-width="1.8" stroke-linejoin="round"/><path d="M 69.5 42 L 84 82 L 98.5 42" fill="none" stroke="%23ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="20" y="88" width="120" height="18" rx="3" fill="%230284c7"/><text x="80" y="102" font-family="'Arial Black', 'Impact', system-ui, sans-serif" font-weight="900" font-size="11" fill="%23ffffff" text-anchor="middle" letter-spacing="0.2">ANH NGỮ MỸ DU</text><path d="M 28 106 C 50 148, 110 148, 132 106 C 118 142, 42 142, 28 106 Z" fill="%23ffea00"/><circle cx="120" cy="118" r="15" fill="%232563eb" stroke="%23ffffff" stroke-width="2.5"/><path d="M 112 118 L 117 123 L 128 112" fill="none" stroke="%23ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const DEFAULT_MYDU_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160"><circle cx="80" cy="80" r="76" fill="%231b365d" stroke="%23FDFA55" stroke-width="7"/><circle cx="80" cy="80" r="70" fill="%230284c7"/><circle cx="80" cy="80" r="69" fill="%230284c7" stroke="%23FDFA55" stroke-width="2"/><path d="M 38 82 C 18 56, 38 24, 60 16 C 43 26, 31 56, 38 82 Z" fill="%23ffffff" opacity="0.95"/><g fill="%23FDFA55"><path d="M 64 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 74 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 84 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 94 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 104 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/></g><g><path d="M 66 42 L 79 82 H 68.5 L 66.5 73.5 H 60 L 58 82 H 51.5 Z M 63.2 60 H 63.3 L 63.25 50.5 Z" fill="%23FDFA55" stroke="%23FDFA55" stroke-width="1.8" stroke-linejoin="round"/><path d="M 102 42 L 115 82 H 104.5 L 102.5 73.5 H 96 L 94 82 H 87.5 Z M 99.2 60 H 99.3 L 99.25 50.5 Z" fill="%23FDFA55" stroke="%23FDFA55" stroke-width="1.8" stroke-linejoin="round"/><path d="M 69.5 42 L 84 82 L 98.5 42" fill="none" stroke="%23ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="20" y="88" width="120" height="18" rx="3" fill="%230284c7"/><text x="80" y="102" font-family="'Arial Black', 'Impact', system-ui, sans-serif" font-weight="900" font-size="11" fill="%23ffffff" text-anchor="middle" letter-spacing="0.2">ANH NGỮ MỸ DU</text><path d="M 28 106 C 50 148, 110 148, 132 106 C 118 142, 42 142, 28 106 Z" fill="%23FDFA55"/><circle cx="120" cy="118" r="15" fill="%232563eb" stroke="%23ffffff" stroke-width="2.5"/><path d="M 112 118 L 117 123 L 128 112" fill="none" stroke="%23ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 export default function App() {
   const [essay, setEssay] = useState<string>("");
@@ -50,6 +50,9 @@ export default function App() {
   const [keyValidationMsg, setKeyValidationMsg] = useState<string | null>(null);
   const [forceShowConfig, setForceShowConfig] = useState<boolean>(false);
   const [isDraggingTask1Image, setIsDraggingTask1Image] = useState<boolean>(false);
+  const [studentClass, setStudentClass] = useState<string>("");
+  const [teacherName, setTeacherName] = useState<string>("");
+  const [studentName, setStudentName] = useState<string>("");
   const [customLogo, setCustomLogo] = useState<string>(() => {
     return localStorage.getItem("mydu_custom_logo") || DEFAULT_MYDU_LOGO;
   });
@@ -462,7 +465,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-16" id="app-root">
       {/* Upper Navigation & Branding Header */}
-      <header className="bg-blue-900 text-white border-b-4 border-yellow-400 shadow-md sticky top-0 z-50">
+      <header className="bg-blue-900 text-white border-b-4 border-[#FDFA55] shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Logo and title */}
@@ -484,7 +487,7 @@ export default function App() {
                   <img
                     src={customLogo || DEFAULT_MYDU_LOGO}
                     alt="Logo Trường Anh Ngữ Mỹ Du"
-                    className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-yellow-400 group-hover:scale-105 group-hover:border-yellow-300 transition-all bg-blue-950 shrink-0"
+                    className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-[#FDFA55] group-hover:scale-105 group-hover:border-[#FDFA55] transition-all bg-blue-950 shrink-0"
                   />
                 </div>
               </div>
@@ -494,7 +497,7 @@ export default function App() {
                 <h1 className="text-lg font-bold tracking-tight uppercase font-display flex items-center space-x-2">
                   <span>BẬC THẦY WRITING IELTS</span>
                 </h1>
-                <p className="text-xs text-yellow-300 font-medium tracking-wide">
+                <p className="text-xs text-[#FDFA55] font-medium tracking-wide">
                   Dare to dream, think &amp; do 🍃
                 </p>
               </div>
@@ -503,7 +506,7 @@ export default function App() {
             {/* School Info */}
             <div className="hidden sm:flex flex-col items-end text-right">
               <div className="text-sm font-bold uppercase tracking-wider text-white">TRƯỜNG ANH NGỮ MỸ DU</div>
-              <div className="text-xs font-medium text-yellow-300 flex items-center gap-2 mt-0.5">
+              <div className="text-xs font-medium text-[#FDFA55] flex items-center gap-2 mt-0.5">
                 <span>📍 51, Đường 2, Phước Long, HCM</span>
                 <span className="flex items-center gap-1">
                   {/* Colored Desk Telephone Icon with Buttons */}
@@ -526,8 +529,8 @@ export default function App() {
                     <rect x="11" y="15.8" width="2" height="1.3" rx="0.3" fill="#FFFFFF" />
                     <rect x="13.8" y="15.8" width="2" height="1.3" rx="0.3" fill="#10B981" />
                     {/* Handset Receiver on Cradle */}
-                    <path d="M2 7.5C2 6.11929 3.11929 5 4.5 5H19.5C20.8807 5 22 6.11929 22 7.5V8.5C22 9.32843 21.3284 10 20.5 10H18.5C17.6716 10 17 9.32843 17 8.5V7H7V8.5C7 9.32843 6.32843 10 5.5 10H3.5C2.67157 10 2 9.32843 2 8.5V7.5Z" fill="#F59E0B" />
-                    <path d="M3.5 5.5C3.5 4.67157 4.17157 4 5 4H19C19.8284 4 20.5 4.67157 20.5 5.5V6.5H3.5V5.5Z" fill="#FCD34D" />
+                    <path d="M2 7.5C2 6.11929 3.11929 5 4.5 5H19.5C20.8807 5 22 6.11929 22 7.5V8.5C22 9.32843 21.3284 10 20.5 10H18.5C17.6716 10 17 9.32843 17 8.5V7H7V8.5C7 9.32843 6.32843 10 5.5 10H3.5C2.67157 10 2 9.32843 2 8.5V7.5Z" fill="#FDFA55" />
+                    <path d="M3.5 5.5C3.5 4.67157 4.17157 4 5 4H19C19.8284 4 20.5 4.67157 20.5 5.5V6.5H3.5V5.5Z" fill="#FDFA55" />
                   </svg>
                   <span>0919309322</span>
                 </span>
@@ -625,21 +628,71 @@ export default function App() {
           <section className="lg:col-span-5 space-y-6" id="input-section">
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
               
-              {/* Header Title inside panel */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center space-x-2">
-                  <BookOpenCheck className="w-5 h-5 text-blue-700" />
-                  <h2 className="font-extrabold text-sm uppercase tracking-tight text-slate-800 font-display">
-                    Soạn thảo bài viết
-                  </h2>
+              {/* Header Title inside panel & Thông Tin Bài Viết */}
+              <div className="border-b border-slate-100 pb-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpenCheck className="w-5 h-5 text-blue-700" />
+                    <h2 className="font-extrabold text-sm uppercase tracking-tight text-slate-800 font-display">
+                      Soạn thảo bài viết
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleNewAttempt}
+                    className="text-xs text-slate-500 hover:text-blue-800 font-bold flex items-center space-x-1 cursor-pointer transition-colors"
+                    title="Xóa trắng để làm bài viết mới"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5 text-blue-700" />
+                    <span>Bài viết mới</span>
+                  </button>
                 </div>
-                <button
-                  onClick={handleNewAttempt}
-                  className="text-xs text-blue-700 hover:text-blue-800 font-bold flex items-center space-x-1"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Bài viết mới</span>
-                </button>
+
+                {/* THÔNG TIN BÀI VIẾT BLOCK */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 space-y-2.5">
+                  <div className="flex items-center space-x-1.5 text-xs font-extrabold uppercase text-blue-900 tracking-wider">
+                    <GraduationCap className="w-4 h-4 text-blue-700 shrink-0" />
+                    <span>Thông Tin Bài Viết</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
+                        1. Lớp:
+                      </label>
+                      <input
+                        type="text"
+                        value={studentClass}
+                        onChange={(e) => setStudentClass(e.target.value)}
+                        placeholder="Nhập lớp..."
+                        className="w-full text-xs p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-700 outline-none text-slate-800 font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
+                        2. GV Hướng Dẫn:
+                      </label>
+                      <input
+                        type="text"
+                        value={teacherName}
+                        onChange={(e) => setTeacherName(e.target.value)}
+                        placeholder="Nhập tên GV..."
+                        className="w-full text-xs p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-700 outline-none text-slate-800 font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
+                        3. Họ và tên:
+                      </label>
+                      <input
+                        type="text"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        placeholder="Nhập tên học sinh..."
+                        className="w-full text-xs p-2 rounded-lg bg-white border border-slate-200 focus:border-blue-700 outline-none text-slate-800 font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Task Type Toggle */}
@@ -1097,6 +1150,9 @@ export default function App() {
                   originalEssay: essay,
                   report,
                   task1Image: taskType === "task1" ? task1Image : null,
+                  studentClass,
+                  teacherName,
+                  studentName,
                 };
 
                 const latestTask1Item = history.find((item) => item.taskType === "task1");
@@ -1112,6 +1168,9 @@ export default function App() {
                         originalEssay: latestTask1Item.essay,
                         report: latestTask1Item.report,
                         task1Image: latestTask1Item.image || (taskType === "task1" ? task1Image : null),
+                        studentClass,
+                        teacherName,
+                        studentName,
                       }
                     : null;
 
@@ -1125,6 +1184,9 @@ export default function App() {
                         originalEssay: latestTask2Item.essay,
                         report: latestTask2Item.report,
                         task1Image: null,
+                        studentClass,
+                        teacherName,
+                        studentName,
                       }
                     : null;
 
@@ -1141,6 +1203,9 @@ export default function App() {
                     promptText={prompt}
                     allAvailableTasks={availableTasks}
                     task1Image={task1Image}
+                    studentClass={studentClass}
+                    teacherName={teacherName}
+                    studentName={studentName}
                   />
                 );
               })()

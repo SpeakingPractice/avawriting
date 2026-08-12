@@ -3,7 +3,7 @@ import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
 import { StandardCriteriaGuide } from "./StandardCriteriaGuide";
 import { EssayEvaluationView } from "./EssayEvaluationView";
-import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData, generateFallbackVietnameseTranslation } from "../lib/exportDoc";
+import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData, generateFallbackVietnameseTranslation, getVietnameseEssayText } from "../lib/exportDoc";
 import {
   Sparkles,
   AlertTriangle,
@@ -33,6 +33,9 @@ interface ReportDashboardProps {
   promptText?: string;
   allAvailableTasks?: TaskExportData[];
   task1Image?: string | null;
+  studentClass?: string;
+  teacherName?: string;
+  studentName?: string;
 }
 
 export const ReportDashboard: React.FC<ReportDashboardProps> = ({
@@ -43,6 +46,9 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   promptText = "",
   allAvailableTasks = [],
   task1Image = null,
+  studentClass = "",
+  teacherName = "",
+  studentName = "",
 }) => {
   const [activeTab, setActiveTab] = useState<"criteriaGuide" | "essayEvaluation" | "strengths" | "model" | "roadmap">("criteriaGuide");
   const [copied, setCopied] = useState(false);
@@ -61,14 +67,17 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
 
   const activeTaskData: TaskExportData = hasDualTasks
     ? selectedTaskIdx === 0
-      ? t1Task!
-      : t2Task!
+      ? { ...t1Task!, studentClass: t1Task!.studentClass || studentClass, teacherName: t1Task!.teacherName || teacherName, studentName: t1Task!.studentName || studentName }
+      : { ...t2Task!, studentClass: t2Task!.studentClass || studentClass, teacherName: t2Task!.teacherName || teacherName, studentName: t2Task!.studentName || studentName }
     : {
         taskType: taskType === "combo" ? "task2" : taskType,
         promptText,
         originalEssay,
         report,
         task1Image: task1Image || (taskType === "task1" ? t1Task?.task1Image : null),
+        studentClass,
+        teacherName,
+        studentName,
       };
 
   const activeReport = activeTaskData.report;
@@ -95,11 +104,24 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
   };
 
   const handleExportSingleDoc = (taskToExport?: TaskExportData) => {
-    exportReportToDoc([taskToExport || activeTaskData]);
+    const target = taskToExport || activeTaskData;
+    exportReportToDoc([{
+      ...target,
+      studentClass: target.studentClass || studentClass,
+      teacherName: target.teacherName || teacherName,
+      studentName: target.studentName || studentName,
+    }]);
   };
 
   const handleExportAllDoc = () => {
-    exportReportToDoc(hasDualTasks ? [t1Task!, t2Task!] : [activeTaskData]);
+    const rawList = hasDualTasks ? [t1Task!, t2Task!] : [activeTaskData];
+    const tasksWithInfo = rawList.map((t) => ({
+      ...t,
+      studentClass: t.studentClass || studentClass,
+      teacherName: t.teacherName || teacherName,
+      studentName: t.studentName || studentName,
+    }));
+    exportReportToDoc(tasksWithInfo);
   };
 
   const renderParagraphWithHighlights = (text: string) => {
@@ -571,9 +593,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                 <span>[1.2] Bản Dịch Tiếng Việt Song Ngữ Đối Chiếu (Vietnamese Translation)</span>
               </div>
               <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-5 md:p-6 font-serif text-sm leading-relaxed text-slate-800 max-h-[360px] overflow-y-auto scrollbar-thin">
-                {generateFallbackVietnameseTranslation(
-                  activeReport.fullUpgradeEssayVietnamese || activeReport.fullUpgradeEssay
-                )
+                {getVietnameseEssayText(activeReport)
                   .split("\n\n")
                   .map((para, i) => (
                     <p key={i} className="mb-4 last:mb-0 indent-4">
