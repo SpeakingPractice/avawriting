@@ -180,11 +180,13 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setCodes(data.allCodes || []);
+        const all = data.allCodes || [];
+        setCodes(all);
         setGeneratedCodes(data.newCodes || []);
         setSuccessMsg(`Đã tạo thành công ${data.newCodes?.length || 1} mã sử dụng 1 lần!`);
         setNote("");
-        localStorage.setItem("ava_local_codes", JSON.stringify(data.allCodes || []));
+        localStorage.setItem("ava_local_codes", JSON.stringify(all));
+        await syncCodesWithServer(all);
         setLoading(false);
         return;
       }

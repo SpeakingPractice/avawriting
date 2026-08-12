@@ -117,6 +117,10 @@ interface OneTimeCode {
   note?: string;
 }
 
+declare global {
+  var __ava_security_config: SecurityConfig | undefined;
+}
+
 interface SecurityConfig {
   masterKey: string;
   oneTimeCodes: OneTimeCode[];
@@ -124,15 +128,14 @@ interface SecurityConfig {
 }
 
 const CONFIG_FILE_PATHS = [
+  "/tmp/ava_security_config.json",
+  path.join(os.tmpdir(), "ava_security_config.json"),
   path.join(process.cwd(), "security_config.json"),
-  path.join(os.tmpdir(), "security_config.json"),
-  "/tmp/security_config.json",
 ];
-let inMemoryConfig: SecurityConfig | null = null;
 
 function getSecurityConfig(): SecurityConfig {
-  if (inMemoryConfig && Array.isArray(inMemoryConfig.oneTimeCodes) && inMemoryConfig.oneTimeCodes.length > 0) {
-    return inMemoryConfig;
+  if (globalThis.__ava_security_config) {
+    return globalThis.__ava_security_config;
   }
 
   let mergedMasterKey = "999999";
@@ -148,8 +151,11 @@ function getSecurityConfig(): SecurityConfig {
           if (parsed.masterKey) mergedMasterKey = parsed.masterKey;
           if (Array.isArray(parsed.oneTimeCodes)) {
             for (const item of parsed.oneTimeCodes) {
-              if (item && item.code && typeof item.code === "string" && !mergedCodesMap.has(item.code)) {
-                mergedCodesMap.set(item.code, item);
+              if (item && item.code && typeof item.code === "string") {
+                const cleanC = String(item.code).trim();
+                if (!mergedCodesMap.has(cleanC)) {
+                  mergedCodesMap.set(cleanC, { ...item, code: cleanC });
+                }
               }
             }
           }
@@ -163,25 +169,17 @@ function getSecurityConfig(): SecurityConfig {
     }
   }
 
-  if (inMemoryConfig && Array.isArray(inMemoryConfig.oneTimeCodes)) {
-    for (const item of inMemoryConfig.oneTimeCodes) {
-      if (item && item.code && typeof item.code === "string" && !mergedCodesMap.has(item.code)) {
-        mergedCodesMap.set(item.code, item);
-      }
-    }
-  }
-
-  inMemoryConfig = {
+  globalThis.__ava_security_config = {
     masterKey: mergedMasterKey,
     oneTimeCodes: Array.from(mergedCodesMap.values()),
     activeSessions: mergedActiveSessions,
   };
 
-  return inMemoryConfig;
+  return globalThis.__ava_security_config;
 }
 
 function saveSecurityConfig(config: SecurityConfig) {
-  inMemoryConfig = config;
+  globalThis.__ava_security_config = config;
   const jsonContent = JSON.stringify(config, null, 2);
   for (const filePath of CONFIG_FILE_PATHS) {
     try {
