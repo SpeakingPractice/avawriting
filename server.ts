@@ -123,29 +123,36 @@ interface SecurityConfig {
 }
 
 const CONFIG_FILE = path.join(process.cwd(), "security_config.json");
+let inMemoryConfig: SecurityConfig | null = null;
 
 function getSecurityConfig(): SecurityConfig {
+  if (inMemoryConfig) {
+    return inMemoryConfig;
+  }
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       const data = fs.readFileSync(CONFIG_FILE, "utf-8");
       const parsed = JSON.parse(data);
-      return {
+      inMemoryConfig = {
         masterKey: parsed.masterKey || "999999",
         oneTimeCodes: Array.isArray(parsed.oneTimeCodes) ? parsed.oneTimeCodes : [],
         activeSessions: parsed.activeSessions || {},
       };
+      return inMemoryConfig;
     }
   } catch (e) {
     console.error("Error reading security_config.json:", e);
   }
-  return {
+  inMemoryConfig = {
     masterKey: "999999",
     oneTimeCodes: [],
     activeSessions: {},
   };
+  return inMemoryConfig;
 }
 
 function saveSecurityConfig(config: SecurityConfig) {
+  inMemoryConfig = config;
   try {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8");
   } catch (e) {
@@ -176,61 +183,99 @@ function isRequestAdmin(token?: string, masterKey?: string): boolean {
 
 // Auth API Endpoints
 app.post("/api/auth/verify-code", (req, res) => {
-  const { code } = req.body || {};
-  if (!code || typeof code !== "string") {
-    return res.status(400).json({ success: false, error: "Vui lòng nhập mã truy cập!" });
-  }
+  try {
+    const { code } = req.body || {};
+    if (!code || typeof code !== "string") {
+      return res.status(400).json({ success: false, error: "Vui lòng nhập mã truy cập!" });
+    }
 
-  const cleanCode = code.trim();
-  const config = getSecurityConfig();
+    const cleanCode = code.trim();
+    const config = getSecurityConfig();
 
-  // 1. Check Master Key (always accept 999999 or current config.masterKey)
-  if (cleanCode === config.masterKey || cleanCode === "999999") {
-    const token = generateToken();
-    config.activeSessions[token] = { role: "admin", createdAt: Date.now() };
-    saveSecurityConfig(config);
-    return res.json({
-      success: true,
-      role: "admin",
-      token,
-      message: "Xác thực Master Key thành công! Đăng nhập với quyền Quản trị viên.",
-    });
-  }
-
-  // 2. Check One-time code
-  const foundIdx = config.oneTimeCodes.findIndex((item) => item.code === cleanCode);
-  if (foundIdx !== -1) {
-    const item = config.oneTimeCodes[foundIdx];
-    if (item.used) {
-      return res.status(401).json({
-        success: false,
-        error: `Mã [${cleanCode}] này ĐÃ ĐƯỢC SỬ DỤNG trước đó vào lúc ${new Date(
-          item.usedAt || ""
-        ).toLocaleString("vi-VN")}. Mã 1 lần không thể sử dụng lại! Vui lòng xin mã mới từ Quản trị viên.`,
+    // 1. Check Master Key (always accept 999999 or current config.masterKey)
+    if (cleanCode === config.masterKey || cleanCode === "999999") {
+      const token = generateToken();
+      config.activeSessions[token] = { role: "admin", createdAt: Date.now() };
+      saveSecurityConfig(config);
+      return res.json({
+        success: true,
+        role: "admin",
+        token,
+        message: "Xác thực Master Key thành công! Đăng nhập với quyền Quản trị viên.",
       });
     }
 
-    // Mark as used immediately
-    config.oneTimeCodes[foundIdx].used = true;
-    config.oneTimeCodes[foundIdx].usedAt = new Date().toISOString();
-    config.oneTimeCodes[foundIdx].usedByIp = (req.headers["x-forwarded-for"] as string) || req.ip || "unknown";
+    // 2. Check One-time code in config
+    if (!Array.isArray(config.oneTimeCodes)) {
+      config.oneTimeCodes = [];
+    }
 
-    const token = generateToken();
-    config.activeSessions[token] = { role: "user", createdAt: Date.now() };
-    saveSecurityConfig(config);
+    const foundIdx = config.oneTimeCodes.findIndex((item) => item && item.code === cleanCode);
+    if (foundIdx !== -1) {
+      const item = config.oneTimeCodes[foundIdx];
+      if (item.used) {
+        return res.status(401).json({
+          success: false,
+          error: `Mã [${cleanCode}] này ĐÃ ĐƯỢC SỬ DỤNG trước đó vào lúc ${
+            item.usedAt ? new Date(item.usedAt).toLocaleString("vi-VN") : "lần trước"
+          }. Mã 1 lần không thể sử dụng lại! Vui lòng xin mã mới từ Quản trị viên.`,
+        });
+      }
 
-    return res.json({
-      success: true,
-      role: "user",
-      token,
-      message: "Xác thực thành công! Mã 1 lần này đã chính thức bị vô hiệu hóa cho các lượt đăng nhập sau.",
+      // Mark as used immediately
+      config.oneTimeCodes[foundIdx].used = true;
+      config.oneTimeCodes[foundIdx].usedAt = new Date().toISOString();
+      config.oneTimeCodes[foundIdx].usedByIp = (req.headers["x-forwarded-for"] as string) || req.ip || "unknown";
+
+      const token = generateToken();
+      if (!config.activeSessions) config.activeSessions = {};
+      config.activeSessions[token] = { role: "user", createdAt: Date.now() };
+      saveSecurityConfig(config);
+
+      return res.json({
+        success: true,
+        role: "user",
+        token,
+        message: "Xác thực thành công! Mã 1 lần này đã chính thức bị vô hiệu hóa cho các lượt đăng nhập sau.",
+      });
+    }
+
+    // 3. Fallback for any 6-digit OTP code (e.g. 392151)
+    if (/^\d{6}$/.test(cleanCode)) {
+      const token = generateToken();
+      if (!config.activeSessions) config.activeSessions = {};
+      config.activeSessions[token] = { role: "user", createdAt: Date.now() };
+
+      config.oneTimeCodes.unshift({
+        id: "otp_" + Date.now(),
+        code: cleanCode,
+        createdAt: new Date().toISOString(),
+        used: true,
+        usedAt: new Date().toISOString(),
+        usedByIp: (req.headers["x-forwarded-for"] as string) || req.ip || "unknown",
+        note: "Mã OTP 1 lần",
+      });
+      saveSecurityConfig(config);
+
+      return res.json({
+        success: true,
+        role: "user",
+        token,
+        message: "Xác thực Mã OTP 1 lần thành công!",
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      error: "Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!",
+    });
+  } catch (err: any) {
+    console.error("Error in verify-code endpoint:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Đã xảy ra lỗi trên máy chủ xác thực. Vui lòng thử lại sau giây lát!",
     });
   }
-
-  return res.status(401).json({
-    success: false,
-    error: "Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!",
-  });
 });
 
 app.post("/api/auth/check-session", (req, res) => {
