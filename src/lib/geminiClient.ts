@@ -93,9 +93,9 @@ async function generateWithFallbackClient(
 ) {
   const models = [
     "gemini-3.6-flash",
-    "gemini-2.5-flash",
     "gemini-flash-latest",
     "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-preview",
   ];
 
   let lastError: any = null;
