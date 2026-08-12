@@ -288,36 +288,92 @@ app.post("/api/auth/admin/get-data", (req, res) => {
   });
 });
 
-app.post("/api/auth/admin/generate-code", (req, res) => {
-  const { token, masterKey, note, count = 1 } = req.body || {};
-  if (!isRequestAdmin(token, masterKey)) {
-    return res.status(403).json({ error: "Không có quyền thực hiện thao tác này." });
-  }
-
-  const config = getSecurityConfig();
-  const generatedCount = Math.min(Math.max(1, Number(count) || 1), 20);
-  const newItems: OneTimeCode[] = [];
-
-  for (let i = 0; i < generatedCount; i++) {
-    let newCode = generateRandom6DigitCode();
-    while (config.oneTimeCodes.some((c) => c.code === newCode) || newCode === config.masterKey || newCode === "999999") {
-      newCode = generateRandom6DigitCode();
+app.post("/api/auth/admin/sync-codes", (req, res) => {
+  try {
+    const { token, masterKey, codes } = req.body || {};
+    if (!isRequestAdmin(token, masterKey)) {
+      return res.status(403).json({ error: "Không có quyền thực hiện." });
     }
 
-    const item: OneTimeCode = {
-      id: "code_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      code: newCode,
-      createdAt: new Date().toISOString(),
-      used: false,
-      note: note ? String(note).trim() : `Mã 1 lần #${config.oneTimeCodes.length + i + 1}`,
-    };
-    newItems.push(item);
+    const config = getSecurityConfig();
+    if (!Array.isArray(config.oneTimeCodes)) {
+      config.oneTimeCodes = [];
+    }
+
+    if (Array.isArray(codes) && codes.length > 0) {
+      let updated = false;
+      for (const c of codes) {
+        if (c && c.code && typeof c.code === "string") {
+          const cleanC = String(c.code).trim();
+          const existingIdx = config.oneTimeCodes.findIndex((item) => item && item.code === cleanC);
+          if (existingIdx === -1) {
+            config.oneTimeCodes.unshift({
+              id: c.id || "code_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+              code: cleanC,
+              createdAt: c.createdAt || new Date().toISOString(),
+              used: !!c.used,
+              usedAt: c.usedAt,
+              note: c.note || "Mã 1 lần từ Quản trị viên",
+            });
+            updated = true;
+          }
+        }
+      }
+      if (updated) {
+        saveSecurityConfig(config);
+      }
+    }
+
+    return res.json({ success: true, allCodes: config.oneTimeCodes });
+  } catch (err: any) {
+    console.error("Error in sync-codes endpoint:", err);
+    return res.status(500).json({ success: false, error: "Lỗi đồng bộ mã." });
   }
+});
 
-  config.oneTimeCodes.unshift(...newItems);
-  saveSecurityConfig(config);
+app.post("/api/auth/admin/generate-code", (req, res) => {
+  try {
+    const { token, masterKey, note, count = 1 } = req.body || {};
+    if (!isRequestAdmin(token, masterKey)) {
+      return res.status(403).json({ error: "Không có quyền thực hiện thao tác này." });
+    }
 
-  return res.json({ success: true, newCodes: newItems, allCodes: config.oneTimeCodes });
+    const config = getSecurityConfig();
+    if (!Array.isArray(config.oneTimeCodes)) {
+      config.oneTimeCodes = [];
+    }
+
+    const generatedCount = Math.min(Math.max(1, Number(count) || 1), 20);
+    const newItems: OneTimeCode[] = [];
+
+    for (let i = 0; i < generatedCount; i++) {
+      let newCode = generateRandom6DigitCode();
+      while (
+        config.oneTimeCodes.some((c) => c && c.code === newCode) ||
+        newCode === config.masterKey ||
+        newCode === "999999"
+      ) {
+        newCode = generateRandom6DigitCode();
+      }
+
+      const item: OneTimeCode = {
+        id: "code_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        code: newCode,
+        createdAt: new Date().toISOString(),
+        used: false,
+        note: note ? String(note).trim() : `Mã 1 lần #${config.oneTimeCodes.length + i + 1}`,
+      };
+      newItems.push(item);
+    }
+
+    config.oneTimeCodes.unshift(...newItems);
+    saveSecurityConfig(config);
+
+    return res.json({ success: true, newCodes: newItems, allCodes: config.oneTimeCodes });
+  } catch (err: any) {
+    console.error("Error in generate-code endpoint:", err);
+    return res.status(500).json({ success: false, error: "Lỗi máy chủ khi tạo mã." });
+  }
 });
 
 app.post("/api/auth/admin/change-master-key", (req, res) => {

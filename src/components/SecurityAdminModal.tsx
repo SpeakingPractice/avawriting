@@ -61,6 +61,29 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
   // Copy state
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const syncCodesWithServer = async (clientCodes: OneTimeCode[]) => {
+    try {
+      const res = await fetch("/api/auth/admin/sync-codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: sessionToken,
+          masterKey: "999999",
+          codes: clientCodes,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.allCodes)) {
+        setCodes(data.allCodes);
+        localStorage.setItem("ava_local_codes", JSON.stringify(data.allCodes));
+        return data.allCodes;
+      }
+    } catch (err) {
+      console.error("syncCodesWithServer error:", err);
+    }
+    return null;
+  };
+
   const loadFromLocalFallback = () => {
     const localMaster = localStorage.getItem("ava_local_master_key") || "999999";
     const localCodesStr = localStorage.getItem("ava_local_codes");
@@ -74,12 +97,24 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
     }
     setMasterKey(localMaster);
     setCodes(localCodes);
+    if (localCodes.length > 0) {
+      syncCodesWithServer(localCodes);
+    }
   };
 
   const fetchAdminData = async () => {
     if (userRole !== "admin") return;
     setLoading(true);
     setError(null);
+
+    const localCodesStr = localStorage.getItem("ava_local_codes");
+    let localCodes: OneTimeCode[] = [];
+    if (localCodesStr) {
+      try {
+        localCodes = JSON.parse(localCodesStr);
+      } catch (err) {}
+    }
+
     try {
       const res = await fetch("/api/auth/admin/get-data", {
         method: "POST",
@@ -89,9 +124,24 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
       const data = await res.json();
       if (res.ok) {
         setMasterKey(data.masterKey || "999999");
-        setCodes(data.oneTimeCodes || []);
+        const serverCodes: OneTimeCode[] = data.oneTimeCodes || [];
+
+        // Check if there are local codes that aren't on server yet
+        const missingOnServer = localCodes.filter(
+          (lc) => lc && lc.code && !serverCodes.some((sc: OneTimeCode) => sc.code === lc.code)
+        );
+
+        if (missingOnServer.length > 0) {
+          const syncedAll = await syncCodesWithServer(localCodes);
+          if (!syncedAll) {
+            setCodes(serverCodes);
+            localStorage.setItem("ava_local_codes", JSON.stringify(serverCodes));
+          }
+        } else {
+          setCodes(serverCodes);
+          localStorage.setItem("ava_local_codes", JSON.stringify(serverCodes));
+        }
         localStorage.setItem("ava_local_master_key", data.masterKey || "999999");
-        localStorage.setItem("ava_local_codes", JSON.stringify(data.oneTimeCodes || []));
       } else {
         loadFromLocalFallback();
       }
@@ -168,6 +218,10 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
     setSuccessMsg(`Đã tạo thành công ${newItems.length} mã sử dụng 1 lần!`);
     setNote("");
     localStorage.setItem("ava_local_codes", JSON.stringify(updatedCodes));
+
+    // Immediately push fallback codes to server!
+    await syncCodesWithServer(updatedCodes);
+
     setLoading(false);
   };
 

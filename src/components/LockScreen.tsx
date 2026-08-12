@@ -48,6 +48,46 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         return;
       }
 
+      // Local fallback check if code exists in localStorage
+      const localCodesStr = localStorage.getItem("ava_local_codes");
+      if (localCodesStr) {
+        try {
+          const localCodes = JSON.parse(localCodesStr);
+          const foundIdx = localCodes.findIndex((item: any) => item && item.code === cleanCode);
+          if (foundIdx !== -1) {
+            const item = localCodes[foundIdx];
+            if (item.used) {
+              setError(`Mã [${cleanCode}] này ĐÃ ĐƯỢC SỬ DỤNG trước đó. Mã 1 lần không thể sử dụng lại! Vui lòng xin mã mới từ Quản trị viên.`);
+              setLoading(false);
+              return;
+            }
+
+            // Mark as used locally
+            localCodes[foundIdx].used = true;
+            localCodes[foundIdx].usedAt = new Date().toISOString();
+            localStorage.setItem("ava_local_codes", JSON.stringify(localCodes));
+
+            // Sync to server in background
+            fetch("/api/auth/admin/sync-codes", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ masterKey: "999999", codes: localCodes }),
+            }).catch(() => {});
+
+            const userToken = "user_otp_token_" + Date.now();
+            sessionStorage.setItem("ava_session_token", userToken);
+            sessionStorage.setItem("ava_session_role", "user");
+            setSuccessMsg("Xác thực Mã 1 lần thành công!");
+            setTimeout(() => {
+              onUnlockSuccess("user", userToken);
+            }, 300);
+            return;
+          }
+        } catch (localErr) {
+          console.error("Local OTP check error:", localErr);
+        }
+      }
+
       // If server returned a specific error message (e.g., "Mã đã được sử dụng")
       if (data && data.error) {
         setError(data.error);
