@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -103,6 +104,251 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: "10mb" }));
+
+// Security Config Management & One-Time Passcode (OTP)
+interface OneTimeCode {
+  id: string;
+  code: string;
+  createdAt: string;
+  used: boolean;
+  usedAt?: string;
+  usedByIp?: string;
+  note?: string;
+}
+
+interface SecurityConfig {
+  masterKey: string;
+  oneTimeCodes: OneTimeCode[];
+  activeSessions: Record<string, { role: "admin" | "user"; createdAt: number }>;
+}
+
+const CONFIG_FILE = path.join(process.cwd(), "security_config.json");
+
+function getSecurityConfig(): SecurityConfig {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      const data = fs.readFileSync(CONFIG_FILE, "utf-8");
+      const parsed = JSON.parse(data);
+      return {
+        masterKey: parsed.masterKey || "999999",
+        oneTimeCodes: Array.isArray(parsed.oneTimeCodes) ? parsed.oneTimeCodes : [],
+        activeSessions: parsed.activeSessions || {},
+      };
+    }
+  } catch (e) {
+    console.error("Error reading security_config.json:", e);
+  }
+  return {
+    masterKey: "999999",
+    oneTimeCodes: [],
+    activeSessions: {},
+  };
+}
+
+function saveSecurityConfig(config: SecurityConfig) {
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Error writing security_config.json:", e);
+  }
+}
+
+function generateRandom6DigitCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function generateToken(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+// Auth API Endpoints
+app.post("/api/auth/verify-code", (req, res) => {
+  const { code } = req.body || {};
+  if (!code || typeof code !== "string") {
+    return res.status(400).json({ success: false, error: "Vui lòng nhập mã truy cập!" });
+  }
+
+  const cleanCode = code.trim();
+  const config = getSecurityConfig();
+
+  // 1. Check Master Key
+  if (cleanCode === config.masterKey) {
+    const token = generateToken();
+    config.activeSessions[token] = { role: "admin", createdAt: Date.now() };
+    saveSecurityConfig(config);
+    return res.json({
+      success: true,
+      role: "admin",
+      token,
+      message: "Xác thực Master Key thành công! Đăng nhập với quyền Quản trị viên.",
+    });
+  }
+
+  // 2. Check One-time code
+  const foundIdx = config.oneTimeCodes.findIndex((item) => item.code === cleanCode);
+  if (foundIdx !== -1) {
+    const item = config.oneTimeCodes[foundIdx];
+    if (item.used) {
+      return res.status(401).json({
+        success: false,
+        error: `Mã [${cleanCode}] này ĐÃ ĐƯỢC SỬ DỤNG trước đó vào lúc ${new Date(
+          item.usedAt || ""
+        ).toLocaleString("vi-VN")}. Mã 1 lần không thể sử dụng lại! Vui lòng xin mã mới từ Quản trị viên.`,
+      });
+    }
+
+    // Mark as used immediately
+    config.oneTimeCodes[foundIdx].used = true;
+    config.oneTimeCodes[foundIdx].usedAt = new Date().toISOString();
+    config.oneTimeCodes[foundIdx].usedByIp = (req.headers["x-forwarded-for"] as string) || req.ip || "unknown";
+
+    const token = generateToken();
+    config.activeSessions[token] = { role: "user", createdAt: Date.now() };
+    saveSecurityConfig(config);
+
+    return res.json({
+      success: true,
+      role: "user",
+      token,
+      message: "Xác thực thành công! Mã 1 lần này đã chính thức bị vô hiệu hóa cho các lượt đăng nhập sau.",
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    error: "Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!",
+  });
+});
+
+app.post("/api/auth/check-session", (req, res) => {
+  const { token } = req.body || {};
+  if (!token) return res.json({ valid: false });
+
+  const config = getSecurityConfig();
+  const session = config.activeSessions[token];
+  if (!session) return res.json({ valid: false });
+
+  // Expiry check (7 days)
+  if (Date.now() - session.createdAt > 7 * 24 * 60 * 60 * 1000) {
+    delete config.activeSessions[token];
+    saveSecurityConfig(config);
+    return res.json({ valid: false });
+  }
+
+  return res.json({ valid: true, role: session.role });
+});
+
+app.post("/api/auth/admin/get-data", (req, res) => {
+  const { token, masterKey } = req.body || {};
+  const config = getSecurityConfig();
+
+  const isMaster = masterKey === config.masterKey;
+  const isSessionAdmin = token && config.activeSessions[token]?.role === "admin";
+
+  if (!isMaster && !isSessionAdmin) {
+    return res.status(403).json({ error: "Không có quyền truy cập Quản trị viên." });
+  }
+
+  return res.json({
+    masterKey: config.masterKey,
+    oneTimeCodes: config.oneTimeCodes,
+  });
+});
+
+app.post("/api/auth/admin/generate-code", (req, res) => {
+  const { token, masterKey, note, count = 1 } = req.body || {};
+  const config = getSecurityConfig();
+
+  const isMaster = masterKey === config.masterKey;
+  const isSessionAdmin = token && config.activeSessions[token]?.role === "admin";
+
+  if (!isMaster && !isSessionAdmin) {
+    return res.status(403).json({ error: "Không có quyền thực hiện thao tác này." });
+  }
+
+  const generatedCount = Math.min(Math.max(1, Number(count) || 1), 20);
+  const newItems: OneTimeCode[] = [];
+
+  for (let i = 0; i < generatedCount; i++) {
+    let newCode = generateRandom6DigitCode();
+    while (config.oneTimeCodes.some((c) => c.code === newCode) || newCode === config.masterKey) {
+      newCode = generateRandom6DigitCode();
+    }
+
+    const item: OneTimeCode = {
+      id: "code_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      code: newCode,
+      createdAt: new Date().toISOString(),
+      used: false,
+      note: note ? String(note).trim() : `Mã 1 lần #${config.oneTimeCodes.length + i + 1}`,
+    };
+    newItems.push(item);
+  }
+
+  config.oneTimeCodes.unshift(...newItems);
+  saveSecurityConfig(config);
+
+  return res.json({ success: true, newCodes: newItems, allCodes: config.oneTimeCodes });
+});
+
+app.post("/api/auth/admin/change-master-key", (req, res) => {
+  const { token, oldKey, newKey } = req.body || {};
+  const config = getSecurityConfig();
+
+  const isMaster = oldKey === config.masterKey;
+  const isSessionAdmin = token && config.activeSessions[token]?.role === "admin";
+
+  if (!isMaster && !isSessionAdmin) {
+    return res.status(403).json({ error: "Mã Quản trị hiện tại không chính xác." });
+  }
+
+  if (!newKey || typeof newKey !== "string" || newKey.trim().length < 4) {
+    return res.status(400).json({ error: "Mã Quản trị mới phải có ít nhất 4 ký tự!" });
+  }
+
+  config.masterKey = newKey.trim();
+  saveSecurityConfig(config);
+
+  return res.json({
+    success: true,
+    message: "Đã cập nhật Mã Quản trị (Master Key) thành công!",
+    newMasterKey: config.masterKey,
+  });
+});
+
+app.post("/api/auth/admin/delete-code", (req, res) => {
+  const { token, masterKey, codeId } = req.body || {};
+  const config = getSecurityConfig();
+
+  const isMaster = masterKey === config.masterKey;
+  const isSessionAdmin = token && config.activeSessions[token]?.role === "admin";
+
+  if (!isMaster && !isSessionAdmin) {
+    return res.status(403).json({ error: "Không có quyền thực hiện." });
+  }
+
+  config.oneTimeCodes = config.oneTimeCodes.filter((c) => c.id !== codeId && c.code !== codeId);
+  saveSecurityConfig(config);
+
+  return res.json({ success: true, allCodes: config.oneTimeCodes });
+});
+
+app.post("/api/auth/admin/clear-used-codes", (req, res) => {
+  const { token, masterKey } = req.body || {};
+  const config = getSecurityConfig();
+
+  const isMaster = masterKey === config.masterKey;
+  const isSessionAdmin = token && config.activeSessions[token]?.role === "admin";
+
+  if (!isMaster && !isSessionAdmin) {
+    return res.status(403).json({ error: "Không có quyền thực hiện." });
+  }
+
+  config.oneTimeCodes = config.oneTimeCodes.filter((c) => !c.used);
+  saveSecurityConfig(config);
+
+  return res.json({ success: true, allCodes: config.oneTimeCodes });
+});
 
 // Helper function to calculate official IELTS rounding (0.0, 0.5, 1.0)
 function roundIELTS(score: number): number {

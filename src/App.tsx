@@ -4,6 +4,8 @@ import { ScoreGauge } from "./components/ScoreGauge";
 import { ReviewHistory } from "./components/ReviewHistory";
 import { FileUploader } from "./components/FileUploader";
 import { ReportDashboard } from "./components/ReportDashboard";
+import { LockScreen } from "./components/LockScreen";
+import { SecurityAdminModal } from "./components/SecurityAdminModal";
 import { validateGeminiApiKeyClient, gradeEssayClient } from "./lib/geminiClient";
 import { TaskExportData } from "./lib/exportDoc";
 import {
@@ -22,6 +24,8 @@ import {
   Key,
   Image,
   GraduationCap,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 
 const DEFAULT_MYDU_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160"><circle cx="80" cy="80" r="76" fill="%231b365d" stroke="%23FDFA55" stroke-width="7"/><circle cx="80" cy="80" r="70" fill="%230284c7"/><circle cx="80" cy="80" r="69" fill="%230284c7" stroke="%23FDFA55" stroke-width="2"/><path d="M 38 82 C 18 56, 38 24, 60 16 C 43 26, 31 56, 38 82 Z" fill="%23ffffff" opacity="0.95"/><g fill="%23FDFA55"><path d="M 64 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 74 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 84 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 94 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/><path d="M 104 23.5 l 1.3 2.7 h 2.9 l -2.3 2.2 l 0.9 2.9 l -2.8 -1.8 l -2.8 1.8 l 0.9 -2.9 l -2.3 -2.2 h 2.9 z"/></g><g><path d="M 66 42 L 79 82 H 68.5 L 66.5 73.5 H 60 L 58 82 H 51.5 Z M 63.2 60 H 63.3 L 63.25 50.5 Z" fill="%23FDFA55" stroke="%23FDFA55" stroke-width="1.8" stroke-linejoin="round"/><path d="M 102 42 L 115 82 H 104.5 L 102.5 73.5 H 96 L 94 82 H 87.5 Z M 99.2 60 H 99.3 L 99.25 50.5 Z" fill="%23FDFA55" stroke="%23FDFA55" stroke-width="1.8" stroke-linejoin="round"/><path d="M 69.5 42 L 84 82 L 98.5 42" fill="none" stroke="%23ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="20" y="88" width="120" height="18" rx="3" fill="%230284c7"/><text x="80" y="102" font-family="'Arial Black', 'Impact', system-ui, sans-serif" font-weight="900" font-size="11" fill="%23ffffff" text-anchor="middle" letter-spacing="0.2">ANH NGỮ MỸ DU</text><path d="M 28 106 C 50 148, 110 148, 132 106 C 118 142, 42 142, 28 106 Z" fill="%23FDFA55"/><circle cx="120" cy="118" r="15" fill="%232563eb" stroke="%23ffffff" stroke-width="2.5"/><path d="M 112 118 L 117 123 L 128 112" fill="none" stroke="%23ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -57,6 +61,56 @@ export default function App() {
     return localStorage.getItem("mydu_custom_logo") || DEFAULT_MYDU_LOGO;
   });
   const logoInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Security Auth States
+  const [sessionToken, setSessionToken] = useState<string>(() => sessionStorage.getItem("ava_session_token") || "");
+  const [sessionRole, setSessionRole] = useState<"admin" | "user">(
+    () => (sessionStorage.getItem("ava_session_role") as "admin" | "user") || "user"
+  );
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => !!sessionStorage.getItem("ava_session_token"));
+  const [showSecurityModal, setShowSecurityModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("ava_session_token");
+    if (token) {
+      fetch("/api/auth/check-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.valid) {
+            setIsUnlocked(true);
+            setSessionRole(data.role || "user");
+          } else {
+            sessionStorage.removeItem("ava_session_token");
+            sessionStorage.removeItem("ava_session_role");
+            setIsUnlocked(false);
+            setSessionToken("");
+          }
+        })
+        .catch(() => {
+          // Keep active if offline/error
+        });
+    } else {
+      setIsUnlocked(false);
+    }
+  }, []);
+
+  const handleUnlockSuccess = (role: "admin" | "user", token: string) => {
+    setSessionRole(role);
+    setSessionToken(token);
+    setIsUnlocked(true);
+  };
+
+  const handleLockApp = () => {
+    sessionStorage.removeItem("ava_session_token");
+    sessionStorage.removeItem("ava_session_role");
+    setIsUnlocked(false);
+    setSessionToken("");
+    setShowSecurityModal(false);
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -503,8 +557,18 @@ export default function App() {
               </div>
             </div>
 
-            {/* School Info */}
-            <div className="hidden sm:flex flex-col items-end text-right">
+            {/* School Info & Security Badge */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowSecurityModal(true)}
+                className="px-3 py-1.5 bg-blue-900/60 hover:bg-blue-900 border border-blue-400/30 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                title="Bảo mật & Quản lý Mã 1 lần"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#FDFA55]" />
+                <span className="hidden xs:inline">Bảo mật</span>
+              </button>
+
+              <div className="hidden sm:flex flex-col items-end text-right">
               <div className="text-sm font-bold uppercase tracking-wider text-white">TRƯỜNG ANH NGỮ MỸ DU</div>
               <div className="text-xs font-medium text-[#FDFA55] flex items-center gap-2 mt-0.5">
                 <span>📍 51, Đường 2, Phước Long, HCM</span>
@@ -538,7 +602,8 @@ export default function App() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* Main Content Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
@@ -1274,6 +1339,18 @@ export default function App() {
 
         </div>
       </main>
+
+      {/* Security Lock Screen Gate */}
+      {!isUnlocked && <LockScreen onUnlockSuccess={handleUnlockSuccess} />}
+
+      {/* Security Admin & OTP Modal */}
+      <SecurityAdminModal
+        isOpen={showSecurityModal}
+        onClose={() => setShowSecurityModal(false)}
+        userRole={sessionRole}
+        sessionToken={sessionToken}
+        onLockApp={handleLockApp}
+      />
     </div>
   );
 }
