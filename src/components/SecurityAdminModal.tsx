@@ -126,22 +126,24 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
         setMasterKey(data.masterKey || "999999");
         const serverCodes: OneTimeCode[] = data.oneTimeCodes || [];
 
-        // Check if there are local codes that aren't on server yet
-        const missingOnServer = localCodes.filter(
-          (lc) => lc && lc.code && !serverCodes.some((sc: OneTimeCode) => sc.code === lc.code)
-        );
-
-        if (missingOnServer.length > 0) {
-          const syncedAll = await syncCodesWithServer(localCodes);
-          if (!syncedAll) {
-            setCodes(serverCodes);
-            localStorage.setItem("ava_local_codes", JSON.stringify(serverCodes));
+        // Merge server and local codes to guarantee no code is lost
+        const combinedMap = new Map<string, OneTimeCode>();
+        serverCodes.forEach((sc) => {
+          if (sc && sc.code) combinedMap.set(sc.code, sc);
+        });
+        localCodes.forEach((lc) => {
+          if (lc && lc.code && !combinedMap.has(lc.code)) {
+            combinedMap.set(lc.code, lc);
           }
-        } else {
-          setCodes(serverCodes);
-          localStorage.setItem("ava_local_codes", JSON.stringify(serverCodes));
-        }
+        });
+        const combinedCodes = Array.from(combinedMap.values());
+
+        setCodes(combinedCodes);
+        localStorage.setItem("ava_local_codes", JSON.stringify(combinedCodes));
         localStorage.setItem("ava_local_master_key", data.masterKey || "999999");
+
+        // Sync combined set to server to guarantee server has all codes
+        syncCodesWithServer(combinedCodes);
       } else {
         loadFromLocalFallback();
       }

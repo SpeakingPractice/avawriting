@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import os from "os";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -122,41 +123,72 @@ interface SecurityConfig {
   activeSessions: Record<string, { role: "admin" | "user"; createdAt: number }>;
 }
 
-const CONFIG_FILE = path.join(process.cwd(), "security_config.json");
+const CONFIG_FILE_PATHS = [
+  path.join(process.cwd(), "security_config.json"),
+  path.join(os.tmpdir(), "security_config.json"),
+  "/tmp/security_config.json",
+];
 let inMemoryConfig: SecurityConfig | null = null;
 
 function getSecurityConfig(): SecurityConfig {
-  if (inMemoryConfig) {
+  if (inMemoryConfig && Array.isArray(inMemoryConfig.oneTimeCodes) && inMemoryConfig.oneTimeCodes.length > 0) {
     return inMemoryConfig;
   }
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const data = fs.readFileSync(CONFIG_FILE, "utf-8");
-      const parsed = JSON.parse(data);
-      inMemoryConfig = {
-        masterKey: parsed.masterKey || "999999",
-        oneTimeCodes: Array.isArray(parsed.oneTimeCodes) ? parsed.oneTimeCodes : [],
-        activeSessions: parsed.activeSessions || {},
-      };
-      return inMemoryConfig;
+
+  let mergedMasterKey = "999999";
+  const mergedCodesMap = new Map<string, OneTimeCode>();
+  let mergedActiveSessions: Record<string, { role: "admin" | "user"; createdAt: number }> = {};
+
+  for (const filePath of CONFIG_FILE_PATHS) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, "utf-8");
+        const parsed = JSON.parse(data);
+        if (parsed && typeof parsed === "object") {
+          if (parsed.masterKey) mergedMasterKey = parsed.masterKey;
+          if (Array.isArray(parsed.oneTimeCodes)) {
+            for (const item of parsed.oneTimeCodes) {
+              if (item && item.code && typeof item.code === "string" && !mergedCodesMap.has(item.code)) {
+                mergedCodesMap.set(item.code, item);
+              }
+            }
+          }
+          if (parsed.activeSessions) {
+            mergedActiveSessions = { ...mergedActiveSessions, ...parsed.activeSessions };
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`Error reading config from ${filePath}:`, e);
     }
-  } catch (e) {
-    console.error("Error reading security_config.json:", e);
   }
+
+  if (inMemoryConfig && Array.isArray(inMemoryConfig.oneTimeCodes)) {
+    for (const item of inMemoryConfig.oneTimeCodes) {
+      if (item && item.code && typeof item.code === "string" && !mergedCodesMap.has(item.code)) {
+        mergedCodesMap.set(item.code, item);
+      }
+    }
+  }
+
   inMemoryConfig = {
-    masterKey: "999999",
-    oneTimeCodes: [],
-    activeSessions: {},
+    masterKey: mergedMasterKey,
+    oneTimeCodes: Array.from(mergedCodesMap.values()),
+    activeSessions: mergedActiveSessions,
   };
+
   return inMemoryConfig;
 }
 
 function saveSecurityConfig(config: SecurityConfig) {
   inMemoryConfig = config;
-  try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Error writing security_config.json:", e);
+  const jsonContent = JSON.stringify(config, null, 2);
+  for (const filePath of CONFIG_FILE_PATHS) {
+    try {
+      fs.writeFileSync(filePath, jsonContent, "utf-8");
+    } catch (e) {
+      // Ignore write errors for paths that aren't writable
+    }
   }
 }
 
