@@ -405,7 +405,7 @@ function roundIELTS(score: number): number {
   }
 }
 
-// Helper function to call Gemini with automatic fallback models and retry logic on 503/UNAVAILABLE errors
+// Helper function to call Gemini with automatic fallback models and retry logic on 503/UNAVAILABLE or 429/quota errors
 async function generateContentWithFallback(
   ai: GoogleGenAI,
   options: {
@@ -413,17 +413,16 @@ async function generateContentWithFallback(
     config?: any;
   }
 ) {
+  // Use distinct valid models in preference order
   const models = [
     "gemini-3.6-flash",
-    "gemini-flash-latest",
     "gemini-3.1-flash-lite",
-    "gemini-2.5-flash-preview",
   ];
 
   let lastError: any = null;
 
   for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         console.log(`[AVA Gemini] Requesting model: ${model} (attempt ${attempt + 1})`);
         
@@ -489,21 +488,23 @@ async function generateContentWithFallback(
           errMsg.includes("quota");
 
         if (isQuota) {
-          console.warn(`[AVA Gemini] Model ${model} quota exhausted. Switching to next fallback model immediately.`);
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          break;
-        }
-
-        const isTransient =
-          errMsg.includes("503") ||
-          errMsg.includes("UNAVAILABLE") ||
-          errMsg.includes("high demand") ||
-          errMsg.includes("overloaded");
-
-        if (isTransient) {
-          await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+          console.warn(`[AVA Gemini] Model ${model} quota hit on attempt ${attempt + 1}.`);
+          if (attempt < 2) {
+            // Wait with exponential backoff before retrying this attempt or switching model
+            await new Promise((resolve) => setTimeout(resolve, 2000 * (attempt + 1)));
+          }
         } else {
-          break;
+          const isTransient =
+            errMsg.includes("503") ||
+            errMsg.includes("UNAVAILABLE") ||
+            errMsg.includes("high demand") ||
+            errMsg.includes("overloaded");
+
+          if (isTransient) {
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+          } else {
+            break;
+          }
         }
       }
     }
@@ -542,7 +543,7 @@ app.post("/api/validate-key", async (req, res) => {
   } catch (err: any) {
     console.error("Custom API Key validation failed:", err);
     const errMsg = err.message || "";
-    let cleanMsg = "Khóa API không hợp lệ hoặc không có quyền truy cập mô hình gemini-3.5-flash.";
+    let cleanMsg = "Khóa API không hợp lệ hoặc không có quyền truy cập mô hình gemini-3.6-flash.";
     if (errMsg.includes("quota") || errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED")) {
       cleanMsg = "Khóa API hợp lệ nhưng đã hết hạn ngạch sử dụng (Quota Exceeded / Rate Limit).";
     } else if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("invalid")) {

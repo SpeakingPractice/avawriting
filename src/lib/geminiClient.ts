@@ -93,15 +93,13 @@ async function generateWithFallbackClient(
 ) {
   const models = [
     "gemini-3.6-flash",
-    "gemini-flash-latest",
     "gemini-3.1-flash-lite",
-    "gemini-2.5-flash-preview",
   ];
 
   let lastError: any = null;
 
   for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         let response;
         try {
@@ -161,19 +159,21 @@ async function generateWithFallbackClient(
           errMsg.includes("quota");
 
         if (isQuota) {
-          break; // Move to next fallback model immediately
-        }
-
-        const isTransient =
-          errMsg.includes("503") ||
-          errMsg.includes("UNAVAILABLE") ||
-          errMsg.includes("high demand") ||
-          errMsg.includes("overloaded");
-
-        if (isTransient) {
-          await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
+          if (attempt < 2) {
+            await new Promise((resolve) => setTimeout(resolve, 2000 * (attempt + 1)));
+          }
         } else {
-          break;
+          const isTransient =
+            errMsg.includes("503") ||
+            errMsg.includes("UNAVAILABLE") ||
+            errMsg.includes("high demand") ||
+            errMsg.includes("overloaded");
+
+          if (isTransient) {
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+          } else {
+            break;
+          }
         }
       }
     }
