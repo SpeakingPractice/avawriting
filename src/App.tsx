@@ -435,12 +435,44 @@ export default function App() {
       }
     } catch (err: any) {
       clearInterval(interval);
-      console.error(err);
-      const errMsg = err.message || "";
-      setError(errMsg || "Không thể kết nối với dịch vụ chấm điểm AVA. Vui lòng kiểm tra lại kết nối hoặc khóa API.");
+      console.error("Grading error caught:", err);
+      
+      let rawMsg = typeof err === "string" ? err : err?.message || String(err);
+      
+      // Clean JSON string error if present
+      if (rawMsg.trim().startsWith("{") && rawMsg.includes("error")) {
+        try {
+          const parsed = JSON.parse(rawMsg);
+          if (parsed?.error) {
+            if (typeof parsed.error === "string") rawMsg = parsed.error;
+            else if (typeof parsed.error?.message === "string") rawMsg = parsed.error.message;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      let userFriendlyMsg = rawMsg;
+      if (
+        rawMsg.includes("503") ||
+        rawMsg.includes("UNAVAILABLE") ||
+        rawMsg.includes("high demand") ||
+        rawMsg.includes("overloaded")
+      ) {
+        userFriendlyMsg = "Máy chủ Google AI hiện đang cao tải tạm thời (Lỗi 503 High Demand). Hệ thống đã tự động kích hoạt mô hình dự phòng gemini-2.5-flash, bạn vui lòng đợi 3-5 giây rồi nhấn 'Nộp bài & Bắt đầu chấm điểm' lại!";
+      } else if (
+        rawMsg.includes("429") ||
+        rawMsg.includes("RESOURCE_EXHAUSTED") ||
+        rawMsg.includes("quota") ||
+        rawMsg.includes("limit")
+      ) {
+        userFriendlyMsg = "Hệ thống đang tạm thời vượt quá lượt yêu cầu (Lỗi 429 Quota Exceeded). Bạn vui lòng đợi 15-30 giây rồi bấm nộp lại hoặc nhập API Key cá nhân từ Google AI Studio phía trên.";
+      }
+
+      setError(userFriendlyMsg);
 
       if (customApiKey.trim()) {
-        const lowerMsg = errMsg.toLowerCase();
+        const lowerMsg = rawMsg.toLowerCase();
         if (
           lowerMsg.includes("quota") ||
           lowerMsg.includes("429") ||

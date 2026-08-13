@@ -92,7 +92,10 @@ async function generateWithFallbackClient(
   options: { contents: any; config?: any }
 ) {
   const models = [
+    "gemini-2.5-flash",
     "gemini-3.6-flash",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash-lite",
     "gemini-3.1-flash-lite",
   ];
 
@@ -160,7 +163,7 @@ async function generateWithFallbackClient(
 
         if (isQuota) {
           if (attempt < 2) {
-            await new Promise((resolve) => setTimeout(resolve, 2000 * (attempt + 1)));
+            await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1)));
           }
         } else {
           const isTransient =
@@ -170,7 +173,11 @@ async function generateWithFallbackClient(
             errMsg.includes("overloaded");
 
           if (isTransient) {
-            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+            // Fast failover: if high demand on this model, switch immediately after 1 quick retry
+            if (attempt >= 1) {
+              break;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 500));
           } else {
             break;
           }
