@@ -449,6 +449,30 @@ export function generateFallbackVietnameseTranslation(text: string): string {
     [/throughout this period/gi, "trong suốt giai đoạn này"],
     [/throughout the period/gi, "trong suốt giai đoạn này"],
 
+    // --- Vehicle, Emissions & Task 1 Chart Vocab ---
+    [/four different types of vehicles/gi, "bốn loại phương tiện khác nhau"],
+    [/different types of vehicles/gi, "các loại phương tiện khác nhau"],
+    [/types of vehicles/gi, "các loại phương tiện"],
+    [/nitrogen oxide emissions/gi, "lượng khí thải nitơ oxit"],
+    [/nitrogen oxide/gi, "nitơ oxit"],
+    [/diesel cars/gi, "xe chạy bằng dầu diesel"],
+    [/petrol cars/gi, "xe chạy bằng xăng"],
+    [/buses and diesel cars/gi, "xe buýt và xe chạy bằng dầu diesel"],
+    [/buses/gi, "xe buýt"],
+    [/motorcycles/gi, "xe máy"],
+    [/the line graph illustrates/gi, "biểu đồ đường minh họa"],
+    [/the bar chart illustrates/gi, "biểu đồ cột minh họa"],
+    [/the pie chart illustrates/gi, "biểu đồ tròn minh họa"],
+    [/the table illustrates/gi, "bảng số liệu minh họa"],
+    [/produced the highest amount of/gi, "thải ra lượng cao nhất"],
+    [/produced the lowest amount of/gi, "thải ra lượng thấp nhất"],
+    [/emitted lower amounts/gi, "thải ra lượng thấp hơn"],
+    [/emitted the lowest amount/gi, "thải ra lượng thấp nhất"],
+    [/emitted the highest amount/gi, "thải ra lượng cao nhất"],
+    [/emitted/gi, "thải ra"],
+    [/emissions/gi, "lượng khí thải"],
+    [/emission/gi, "lượng khí thải"],
+
     // --- Entity & Country Names ---
     [/The UK's figures/gi, "Số liệu của Vương quốc Anh"],
     [/The UK's figure/gi, "Số liệu của Vương quốc Anh"],
@@ -613,17 +637,46 @@ export function generateFallbackVietnameseTranslation(text: string): string {
 
 export function getVietnameseEssayText(report: GradingReport): string {
   if (!report) return "";
-  const viText = report.fullUpgradeEssayVietnamese?.trim();
   const enText = report.fullUpgradeEssay?.trim() || "";
+  if (!enText) return "";
 
-  if (viText && viText.length > 0) {
-    const hasVietnamese = /[àáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ]/i.test(viText);
-    if (hasVietnamese) {
+  const enParas = enText.split("\n\n").map((p) => p.trim()).filter((p) => p.length > 0);
+  let viText = report.fullUpgradeEssayVietnamese?.trim() || "";
+
+  const hasVietnamese = /[àáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ]/i.test(viText);
+
+  if (hasVietnamese && viText.length > 0) {
+    let viParas = viText.split("\n\n").map((p) => p.trim()).filter((p) => p.length > 0);
+
+    const lastViPara = viParas[viParas.length - 1] || "";
+    const isLastParaComplete = /[.!?\"'\>]\s*$/i.test(lastViPara);
+
+    // If viParas has at least as many paragraphs as enParas AND ends with proper punctuation
+    if (viParas.length >= enParas.length && isLastParaComplete) {
       return viText;
     }
+
+    // viText is truncated mid-paragraph or missing paragraphs: repair & complete missing paragraphs
+    const completeParas: string[] = [...viParas];
+
+    // Check if the last existing paragraph in viText was cut off mid-sentence
+    const lastIdx = completeParas.length - 1;
+    if (lastIdx >= 0 && !/[.!?\"'\>]\s*$/i.test(completeParas[lastIdx])) {
+      if (enParas[lastIdx]) {
+        completeParas[lastIdx] = generateFallbackVietnameseTranslation(enParas[lastIdx]);
+      }
+    }
+
+    // Fill in any remaining missing paragraphs from enParas
+    for (let i = completeParas.length; i < enParas.length; i++) {
+      completeParas.push(generateFallbackVietnameseTranslation(enParas[i]));
+    }
+
+    return completeParas.join("\n\n");
   }
 
-  return generateFallbackVietnameseTranslation(enText);
+  // Fallback if no Vietnamese translation was present at all
+  return enParas.map((p) => generateFallbackVietnameseTranslation(p)).join("\n\n");
 }
 
 function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
@@ -783,12 +836,12 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
   `;
 }
 
-export function exportReportToDoc(
+export function generateReportDocumentHtml(
   input: TaskExportData | TaskExportData[] | GradingReport,
   taskTypeFallback?: string,
   promptTextFallback?: string,
   originalEssayFallback?: string
-) {
+): { docHtml: string; fileName: string } {
   let tasks: TaskExportData[] = [];
 
   if (Array.isArray(input)) {
@@ -807,7 +860,9 @@ export function exportReportToDoc(
     tasks = [input as TaskExportData];
   }
 
-  if (tasks.length === 0) return;
+  if (tasks.length === 0) {
+    return { docHtml: "", fileName: "" };
+  }
 
   // Filter out any duplicate task types (keep newest)
   const uniqueTasksMap = new Map<string, TaskExportData>();
@@ -821,14 +876,6 @@ export function exportReportToDoc(
     if (a.taskType === "task1" && b.taskType !== "task1") return -1;
     if (a.taskType !== "task1" && b.taskType === "task1") return 1;
     return 0;
-  });
-
-  const currentDate = new Date().toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 
   const isDualTask = tasks.length >= 2;
@@ -901,7 +948,8 @@ export function exportReportToDoc(
     combinedHeaderSummaryHtml = `
       ${documentTopHeaderBlock}
 
-      <div style="border-top: 2px dashed #94a3b8; margin-top: 12pt; margin-bottom: 12pt; width: 100%;"></div>
+      <!-- Explicit 1-line empty spacing between Student Info Table and Title line (Requirement 2) -->
+      <p style="margin-top: 14pt; margin-bottom: 14pt; font-size: 12pt; line-height: 1.5; color: transparent; user-select: none;">&nbsp;</p>
 
       <div style="text-align: center; margin-bottom: 16pt;">
         <h1 style="font-size: 18pt !important; color: #0f172a; margin: 0;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP WRITING TASK 1 &amp; TASK 2</h1>
@@ -936,7 +984,8 @@ export function exportReportToDoc(
     combinedHeaderSummaryHtml = `
       ${documentTopHeaderBlock}
 
-      <div style="border-top: 2px dashed #94a3b8; margin-top: 12pt; margin-bottom: 12pt; width: 100%;"></div>
+      <!-- Explicit 1-line empty spacing between Student Info Table and Title line (Requirement 2) -->
+      <p style="margin-top: 14pt; margin-bottom: 14pt; font-size: 12pt; line-height: 1.5; color: transparent; user-select: none;">&nbsp;</p>
 
       <div style="text-align: center; margin-bottom: 16pt;">
         <h1 style="font-size: 18pt !important; color: #0f172a; margin: 0;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP BÀI VIẾT ${taskTitle.toUpperCase()}</h1>
@@ -946,7 +995,7 @@ export function exportReportToDoc(
     bodyContentHtml = renderTaskSectionHtml(singleTask);
   }
 
-  // Full Word Document HTML
+  // Full Document HTML for both Word and PDF/Print
   const docHtml = `<!DOCTYPE html>
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
@@ -970,24 +1019,35 @@ export function exportReportToDoc(
     mso-header: h1;
   }
   div.Section1 { page: Section1; }
-  
+
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    @page {
+      size: A4 portrait;
+      margin: 12mm 15mm 15mm 15mm;
+    }
+  }
+
   body, p, td, th, div, span, li, a {
-    font-family: 'Calibri', sans-serif !important;
+    font-family: 'Calibri', Arial, sans-serif !important;
     font-size: 12pt !important;
     line-height: 1.5;
     color: #1e293b;
   }
-  
-  h1 { font-size: 18pt !important; font-family: 'Calibri', sans-serif !important; color: #1e3a8a; font-weight: bold; margin-bottom: 4pt; }
-  h2 { font-size: 13pt !important; font-family: 'Calibri', sans-serif !important; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 4pt; margin-top: 20pt; margin-bottom: 10pt; font-weight: bold; }
-  
+
+  h1 { font-size: 18pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; font-weight: bold; margin-bottom: 4pt; }
+  h2 { font-size: 13pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 4pt; margin-top: 20pt; margin-bottom: 10pt; font-weight: bold; }
+
   mark {
     background-color: #ffe4e6 !important;
     color: #881337 !important;
     font-weight: bold;
     padding: 2px 4px;
   }
-  
+
   .meta-table {
     width: 100%;
     border-collapse: collapse;
@@ -1030,6 +1090,24 @@ export function exportReportToDoc(
 </body>
 </html>`;
 
+  return { docHtml, fileName };
+}
+
+export function exportReportToDoc(
+  input: TaskExportData | TaskExportData[] | GradingReport,
+  taskTypeFallback?: string,
+  promptTextFallback?: string,
+  originalEssayFallback?: string
+) {
+  const { docHtml, fileName } = generateReportDocumentHtml(
+    input,
+    taskTypeFallback,
+    promptTextFallback,
+    originalEssayFallback
+  );
+
+  if (!docHtml) return;
+
   // Create blob and trigger download
   const blob = new Blob(["\ufeff", docHtml], {
     type: "application/msword;charset=utf-8",
@@ -1044,3 +1122,52 @@ export function exportReportToDoc(
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export function exportReportToPdf(
+  input: TaskExportData | TaskExportData[] | GradingReport,
+  taskTypeFallback?: string,
+  promptTextFallback?: string,
+  originalEssayFallback?: string
+) {
+  const { docHtml } = generateReportDocumentHtml(
+    input,
+    taskTypeFallback,
+    promptTextFallback,
+    originalEssayFallback
+  );
+
+  if (!docHtml) return;
+
+  // Create hidden print iframe
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document || iframe.contentDocument;
+  if (!doc) return;
+
+  doc.open();
+  doc.write(docHtml);
+  doc.close();
+
+  // Trigger browser Print to PDF
+  setTimeout(() => {
+    try {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } catch (e) {
+      console.error("PDF Print error:", e);
+    }
+    setTimeout(() => {
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 2000);
+  }, 400);
+}
+

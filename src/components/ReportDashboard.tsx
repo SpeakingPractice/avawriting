@@ -3,6 +3,7 @@ import { GradingReport } from "../types";
 import { ScoreGauge } from "./ScoreGauge";
 import { StandardCriteriaGuide } from "./StandardCriteriaGuide";
 import { EssayEvaluationView } from "./EssayEvaluationView";
+import { ExportReportModal } from "./ExportReportModal";
 import { exportReportToDoc, formatBandScore, calculateCombinedIeltsBand, TaskExportData, generateFallbackVietnameseTranslation, getVietnameseEssayText } from "../lib/exportDoc";
 import {
   Sparkles,
@@ -52,6 +53,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"criteriaGuide" | "essayEvaluation" | "strengths" | "model" | "roadmap">("criteriaGuide");
   const [copied, setCopied] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
   const t1Task = allAvailableTasks.find((t) => t.taskType === "task1");
@@ -206,7 +208,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </div>
         </div>
 
-        {/* Word Count Indicator Row (Requirement 4: Export buttons removed from under word count) */}
+        {/* Word Count Indicator Row */}
         <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-blue-100">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center space-x-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
@@ -227,6 +229,17 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                 {activeReport.wordCountRequirement === "meets" ? "✓ Đủ số từ tối thiểu" : "⚠️ Chưa đạt độ dài"}
               </span>
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="inline-flex items-center space-x-1.5 text-xs text-blue-950 font-extrabold bg-yellow-400 hover:bg-yellow-300 border border-yellow-500/50 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer shadow-md active:scale-[0.98]"
+              title="Mở bảng xuất báo cáo chấm bài (Word / PDF)"
+            >
+              <Download className="w-4 h-4 text-blue-950" />
+              <span>Xuất Báo Cáo (Word / PDF)</span>
+            </button>
           </div>
         </div>
       </div>
@@ -480,42 +493,13 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
                 </h3>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {hasDualTasks ? (
-                  <>
-                    <button
-                      onClick={() => handleExportSingleDoc(t1Task)}
-                      className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-200 hover:bg-amber-300 border border-amber-300 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                      title="Xuất file Word riêng cho Task 1"
-                    >
-                      <Download className="w-3.5 h-3.5 text-blue-950" />
-                      <span>Xuất Task 1</span>
-                    </button>
-                    <button
-                      onClick={() => handleExportSingleDoc(t2Task)}
-                      className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-200 hover:bg-amber-300 border border-amber-300 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                      title="Xuất file Word riêng cho Task 2"
-                    >
-                      <Download className="w-3.5 h-3.5 text-blue-950" />
-                      <span>Xuất Task 2</span>
-                    </button>
-                    <button
-                      onClick={handleExportAllDoc}
-                      className="inline-flex items-center space-x-1 text-xs text-blue-950 hover:text-black font-extrabold bg-amber-400 hover:bg-amber-300 border border-amber-500 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
-                      title="Xuất file Word gộp chứa trọn bộ báo cáo Task 1 & Task 2"
-                    >
-                      <FileCheck className="w-3.5 h-3.5 text-blue-950" />
-                      <span>Xuất Cả 2 Tasks</span>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => handleExportSingleDoc()}
-                    className="inline-flex items-center space-x-1 text-xs text-blue-900 hover:text-blue-950 font-bold bg-amber-300 hover:bg-amber-400 border border-amber-400 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs"
-                  >
-                    <Download className="w-3.5 h-3.5 text-blue-950" />
-                    <span>Xuất File Word (.doc)</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => setIsExportModalOpen(true)}
+                  className="inline-flex items-center space-x-1.5 text-xs text-blue-950 font-extrabold bg-amber-300 hover:bg-amber-400 border border-amber-400 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+                >
+                  <Download className="w-4 h-4 text-blue-950" />
+                  <span>Xuất Báo Cáo (Word / PDF)</span>
+                </button>
                 <button
                   onClick={handleCopyModel}
                   className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
@@ -646,6 +630,17 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Export Report Modal Dialog */}
+      <ExportReportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        allAvailableTasks={allAvailableTasks}
+        activeTaskData={activeTaskData}
+        studentClass={studentClass}
+        teacherName={teacherName}
+        studentName={studentName}
+      />
     </div>
   );
 };

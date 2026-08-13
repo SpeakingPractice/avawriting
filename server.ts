@@ -675,6 +675,8 @@ Cấu trúc JSON phản hồi bắt buộc:
       "example": "1 ví dụ cụ thể trích dẫn trực tiếp từ bài viết của thí sinh để minh họa"
     }
   },
+  "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. QUY TẮC BẮT BUỘC: Nâng cấp trực tiếp từ bài làm gốc của thí sinh. Những phần/câu/đoạn nào trong bài gốc đã viết tốt, không bị lỗi nặng thì BẮT BUỘC GIỮ NGUYÊN. Những chỗ nào bị lỗi hoặc ảnh hưởng tiêu cực đến điểm số thì sửa lại/nâng cấp. TẤT CẢ các câu/cụm từ/đoạn văn ĐÃ ĐƯỢC CHỈNH SỬA HOẶC BỔ SUNG NÂNG CẤP BẮT BUỘC BỌC TRONG THẺ <mark>câu/từ đã sửa/nâng cấp</mark> (Ví dụ: <mark>While urban connectivity surged, rural access fell sharply.</mark>) để thí sinh nhận biết chính xác những vị trí đã được thay đổi. Đồng thời bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band.",
+  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT HOÀN CHỈNH 100%, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT MẪU (fullUpgradeEssay) Ở TRÊN. QUY TẮC BẮT BUỘC VỀ BẢN DỊCH TIẾNG VIỆT (DÀNH CHO CẢ TASK 1 VÀ TASK 2): 1. DỊCH TOÀN BỘ 100% TẤT CẢ CÁC ĐOẠN VĂN (Mở bài, Tổng quan Overview, Thân bài 1, Thân bài 2, và Kết bài). TUYỆT ĐỐI KHÔNG DỪNG GIỮA CHỪNG, KHÔNG TÓM TẮT VÀ KHÔNG BỎ SÓT BẤT KỲ ĐOẠN VĂN NÀO. 2. Số lượng đoạn văn (phân tách bởi \\n\\n) trong bản dịch BẮT BUỘC BẰNG CHÍNH XÁC số lượng đoạn văn của bài mẫu tiếng Anh (fullUpgradeEssay). 3. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với vị trí đã được sửa/nâng cấp (<mark>...</mark>) trong bài tiếng Anh BẮT BUỘC BỌC TRONG THẺ <mark>câu/cụm từ tiếng Việt dịch tương ứng</mark> (Ví dụ: <mark>Trong khi tính kết nối đô thị tăng mạnh, khả năng tiếp cận ở nông thôn lại giảm sâu.</mark>).",
   "strengths": [
     {
       "title": "Tiêu đề thế mạnh thứ nhất",
@@ -718,9 +720,7 @@ Cấu trúc JSON phản hồi bắt buộc:
     "Các bước hành động cụ thể, chi tiết 1 để tăng băng điểm (thiết kế riêng cho bài viết này)",
     "Các bước hành động cụ thể, chi tiết 2",
     "Các bước hành động cụ thể, chi tiết 3"
-  ],
-  "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. QUY TẮC BẮT BUỘC: Nâng cấp trực tiếp từ bài làm gốc của thí sinh. Những phần/câu/đoạn nào trong bài gốc đã viết tốt, không bị lỗi nặng thì BẮT BUỘC GIỮ NGUYÊN. Những chỗ nào bị lỗi hoặc ảnh hưởng tiêu cực đến điểm số thì sửa lại/nâng cấp. TẤT CẢ các câu/cụm từ/đoạn văn ĐÃ ĐƯỢC CHỈNH SỬA HOẶC BỔ SUNG NÂNG CẤP BẮT BUỘC BỌC TRONG THẺ <mark>câu/từ đã sửa/nâng cấp</mark> (Ví dụ: <mark>While urban connectivity surged, rural access fell sharply.</mark>) để thí sinh nhận biết chính xác những vị trí đã được thay đổi. Đồng thời bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band (nextBandSteps).",
-  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT HOÀN CHỈNH 100%, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT MẪU (fullUpgradeEssay) Ở TRÊN. QUY TẮC BẮT BUỘC VỀ BẢN DỊCH TIẾNG VIỆT (DÀNH CHO CẢ TASK 1 VÀ TASK 2): 1. DỊCH TOÀN BỘ 100% TẤT CẢ CÁC ĐOẠN VĂN, TẤT CẢ CÁC CÂU SANG TIẾNG VIỆT (Bao gồm Mở bài, Tổng quan Overview, các đoạn Thân bài Body 1, Body 2, và Kết bài của Task 2 cũng như Task 1). 2. TUYỆT ĐỐI KHÔNG BỎ SÓT BẤT KỲ ĐOẠN VĂN HAY CÂU NÀO, KHÔNG TÓM TẮT VÀ KHÔNG ĐỂ LẠI BẤT KỲ CÂU HOẶC CỤM TỪ TIẾNG ANH NÀO TRONG BẢN DỊCH. 3. BẮT BUỘC giữ nguyên số lượng đoạn văn (phân tách bởi \\n\\n) tương ứng đúng với bài mẫu tiếng Anh (fullUpgradeEssay). 4. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với vị trí đã được sửa/nâng cấp (<mark>...</mark>) trong bài tiếng Anh BẮT BUỘC BỌC TRONG THẺ <mark>câu/cụm từ tiếng Việt dịch tương ứng</mark> (Ví dụ: <mark>Trong khi tính kết nối đô thị tăng mạnh, khả năng tiếp cận ở nông thôn lại giảm sâu.</mark>) để thí sinh dễ dàng đối chiếu song ngữ."
+  ]
 }`;
 
     const promptText = `
