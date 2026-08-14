@@ -49,13 +49,16 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         setSuccessMsg(data.message || "Đăng nhập thành công!");
         sessionStorage.setItem("ava_session_token", data.token);
         sessionStorage.setItem("ava_session_role", data.role);
+        localStorage.setItem("ava_session_token", data.token);
+        localStorage.setItem("ava_session_role", data.role);
         if (data.username) {
           sessionStorage.setItem("ava_session_username", data.username);
+          localStorage.setItem("ava_session_username", data.username);
         }
 
         setTimeout(() => {
           onUnlockSuccess(data.role, data.token);
-        }, 400);
+        }, 300);
         return;
       }
 
@@ -115,6 +118,9 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         sessionStorage.setItem("ava_session_token", userFallbackToken);
         sessionStorage.setItem("ava_session_role", "user");
         sessionStorage.setItem("ava_session_username", found.username);
+        localStorage.setItem("ava_session_token", userFallbackToken);
+        localStorage.setItem("ava_session_role", "user");
+        localStorage.setItem("ava_session_username", found.username);
         setSuccessMsg(`Đăng nhập thành công! Chào mừng ${found.name || found.username}.`);
         setTimeout(() => {
           onUnlockSuccess("user", userFallbackToken);
@@ -168,6 +174,9 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         sessionStorage.setItem("ava_session_token", userFallbackToken);
         sessionStorage.setItem("ava_session_role", "user");
         sessionStorage.setItem("ava_session_username", foundDefault.username);
+        localStorage.setItem("ava_session_token", userFallbackToken);
+        localStorage.setItem("ava_session_role", "user");
+        localStorage.setItem("ava_session_username", foundDefault.username);
         setSuccessMsg(`Đăng nhập thành công! Chào mừng ${foundDefault.name || foundDefault.username}.`);
         setTimeout(() => {
           onUnlockSuccess("user", userFallbackToken);

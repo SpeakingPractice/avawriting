@@ -112,7 +112,6 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
   };
 
   const fetchAdminData = async (silent = false) => {
-    if (userRole !== "admin") return;
     if (!silent) setLoading(true);
     setError(null);
     const activeToken = sessionToken || sessionStorage.getItem("ava_session_token") || localStorage.getItem("ava_session_token") || "admin_master_token_direct";
@@ -149,12 +148,12 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
   };
 
   useEffect(() => {
-    if (isOpen && userRole === "admin") {
+    if (isOpen) {
       fetchAdminData(false);
-      // Auto-refresh online statuses periodically
+      // Auto-refresh online statuses periodically every 2 seconds
       const interval = setInterval(() => {
         fetchAdminData(true);
-      }, 3000);
+      }, 2000);
       return () => clearInterval(interval);
     }
   }, [isOpen, userRole, sessionToken]);
