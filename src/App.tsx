@@ -100,16 +100,19 @@ export default function App() {
 
   // Heartbeat to keep session active/online
   useEffect(() => {
-    if (!isUnlocked || !sessionToken) return;
+    const token = sessionToken || sessionStorage.getItem("ava_session_token");
+    if (!isUnlocked || !token) return;
     const sendHeartbeat = () => {
+      const activeTok = sessionToken || sessionStorage.getItem("ava_session_token");
+      if (!activeTok) return;
       fetch("/api/auth/heartbeat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: sessionToken }),
+        body: JSON.stringify({ token: activeTok }),
       }).catch(() => {});
     };
     sendHeartbeat();
-    const interval = setInterval(sendHeartbeat, 60000);
+    const interval = setInterval(sendHeartbeat, 25000);
     return () => clearInterval(interval);
   }, [isUnlocked, sessionToken]);
 

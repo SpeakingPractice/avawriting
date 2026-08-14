@@ -109,11 +109,12 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
     if (userRole !== "admin") return;
     if (!silent) setLoading(true);
     setError(null);
+    const activeToken = sessionToken || sessionStorage.getItem("ava_session_token") || "";
     try {
       const res = await fetch("/api/auth/admin/get-accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: sessionToken }),
+        body: JSON.stringify({ token: activeToken }),
       });
       const data = await res.json();
       if (res.ok && data) {
@@ -143,7 +144,7 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
       // Auto-refresh online statuses periodically
       const interval = setInterval(() => {
         fetchAdminData(true);
-      }, 8000);
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [isOpen, userRole]);

@@ -144,9 +144,6 @@ const DEFAULT_SYSTEM_ACCOUNTS: UserAccount[] = [
 ];
 
 function getSecurityConfig(): SecurityConfig {
-  if (inMemoryConfig) {
-    return inMemoryConfig;
-  }
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       const data = fs.readFileSync(CONFIG_FILE, "utf-8");
@@ -171,14 +168,19 @@ function getSecurityConfig(): SecurityConfig {
     console.error("Error reading security_config.json:", e);
   }
 
-  inMemoryConfig = {
-    adminAccount: {
-      username: "admin",
-      password: "mydu240484",
-    },
-    accounts: DEFAULT_SYSTEM_ACCOUNTS,
-    activeSessions: {},
-  };
+  if (!inMemoryConfig) {
+    inMemoryConfig = {
+      adminAccount: {
+        username: "admin",
+        password: "mydu240484",
+      },
+      accounts: DEFAULT_SYSTEM_ACCOUNTS,
+      activeSessions: {},
+    };
+    try {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(inMemoryConfig, null, 2), "utf-8");
+    } catch (e) {}
+  }
   return inMemoryConfig;
 }
 
@@ -198,9 +200,9 @@ function generateToken(): string {
 // Helper to verify admin permissions
 function isRequestAdmin(token?: string): boolean {
   if (!token) return false;
-  if (token.startsWith("admin_master_token_")) return true;
+  if (typeof token === "string" && token.startsWith("admin_master_token_")) return true;
   const config = getSecurityConfig();
-  const session = config.activeSessions[token];
+  const session = config.activeSessions ? config.activeSessions[token] : undefined;
   if (session && session.role === "admin") return true;
   return false;
 }
