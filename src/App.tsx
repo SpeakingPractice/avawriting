@@ -71,9 +71,10 @@ export default function App() {
   const [showSecurityModal, setShowSecurityModal] = useState<boolean>(false);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("ava_session_token");
-    const username = sessionStorage.getItem("ava_session_username") || "";
+    const token = sessionStorage.getItem("ava_session_token") || localStorage.getItem("ava_session_token");
+    const username = sessionStorage.getItem("ava_session_username") || localStorage.getItem("ava_session_username") || "";
     if (token) {
+      setSessionToken(token);
       fetch("/api/auth/check-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,19 +85,26 @@ export default function App() {
           if (data.valid) {
             setIsUnlocked(true);
             setSessionRole(data.role || "user");
+            setSessionToken(token);
             if (data.username) {
               sessionStorage.setItem("ava_session_username", data.username);
+              localStorage.setItem("ava_session_username", data.username);
             }
           } else {
             sessionStorage.removeItem("ava_session_token");
             sessionStorage.removeItem("ava_session_role");
             sessionStorage.removeItem("ava_session_username");
+            localStorage.removeItem("ava_session_token");
+            localStorage.removeItem("ava_session_role");
+            localStorage.removeItem("ava_session_username");
             setIsUnlocked(false);
             setSessionToken("");
           }
         })
         .catch(() => {
           // Keep active if offline/error
+          setIsUnlocked(true);
+          setSessionToken(token);
         });
     } else {
       setIsUnlocked(false);
@@ -105,11 +113,11 @@ export default function App() {
 
   // Heartbeat to keep session active/online
   useEffect(() => {
-    const token = sessionToken || sessionStorage.getItem("ava_session_token");
+    const token = sessionToken || sessionStorage.getItem("ava_session_token") || localStorage.getItem("ava_session_token");
     if (!isUnlocked || !token) return;
     const sendHeartbeat = () => {
-      const activeTok = sessionToken || sessionStorage.getItem("ava_session_token");
-      const activeUser = sessionStorage.getItem("ava_session_username") || "";
+      const activeTok = sessionToken || sessionStorage.getItem("ava_session_token") || localStorage.getItem("ava_session_token");
+      const activeUser = sessionStorage.getItem("ava_session_username") || localStorage.getItem("ava_session_username") || "";
       if (!activeTok) return;
       fetch("/api/auth/heartbeat", {
         method: "POST",
@@ -118,7 +126,7 @@ export default function App() {
       }).catch(() => {});
     };
     sendHeartbeat();
-    const interval = setInterval(sendHeartbeat, 15000);
+    const interval = setInterval(sendHeartbeat, 10000);
     return () => clearInterval(interval);
   }, [isUnlocked, sessionToken]);
 

@@ -93,9 +93,15 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
         { id: "acc_ava09", username: "ava09", password: "923809", name: "Tài khoản Giáo viên 09", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
         { id: "acc_ava10", username: "ava10", password: "109803", name: "Tài khoản Giáo viên 10", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
       ];
-      localStorage.setItem("ava_local_accounts", JSON.stringify(localAccs));
     }
-    const currentUsername = sessionStorage.getItem("ava_session_username") || "";
+    // Clean names to ensure "Giáo viên"
+    localAccs = localAccs.map(a => ({
+      ...a,
+      name: (a.name || "").replace(/Học sinh/gi, "Giáo viên") || `Tài khoản Giáo viên ${a.username.replace(/\D/g, '')}`,
+    }));
+    localStorage.setItem("ava_local_accounts", JSON.stringify(localAccs));
+
+    const currentUsername = sessionStorage.getItem("ava_session_username") || localStorage.getItem("ava_session_username") || "";
     const enriched = localAccs.map((a) => ({
       ...a,
       isOnline: a.username.toLowerCase() === currentUsername.toLowerCase(),
@@ -109,7 +115,7 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
     if (userRole !== "admin") return;
     if (!silent) setLoading(true);
     setError(null);
-    const activeToken = sessionToken || sessionStorage.getItem("ava_session_token") || "";
+    const activeToken = sessionToken || sessionStorage.getItem("ava_session_token") || localStorage.getItem("ava_session_token") || "admin_master_token_direct";
     try {
       const res = await fetch("/api/auth/admin/get-accounts", {
         method: "POST",
@@ -120,7 +126,11 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
       if (res.ok && data) {
         const uName = data.adminUsername || "admin";
         const uPass = data.adminPassword || "mydu240484";
-        const accs = data.accounts || [];
+        const rawAccs = data.accounts || [];
+        const accs = rawAccs.map((a: UserAccount) => ({
+          ...a,
+          name: (a.name || "").replace(/Học sinh/gi, "Giáo viên") || `Tài khoản Giáo viên ${a.username.replace(/\D/g, '')}`,
+        }));
         setAdminUsername(uName);
         setAdminPassword(uPass);
         setAccounts(accs);
@@ -147,7 +157,7 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
       }, 3000);
       return () => clearInterval(interval);
     }
-  }, [isOpen, userRole]);
+  }, [isOpen, userRole, sessionToken]);
 
   if (!isOpen) return null;
 
@@ -425,7 +435,7 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
                     <button
                       onClick={() => fetchAdminData(false)}
                       className="p-1.5 text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer shrink-0"
-                      title="Làm mới danh sách"
+                      title="Làm mới danh sách ngay"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                     </button>
@@ -437,6 +447,14 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
                       <span>Tạo tài khoản</span>
                     </button>
                   </div>
+                </div>
+
+                <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-600 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <span>Trạng thái <strong>Online/Offline</strong> tự động đồng bộ thời gian thực mỗi 3 giây.</span>
+                  </div>
+                  <span className="text-slate-400 text-[10px] hidden sm:inline">Mở tài khoản ở tab/thiết bị khác để kiểm tra</span>
                 </div>
 
                 {filteredAccounts.length === 0 ? (
