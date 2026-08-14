@@ -72,20 +72,25 @@ export default function App() {
 
   useEffect(() => {
     const token = sessionStorage.getItem("ava_session_token");
+    const username = sessionStorage.getItem("ava_session_username") || "";
     if (token) {
       fetch("/api/auth/check-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, username }),
       })
         .then((res) => res.json())
         .then((data) => {
           if (data.valid) {
             setIsUnlocked(true);
             setSessionRole(data.role || "user");
+            if (data.username) {
+              sessionStorage.setItem("ava_session_username", data.username);
+            }
           } else {
             sessionStorage.removeItem("ava_session_token");
             sessionStorage.removeItem("ava_session_role");
+            sessionStorage.removeItem("ava_session_username");
             setIsUnlocked(false);
             setSessionToken("");
           }
@@ -104,15 +109,16 @@ export default function App() {
     if (!isUnlocked || !token) return;
     const sendHeartbeat = () => {
       const activeTok = sessionToken || sessionStorage.getItem("ava_session_token");
+      const activeUser = sessionStorage.getItem("ava_session_username") || "";
       if (!activeTok) return;
       fetch("/api/auth/heartbeat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: activeTok }),
+        body: JSON.stringify({ token: activeTok, username: activeUser }),
       }).catch(() => {});
     };
     sendHeartbeat();
-    const interval = setInterval(sendHeartbeat, 25000);
+    const interval = setInterval(sendHeartbeat, 15000);
     return () => clearInterval(interval);
   }, [isUnlocked, sessionToken]);
 
@@ -123,8 +129,17 @@ export default function App() {
   };
 
   const handleLockApp = () => {
+    const token = sessionToken || sessionStorage.getItem("ava_session_token");
+    if (token) {
+      fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      }).catch(() => {});
+    }
     sessionStorage.removeItem("ava_session_token");
     sessionStorage.removeItem("ava_session_role");
+    sessionStorage.removeItem("ava_session_username");
     setIsUnlocked(false);
     setSessionToken("");
     setShowSecurityModal(false);

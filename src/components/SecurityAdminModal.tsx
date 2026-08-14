@@ -144,7 +144,7 @@ export const SecurityAdminModal: React.FC<SecurityAdminModalProps> = ({
       // Auto-refresh online statuses periodically
       const interval = setInterval(() => {
         fetchAdminData(true);
-      }, 5000);
+      }, 3000);
       return () => clearInterval(interval);
     }
   }, [isOpen, userRole]);

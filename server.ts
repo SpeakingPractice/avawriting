@@ -131,16 +131,16 @@ const CONFIG_FILE = path.join(process.cwd(), "security_config.json");
 let inMemoryConfig: SecurityConfig | null = null;
 
 const DEFAULT_SYSTEM_ACCOUNTS: UserAccount[] = [
-  { id: "acc_ava01", username: "ava01", password: "139742", name: "Tài khoản Học sinh 01", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava02", username: "ava02", password: "227913", name: "Tài khoản Học sinh 02", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava03", username: "ava03", password: "379654", name: "Tài khoản Học sinh 03", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava04", username: "ava04", password: "467823", name: "Tài khoản Học sinh 04", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava05", username: "ava05", password: "562783", name: "Tài khoản Học sinh 05", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava06", username: "ava06", password: "678239", name: "Tài khoản Học sinh 06", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava07", username: "ava07", password: "789423", name: "Tài khoản Học sinh 07", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava08", username: "ava08", password: "868234", name: "Tài khoản Học sinh 08", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava09", username: "ava09", password: "923809", name: "Tài khoản Học sinh 09", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
-  { id: "acc_ava10", username: "ava10", password: "109803", name: "Tài khoản Học sinh 10", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava01", username: "ava01", password: "139742", name: "Tài khoản Giáo viên 01", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava02", username: "ava02", password: "227913", name: "Tài khoản Giáo viên 02", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava03", username: "ava03", password: "379654", name: "Tài khoản Giáo viên 03", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava04", username: "ava04", password: "467823", name: "Tài khoản Giáo viên 04", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava05", username: "ava05", password: "562783", name: "Tài khoản Giáo viên 05", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava06", username: "ava06", password: "678239", name: "Tài khoản Giáo viên 06", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava07", username: "ava07", password: "789423", name: "Tài khoản Giáo viên 07", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava08", username: "ava08", password: "868234", name: "Tài khoản Giáo viên 08", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava09", username: "ava09", password: "923809", name: "Tài khoản Giáo viên 09", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava10", username: "ava10", password: "109803", name: "Tài khoản Giáo viên 10", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
 ];
 
 function getSecurityConfig(): SecurityConfig {
@@ -335,27 +335,78 @@ app.post("/api/auth/verify-code", (req, res) => {
 
 // Heartbeat endpoint to refresh online status
 app.post("/api/auth/heartbeat", (req, res) => {
-  const { token } = req.body || {};
-  if (!token) return res.json({ success: false });
+  const { token, username } = req.body || {};
+  if (!token && !username) return res.json({ success: false });
   const config = getSecurityConfig();
-  if (config.activeSessions && config.activeSessions[token]) {
+  if (!config.activeSessions) config.activeSessions = {};
+
+  if (token && config.activeSessions[token]) {
     config.activeSessions[token].lastActiveAt = Date.now();
+    if (username) config.activeSessions[token].username = username;
     saveSecurityConfig(config);
     return res.json({ success: true, username: config.activeSessions[token].username });
   }
+
+  // If token is present but not in memory yet (e.g. server restarted or client reconnected)
+  if (token && (typeof token === "string")) {
+    const role = token.startsWith("admin_master_token_") ? "admin" : "user";
+    const uName = username || (role === "admin" ? config.adminAccount.username : "");
+    if (uName) {
+      config.activeSessions[token] = {
+        username: uName,
+        role: role as "admin" | "user",
+        createdAt: Date.now(),
+        lastActiveAt: Date.now(),
+      };
+      saveSecurityConfig(config);
+      return res.json({ success: true, username: uName });
+    }
+  }
+
   return res.json({ success: false });
 });
 
-app.post("/api/auth/check-session", (req, res) => {
+app.post("/api/auth/logout", (req, res) => {
   const { token } = req.body || {};
+  if (token) {
+    const config = getSecurityConfig();
+    if (config.activeSessions && config.activeSessions[token]) {
+      delete config.activeSessions[token];
+      saveSecurityConfig(config);
+    }
+  }
+  return res.json({ success: true });
+});
+
+app.post("/api/auth/check-session", (req, res) => {
+  const { token, username } = req.body || {};
   if (!token) return res.json({ valid: false });
 
+  const config = getSecurityConfig();
+  if (!config.activeSessions) config.activeSessions = {};
+
   if (typeof token === "string" && token.startsWith("admin_master_token_")) {
-    return res.json({ valid: true, role: "admin" });
+    config.activeSessions[token] = {
+      username: username || config.adminAccount.username || "admin",
+      role: "admin",
+      createdAt: config.activeSessions[token]?.createdAt || Date.now(),
+      lastActiveAt: Date.now(),
+    };
+    saveSecurityConfig(config);
+    return res.json({ valid: true, role: "admin", username: config.adminAccount.username });
   }
 
-  const config = getSecurityConfig();
-  const session = config.activeSessions[token];
+  let session = config.activeSessions[token];
+  if (!session && typeof token === "string" && token.startsWith("user_token_") && username) {
+    session = {
+      username: username,
+      role: "user",
+      createdAt: Date.now(),
+      lastActiveAt: Date.now(),
+    };
+    config.activeSessions[token] = session;
+  }
+
   if (!session) return res.json({ valid: false });
 
   // Expiry check (14 days)
@@ -386,9 +437,11 @@ app.post("/api/auth/admin/get-accounts", (req, res) => {
   if (config.activeSessions) {
     for (const [sToken, session] of Object.entries(config.activeSessions)) {
       const lastActive = session.lastActiveAt || session.createdAt || 0;
-      // Consider online if active within last 20 minutes
-      if (now - lastActive < 20 * 60 * 1000) {
-        onlineUsernames.add(session.username.toLowerCase());
+      // Consider online if active within last 5 minutes
+      if (now - lastActive < 5 * 60 * 1000) {
+        if (session.username) {
+          onlineUsernames.add(session.username.toLowerCase().trim());
+        }
       } else if (now - lastActive > 24 * 60 * 60 * 1000) {
         delete config.activeSessions[sToken];
       }
@@ -398,7 +451,7 @@ app.post("/api/auth/admin/get-accounts", (req, res) => {
 
   const enrichedAccounts = (config.accounts || []).map((acc) => ({
     ...acc,
-    isOnline: onlineUsernames.has(acc.username.toLowerCase()),
+    isOnline: onlineUsernames.has(acc.username.toLowerCase().trim()),
   }));
 
   return res.json({
@@ -422,15 +475,17 @@ app.post("/api/auth/admin/get-data", (req, res) => {
   if (config.activeSessions) {
     for (const [, session] of Object.entries(config.activeSessions)) {
       const lastActive = session.lastActiveAt || session.createdAt || 0;
-      if (now - lastActive < 20 * 60 * 1000) {
-        onlineUsernames.add(session.username.toLowerCase());
+      if (now - lastActive < 5 * 60 * 1000) {
+        if (session.username) {
+          onlineUsernames.add(session.username.toLowerCase().trim());
+        }
       }
     }
   }
 
   const enrichedAccounts = (config.accounts || []).map((acc) => ({
     ...acc,
-    isOnline: onlineUsernames.has(acc.username.toLowerCase()),
+    isOnline: onlineUsernames.has(acc.username.toLowerCase().trim()),
   }));
 
   return res.json({

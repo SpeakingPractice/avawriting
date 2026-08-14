@@ -8,7 +8,7 @@
       "id": "acc_ava01",
       "username": "ava01",
       "password": "139742",
-      "name": "Tài khoản Học sinh 01",
+      "name": "Tài khoản Giáo viên 01",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -17,7 +17,7 @@
       "id": "acc_ava02",
       "username": "ava02",
       "password": "227913",
-      "name": "Tài khoản Học sinh 02",
+      "name": "Tài khoản Giáo viên 02",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -26,7 +26,7 @@
       "id": "acc_ava03",
       "username": "ava03",
       "password": "379654",
-      "name": "Tài khoản Học sinh 03",
+      "name": "Tài khoản Giáo viên 03",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -35,7 +35,7 @@
       "id": "acc_ava04",
       "username": "ava04",
       "password": "467823",
-      "name": "Tài khoản Học sinh 04",
+      "name": "Tài khoản Giáo viên 04",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -44,7 +44,7 @@
       "id": "acc_ava05",
       "username": "ava05",
       "password": "562783",
-      "name": "Tài khoản Học sinh 05",
+      "name": "Tài khoản Giáo viên 05",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -53,7 +53,7 @@
       "id": "acc_ava06",
       "username": "ava06",
       "password": "678239",
-      "name": "Tài khoản Học sinh 06",
+      "name": "Tài khoản Giáo viên 06",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -62,7 +62,7 @@
       "id": "acc_ava07",
       "username": "ava07",
       "password": "789423",
-      "name": "Tài khoản Học sinh 07",
+      "name": "Tài khoản Giáo viên 07",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -71,7 +71,7 @@
       "id": "acc_ava08",
       "username": "ava08",
       "password": "868234",
-      "name": "Tài khoản Học sinh 08",
+      "name": "Tài khoản Giáo viên 08",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -80,7 +80,7 @@
       "id": "acc_ava09",
       "username": "ava09",
       "password": "923809",
-      "name": "Tài khoản Học sinh 09",
+      "name": "Tài khoản Giáo viên 09",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"
@@ -89,7 +89,7 @@
       "id": "acc_ava10",
       "username": "ava10",
       "password": "109803",
-      "name": "Tài khoản Học sinh 10",
+      "name": "Tài khoản Giáo viên 10",
       "role": "user",
       "active": true,
       "createdAt": "2026-08-14T00:00:00.000Z"

@@ -94,16 +94,16 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
       }
       if (!localAccounts || localAccounts.length === 0) {
         localAccounts = [
-          { username: "ava01", password: "139742", name: "Tài khoản Học sinh 01", active: true },
-          { username: "ava02", password: "227913", name: "Tài khoản Học sinh 02", active: true },
-          { username: "ava03", password: "379654", name: "Tài khoản Học sinh 03", active: true },
-          { username: "ava04", password: "467823", name: "Tài khoản Học sinh 04", active: true },
-          { username: "ava05", password: "562783", name: "Tài khoản Học sinh 05", active: true },
-          { username: "ava06", password: "678239", name: "Tài khoản Học sinh 06", active: true },
-          { username: "ava07", password: "789423", name: "Tài khoản Học sinh 07", active: true },
-          { username: "ava08", password: "868234", name: "Tài khoản Học sinh 08", active: true },
-          { username: "ava09", password: "923809", name: "Tài khoản Học sinh 09", active: true },
-          { username: "ava10", password: "109803", name: "Tài khoản Học sinh 10", active: true },
+          { username: "ava01", password: "139742", name: "Tài khoản Giáo viên 01", active: true },
+          { username: "ava02", password: "227913", name: "Tài khoản Giáo viên 02", active: true },
+          { username: "ava03", password: "379654", name: "Tài khoản Giáo viên 03", active: true },
+          { username: "ava04", password: "467823", name: "Tài khoản Giáo viên 04", active: true },
+          { username: "ava05", password: "562783", name: "Tài khoản Giáo viên 05", active: true },
+          { username: "ava06", password: "678239", name: "Tài khoản Giáo viên 06", active: true },
+          { username: "ava07", password: "789423", name: "Tài khoản Giáo viên 07", active: true },
+          { username: "ava08", password: "868234", name: "Tài khoản Giáo viên 08", active: true },
+          { username: "ava09", password: "923809", name: "Tài khoản Giáo viên 09", active: true },
+          { username: "ava10", password: "109803", name: "Tài khoản Giáo viên 10", active: true },
         ];
       }
 
