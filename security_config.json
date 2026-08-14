@@ -1,7 +1,7 @@
 {
   "adminAccount": {
     "username": "admin",
-    "password": "admin123"
+    "password": "mydu240484"
   },
   "accounts": [
     {
@@ -95,56 +95,5 @@
       "createdAt": "2026-08-14T00:00:00.000Z"
     }
   ],
-  "activeSessions": {
-    "user_token_nf27e0clkiqmssk21np": {
-      "username": "ava01",
-      "role": "user",
-      "createdAt": 1786688256229
-    },
-    "user_token_tjqovb7vs6mmssk21od": {
-      "username": "ava02",
-      "role": "user",
-      "createdAt": 1786688256253
-    },
-    "user_token_i8860m25tqfmssk21ow": {
-      "username": "ava03",
-      "role": "user",
-      "createdAt": 1786688256272
-    },
-    "user_token_hysi2gvqhimssk21pd": {
-      "username": "ava04",
-      "role": "user",
-      "createdAt": 1786688256289
-    },
-    "user_token_xb76pvbl2pmssk21pu": {
-      "username": "ava05",
-      "role": "user",
-      "createdAt": 1786688256306
-    },
-    "user_token_30an04lu5zhmssk21qa": {
-      "username": "ava06",
-      "role": "user",
-      "createdAt": 1786688256322
-    },
-    "user_token_ixhs9ayv1amssk21qq": {
-      "username": "ava07",
-      "role": "user",
-      "createdAt": 1786688256338
-    },
-    "user_token_3591naj597fmssk21r7": {
-      "username": "ava08",
-      "role": "user",
-      "createdAt": 1786688256355
-    },
-    "user_token_ht4fj86fgjmssk21ro": {
-      "username": "ava09",
-      "role": "user",
-      "createdAt": 1786688256372
-    },
-    "user_token_tc4gpktmcdimssk21s5": {
-      "username": "ava10",
-      "role": "user",
-      "createdAt": 1786688256389
-    }
-  }
+  "activeSessions": {}
 }

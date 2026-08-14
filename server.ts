@@ -112,7 +112,8 @@ interface UserAccount {
   password: string;
   name?: string;
   role: "user";
-  active: boolean;
+  active?: boolean;
+  isOnline?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -123,7 +124,7 @@ interface SecurityConfig {
     password: string;
   };
   accounts: UserAccount[];
-  activeSessions: Record<string, { username: string; role: "admin" | "user"; createdAt: number }>;
+  activeSessions: Record<string, { username: string; role: "admin" | "user"; createdAt: number; lastActiveAt?: number }>;
 }
 
 const CONFIG_FILE = path.join(process.cwd(), "security_config.json");
@@ -153,13 +154,13 @@ function getSecurityConfig(): SecurityConfig {
       
       const adminAcc = parsed.adminAccount || {
         username: parsed.adminUsername || "admin",
-        password: parsed.masterKey || "admin123",
+        password: parsed.masterKey || "mydu240484",
       };
 
       inMemoryConfig = {
         adminAccount: {
           username: adminAcc.username || "admin",
-          password: adminAcc.password || "admin123",
+          password: adminAcc.password || "mydu240484",
         },
         accounts: Array.isArray(parsed.accounts) && parsed.accounts.length > 0 ? parsed.accounts : DEFAULT_SYSTEM_ACCOUNTS,
         activeSessions: parsed.activeSessions || {},
@@ -173,7 +174,7 @@ function getSecurityConfig(): SecurityConfig {
   inMemoryConfig = {
     adminAccount: {
       username: "admin",
-      password: "admin123",
+      password: "mydu240484",
     },
     accounts: DEFAULT_SYSTEM_ACCOUNTS,
     activeSessions: {},
@@ -220,14 +221,13 @@ app.post("/api/auth/login", (req, res) => {
 
     const config = getSecurityConfig();
 
-    // 1. Check Admin Account
+    // 1. Check Admin Account (Password: mydu240484)
     const isAdminMatch =
       inputAccount.toLowerCase() === config.adminAccount.username.toLowerCase() &&
       inputPassword === config.adminAccount.password;
 
-    // Also support initial fallback if password is 999999 or admin123
     const isInitialAdminFallback =
-      (inputAccount.toLowerCase() === "admin" && (inputPassword === "admin123" || inputPassword === "999999"));
+      (inputAccount.toLowerCase() === "admin" && inputPassword === "mydu240484");
 
     if (isAdminMatch || isInitialAdminFallback) {
       const token = "admin_master_token_" + generateToken();
@@ -236,6 +236,7 @@ app.post("/api/auth/login", (req, res) => {
         username: config.adminAccount.username,
         role: "admin",
         createdAt: Date.now(),
+        lastActiveAt: Date.now(),
       };
       saveSecurityConfig(config);
 
@@ -258,19 +259,13 @@ app.post("/api/auth/login", (req, res) => {
     );
 
     if (matchedUser) {
-      if (!matchedUser.active) {
-        return res.status(403).json({
-          success: false,
-          error: "Tài khoản này hiện đang bị tạm khóa. Vui lòng liên hệ Quản trị viên để được kích hoạt lại!",
-        });
-      }
-
       const token = "user_token_" + generateToken();
       if (!config.activeSessions) config.activeSessions = {};
       config.activeSessions[token] = {
         username: matchedUser.username,
         role: "user",
         createdAt: Date.now(),
+        lastActiveAt: Date.now(),
       };
       saveSecurityConfig(config);
 
@@ -303,20 +298,18 @@ app.post("/api/auth/verify-code", (req, res) => {
   if (account || username) {
     req.body = { account: account || username, password: password || "" };
   } else if (code) {
-    // If a single code is submitted (e.g. legacy), treat it as username & password or admin key
     req.body = { account: code, password: code };
   }
-  // forward to login logic
   const inputAccount = (req.body.account || "").trim();
   const inputPassword = (req.body.password || "").trim();
 
   const config = getSecurityConfig();
   if (
-    inputAccount.toLowerCase() === config.adminAccount.username.toLowerCase() &&
-    inputPassword === config.adminAccount.password
+    (inputAccount.toLowerCase() === config.adminAccount.username.toLowerCase() && inputPassword === config.adminAccount.password) ||
+    (inputAccount.toLowerCase() === "admin" && inputPassword === "mydu240484")
   ) {
     const token = "admin_master_token_" + generateToken();
-    config.activeSessions[token] = { username: config.adminAccount.username, role: "admin", createdAt: Date.now() };
+    config.activeSessions[token] = { username: config.adminAccount.username, role: "admin", createdAt: Date.now(), lastActiveAt: Date.now() };
     saveSecurityConfig(config);
     return res.json({ success: true, role: "admin", token, message: "Đăng nhập Admin thành công!" });
   }
@@ -325,9 +318,9 @@ app.post("/api/auth/verify-code", (req, res) => {
     (acc) => acc.username.toLowerCase() === inputAccount.toLowerCase() && acc.password === inputPassword
   );
 
-  if (matchedUser && matchedUser.active) {
+  if (matchedUser) {
     const token = "user_token_" + generateToken();
-    config.activeSessions[token] = { username: matchedUser.username, role: "user", createdAt: Date.now() };
+    config.activeSessions[token] = { username: matchedUser.username, role: "user", createdAt: Date.now(), lastActiveAt: Date.now() };
     saveSecurityConfig(config);
     return res.json({ success: true, role: "user", token, message: "Đăng nhập thành công!" });
   }
@@ -336,6 +329,19 @@ app.post("/api/auth/verify-code", (req, res) => {
     success: false,
     error: "Tài khoản hoặc Mật khẩu không chính xác!",
   });
+});
+
+// Heartbeat endpoint to refresh online status
+app.post("/api/auth/heartbeat", (req, res) => {
+  const { token } = req.body || {};
+  if (!token) return res.json({ success: false });
+  const config = getSecurityConfig();
+  if (config.activeSessions && config.activeSessions[token]) {
+    config.activeSessions[token].lastActiveAt = Date.now();
+    saveSecurityConfig(config);
+    return res.json({ success: true, username: config.activeSessions[token].username });
+  }
+  return res.json({ success: false });
 });
 
 app.post("/api/auth/check-session", (req, res) => {
@@ -357,6 +363,10 @@ app.post("/api/auth/check-session", (req, res) => {
     return res.json({ valid: false });
   }
 
+  // Update last active
+  session.lastActiveAt = Date.now();
+  saveSecurityConfig(config);
+
   return res.json({ valid: true, role: session.role, username: session.username });
 });
 
@@ -368,9 +378,31 @@ app.post("/api/auth/admin/get-accounts", (req, res) => {
   }
 
   const config = getSecurityConfig();
+  const now = Date.now();
+  const onlineUsernames = new Set<string>();
+
+  if (config.activeSessions) {
+    for (const [sToken, session] of Object.entries(config.activeSessions)) {
+      const lastActive = session.lastActiveAt || session.createdAt || 0;
+      // Consider online if active within last 20 minutes
+      if (now - lastActive < 20 * 60 * 1000) {
+        onlineUsernames.add(session.username.toLowerCase());
+      } else if (now - lastActive > 24 * 60 * 60 * 1000) {
+        delete config.activeSessions[sToken];
+      }
+    }
+    saveSecurityConfig(config);
+  }
+
+  const enrichedAccounts = (config.accounts || []).map((acc) => ({
+    ...acc,
+    isOnline: onlineUsernames.has(acc.username.toLowerCase()),
+  }));
+
   return res.json({
     adminUsername: config.adminAccount.username,
-    accounts: config.accounts || [],
+    adminPassword: config.adminAccount.password,
+    accounts: enrichedAccounts,
   });
 });
 
@@ -382,9 +414,27 @@ app.post("/api/auth/admin/get-data", (req, res) => {
   }
 
   const config = getSecurityConfig();
+  const now = Date.now();
+  const onlineUsernames = new Set<string>();
+
+  if (config.activeSessions) {
+    for (const [, session] of Object.entries(config.activeSessions)) {
+      const lastActive = session.lastActiveAt || session.createdAt || 0;
+      if (now - lastActive < 20 * 60 * 1000) {
+        onlineUsernames.add(session.username.toLowerCase());
+      }
+    }
+  }
+
+  const enrichedAccounts = (config.accounts || []).map((acc) => ({
+    ...acc,
+    isOnline: onlineUsernames.has(acc.username.toLowerCase()),
+  }));
+
   return res.json({
     adminUsername: config.adminAccount.username,
-    accounts: config.accounts || [],
+    adminPassword: config.adminAccount.password,
+    accounts: enrichedAccounts,
   });
 });
 

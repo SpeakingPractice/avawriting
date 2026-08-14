@@ -67,11 +67,11 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
 
       // Offline / Local fallback check
       const localAdminUser = localStorage.getItem("ava_local_admin_user") || "admin";
-      const localAdminPass = localStorage.getItem("ava_local_admin_pass") || "admin123";
+      const localAdminPass = localStorage.getItem("ava_local_admin_pass") || "mydu240484";
 
       if (
         cleanAccount.toLowerCase() === localAdminUser.toLowerCase() &&
-        (cleanPassword === localAdminPass || cleanPassword === "999999" || cleanPassword === "admin123")
+        (cleanPassword === localAdminPass || cleanPassword === "mydu240484")
       ) {
         const fallbackToken = "admin_master_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", fallbackToken);
@@ -111,11 +111,6 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
         (a: any) => a.username.toLowerCase() === cleanAccount.toLowerCase() && a.password === cleanPassword
       );
       if (found) {
-        if (found.active === false) {
-          setError("Tài khoản này hiện đang bị tạm khóa!");
-          setLoading(false);
-          return;
-        }
         const userFallbackToken = "user_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", userFallbackToken);
         sessionStorage.setItem("ava_session_role", "user");
@@ -133,11 +128,11 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
       console.error("Auth login network error:", err);
       // Offline check for admin
       const localAdminUser = localStorage.getItem("ava_local_admin_user") || "admin";
-      const localAdminPass = localStorage.getItem("ava_local_admin_pass") || "admin123";
+      const localAdminPass = localStorage.getItem("ava_local_admin_pass") || "mydu240484";
 
       if (
         cleanAccount.toLowerCase() === localAdminUser.toLowerCase() &&
-        (cleanPassword === localAdminPass || cleanPassword === "999999" || cleanPassword === "admin123")
+        (cleanPassword === localAdminPass || cleanPassword === "mydu240484")
       ) {
         const fallbackToken = "admin_master_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", fallbackToken);
@@ -304,7 +299,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
             Hệ thống xác thực tài khoản nội bộ Trường Anh Ngữ Mỹ Du.
           </p>
           <p className="text-slate-500 mt-0.5">
-            Quản trị viên &amp; Học sinh đăng nhập bằng Account và Password được cấp.
+            Quản trị viên &amp; Giáo viên đăng nhập bằng Account và Password được cấp.
           </p>
         </div>
       </div>

@@ -98,6 +98,21 @@ export default function App() {
     }
   }, []);
 
+  // Heartbeat to keep session active/online
+  useEffect(() => {
+    if (!isUnlocked || !sessionToken) return;
+    const sendHeartbeat = () => {
+      fetch("/api/auth/heartbeat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: sessionToken }),
+      }).catch(() => {});
+    };
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 60000);
+    return () => clearInterval(interval);
+  }, [isUnlocked, sessionToken]);
+
   const handleUnlockSuccess = (role: "admin" | "user", token: string) => {
     setSessionRole(role);
     setSessionToken(token);
