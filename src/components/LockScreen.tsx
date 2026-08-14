@@ -147,16 +147,16 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
 
       // Offline check for default 10 accounts
       const defaultAccounts = [
-        { username: "ava01", password: "139742", name: "Tài khoản Học sinh 01" },
-        { username: "ava02", password: "227913", name: "Tài khoản Học sinh 02" },
-        { username: "ava03", password: "379654", name: "Tài khoản Học sinh 03" },
-        { username: "ava04", password: "467823", name: "Tài khoản Học sinh 04" },
-        { username: "ava05", password: "562783", name: "Tài khoản Học sinh 05" },
-        { username: "ava06", password: "678239", name: "Tài khoản Học sinh 06" },
-        { username: "ava07", password: "789423", name: "Tài khoản Học sinh 07" },
-        { username: "ava08", password: "868234", name: "Tài khoản Học sinh 08" },
-        { username: "ava09", password: "923809", name: "Tài khoản Học sinh 09" },
-        { username: "ava10", password: "109803", name: "Tài khoản Học sinh 10" },
+        { username: "ava01", password: "139742", name: "Tài khoản Giáo viên 01" },
+        { username: "ava02", password: "227913", name: "Tài khoản Giáo viên 02" },
+        { username: "ava03", password: "379654", name: "Tài khoản Giáo viên 03" },
+        { username: "ava04", password: "467823", name: "Tài khoản Giáo viên 04" },
+        { username: "ava05", password: "562783", name: "Tài khoản Giáo viên 05" },
+        { username: "ava06", password: "678239", name: "Tài khoản Giáo viên 06" },
+        { username: "ava07", password: "789423", name: "Tài khoản Giáo viên 07" },
+        { username: "ava08", password: "868234", name: "Tài khoản Giáo viên 08" },
+        { username: "ava09", password: "923809", name: "Tài khoản Giáo viên 09" },
+        { username: "ava10", password: "109803", name: "Tài khoản Giáo viên 10" },
       ];
 
       const foundDefault = defaultAccounts.find(
