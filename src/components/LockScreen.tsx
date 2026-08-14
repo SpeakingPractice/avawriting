@@ -1,33 +1,41 @@
 import React, { useState } from "react";
-import { ShieldCheck, Lock, KeyRound, ArrowRight, AlertCircle, Sparkles, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, User, Lock, ArrowRight, AlertCircle, CheckCircle2, Eye, EyeOff, LogIn } from "lucide-react";
 
 interface LockScreenProps {
   onUnlockSuccess: (role: "admin" | "user", token: string) => void;
 }
 
 export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
-  const [code, setCode] = useState("");
+  const [account, setAccount] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const handleVerify = async (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!code.trim()) {
-      setError("Vui lòng nhập Mã truy cập!");
+    const cleanAccount = account.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanAccount) {
+      setError("Vui lòng nhập Tài khoản (Account)!");
+      return;
+    }
+    if (!cleanPassword) {
+      setError("Vui lòng nhập Mật khẩu (Password)!");
       return;
     }
 
-    const cleanCode = code.trim();
     setLoading(true);
     setError(null);
     setSuccessMsg(null);
 
     try {
-      const res = await fetch("/api/auth/verify-code", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: cleanCode }),
+        body: JSON.stringify({ account: cleanAccount, password: cleanPassword }),
       });
 
       let data: any = null;
@@ -38,73 +46,141 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
       }
 
       if (data && data.success) {
-        setSuccessMsg(data.message || "Xác thực thành công!");
+        setSuccessMsg(data.message || "Đăng nhập thành công!");
         sessionStorage.setItem("ava_session_token", data.token);
         sessionStorage.setItem("ava_session_role", data.role);
+        if (data.username) {
+          sessionStorage.setItem("ava_session_username", data.username);
+        }
 
         setTimeout(() => {
           onUnlockSuccess(data.role, data.token);
-        }, 500);
+        }, 400);
         return;
       }
 
-      // If server returned a specific error message (e.g., "Mã đã được sử dụng")
       if (data && data.error) {
         setError(data.error);
         setLoading(false);
         return;
       }
 
-      // Fallback if res.ok is false or non-JSON
-      if (cleanCode === "999999") {
+      // Offline / Local fallback check
+      const localAdminUser = localStorage.getItem("ava_local_admin_user") || "admin";
+      const localAdminPass = localStorage.getItem("ava_local_admin_pass") || "admin123";
+
+      if (
+        cleanAccount.toLowerCase() === localAdminUser.toLowerCase() &&
+        (cleanPassword === localAdminPass || cleanPassword === "999999" || cleanPassword === "admin123")
+      ) {
         const fallbackToken = "admin_master_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", fallbackToken);
         sessionStorage.setItem("ava_session_role", "admin");
-        setSuccessMsg("Xác thực Mã Quản trị thành công!");
+        sessionStorage.setItem("ava_session_username", cleanAccount);
+        setSuccessMsg("Đăng nhập Quản Trị Viên thành công!");
         setTimeout(() => {
           onUnlockSuccess("admin", fallbackToken);
         }, 300);
         return;
       }
 
-      if (/^\d{6}$/.test(cleanCode)) {
-        const userFallbackToken = "user_otp_token_" + Date.now();
+      // Check local user accounts fallback
+      let localAccounts: any[] = [];
+      const localAccountsStr = localStorage.getItem("ava_local_accounts");
+      if (localAccountsStr) {
+        try {
+          localAccounts = JSON.parse(localAccountsStr);
+        } catch (err) {}
+      }
+      if (!localAccounts || localAccounts.length === 0) {
+        localAccounts = [
+          { username: "ava01", password: "139742", name: "Tài khoản Học sinh 01", active: true },
+          { username: "ava02", password: "227913", name: "Tài khoản Học sinh 02", active: true },
+          { username: "ava03", password: "379654", name: "Tài khoản Học sinh 03", active: true },
+          { username: "ava04", password: "467823", name: "Tài khoản Học sinh 04", active: true },
+          { username: "ava05", password: "562783", name: "Tài khoản Học sinh 05", active: true },
+          { username: "ava06", password: "678239", name: "Tài khoản Học sinh 06", active: true },
+          { username: "ava07", password: "789423", name: "Tài khoản Học sinh 07", active: true },
+          { username: "ava08", password: "868234", name: "Tài khoản Học sinh 08", active: true },
+          { username: "ava09", password: "923809", name: "Tài khoản Học sinh 09", active: true },
+          { username: "ava10", password: "109803", name: "Tài khoản Học sinh 10", active: true },
+        ];
+      }
+
+      const found = localAccounts.find(
+        (a: any) => a.username.toLowerCase() === cleanAccount.toLowerCase() && a.password === cleanPassword
+      );
+      if (found) {
+        if (found.active === false) {
+          setError("Tài khoản này hiện đang bị tạm khóa!");
+          setLoading(false);
+          return;
+        }
+        const userFallbackToken = "user_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", userFallbackToken);
         sessionStorage.setItem("ava_session_role", "user");
-        setSuccessMsg("Xác thực Mã OTP thành công!");
+        sessionStorage.setItem("ava_session_username", found.username);
+        setSuccessMsg(`Đăng nhập thành công! Chào mừng ${found.name || found.username}.`);
         setTimeout(() => {
           onUnlockSuccess("user", userFallbackToken);
         }, 300);
         return;
       }
 
-      setError("Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!");
+      setError("Tài khoản hoặc Mật khẩu không chính xác. Vui lòng kiểm tra lại!");
       setLoading(false);
     } catch (err: any) {
-      console.error("Auth verify network error:", err);
-      if (cleanCode === "999999") {
+      console.error("Auth login network error:", err);
+      // Offline check for admin
+      const localAdminUser = localStorage.getItem("ava_local_admin_user") || "admin";
+      const localAdminPass = localStorage.getItem("ava_local_admin_pass") || "admin123";
+
+      if (
+        cleanAccount.toLowerCase() === localAdminUser.toLowerCase() &&
+        (cleanPassword === localAdminPass || cleanPassword === "999999" || cleanPassword === "admin123")
+      ) {
         const fallbackToken = "admin_master_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", fallbackToken);
         sessionStorage.setItem("ava_session_role", "admin");
-        setSuccessMsg("Xác thực Mã Quản trị thành công!");
+        sessionStorage.setItem("ava_session_username", cleanAccount);
+        setSuccessMsg("Đăng nhập Quản Trị Viên thành công!");
         setTimeout(() => {
           onUnlockSuccess("admin", fallbackToken);
         }, 300);
         return;
       }
 
-      if (/^\d{6}$/.test(cleanCode)) {
-        const userFallbackToken = "user_otp_token_" + Date.now();
+      // Offline check for default 10 accounts
+      const defaultAccounts = [
+        { username: "ava01", password: "139742", name: "Tài khoản Học sinh 01" },
+        { username: "ava02", password: "227913", name: "Tài khoản Học sinh 02" },
+        { username: "ava03", password: "379654", name: "Tài khoản Học sinh 03" },
+        { username: "ava04", password: "467823", name: "Tài khoản Học sinh 04" },
+        { username: "ava05", password: "562783", name: "Tài khoản Học sinh 05" },
+        { username: "ava06", password: "678239", name: "Tài khoản Học sinh 06" },
+        { username: "ava07", password: "789423", name: "Tài khoản Học sinh 07" },
+        { username: "ava08", password: "868234", name: "Tài khoản Học sinh 08" },
+        { username: "ava09", password: "923809", name: "Tài khoản Học sinh 09" },
+        { username: "ava10", password: "109803", name: "Tài khoản Học sinh 10" },
+      ];
+
+      const foundDefault = defaultAccounts.find(
+        (a) => a.username.toLowerCase() === cleanAccount.toLowerCase() && a.password === cleanPassword
+      );
+
+      if (foundDefault) {
+        const userFallbackToken = "user_token_" + Date.now();
         sessionStorage.setItem("ava_session_token", userFallbackToken);
         sessionStorage.setItem("ava_session_role", "user");
-        setSuccessMsg("Xác thực Mã OTP thành công!");
+        sessionStorage.setItem("ava_session_username", foundDefault.username);
+        setSuccessMsg(`Đăng nhập thành công! Chào mừng ${foundDefault.name || foundDefault.username}.`);
         setTimeout(() => {
           onUnlockSuccess("user", userFallbackToken);
         }, 300);
         return;
       }
 
-      setError("Không thể kết nối đến máy chủ xác thực. Vui lòng kiểm tra kết nối mạng và thử lại!");
+      setError("Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại!");
       setLoading(false);
     }
   };
@@ -115,8 +191,8 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-950/40 via-slate-950 to-amber-950/20 pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-xl p-6 sm:p-8 text-slate-100">
-        {/* Header Icon */}
+      <div className="relative w-full max-w-md bg-slate-900/95 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-xl p-6 sm:p-8 text-slate-100">
+        {/* Header Icon & Title */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-0.5 shadow-lg shadow-blue-500/20 mb-4 flex items-center justify-center">
             <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
@@ -124,35 +200,67 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
             </div>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            HỆ THỐNG BẢO MẬT AVA
+            ĐĂNG NHẬP HỆ THỐNG AVA
           </h1>
           <p className="text-xs text-slate-400 mt-1 max-w-xs">
-            Trường Anh Ngữ Mỹ Du - Khóa Bảo Vệ 2 Lớp & Mã Truy Cập 1 Lần (OTP)
+            Trường Anh Ngữ Mỹ Du • Hệ Thống Chấm Điểm &amp; Nâng Cấp IELTS Writing
           </p>
         </div>
 
         {/* Input Form */}
-        <form onSubmit={handleVerify} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Account Input */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-              Nhập Mã Truy Cập (Access Passcode)
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+              Tài khoản (Account)
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <KeyRound className="w-5 h-5" />
+                <User className="w-5 h-5" />
               </div>
               <input
                 type="text"
-                value={code}
+                value={account}
                 onChange={(e) => {
-                  setCode(e.target.value);
+                  setAccount(e.target.value);
                   if (error) setError(null);
                 }}
-                placeholder="Nhập mã 6 chữ số..."
-                maxLength={20}
+                placeholder="Nhập tên tài khoản..."
                 autoFocus
-                className="w-full pl-11 pr-4 py-3 bg-slate-950/80 border border-slate-700 rounded-xl text-white font-mono text-lg font-bold placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all tracking-wider text-center"
+                autoComplete="username"
+                className="w-full pl-11 pr-4 py-3 bg-slate-950/80 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
               />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+              Mật khẩu (Password)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock className="w-5 h-5" />
+              </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="Nhập mật khẩu..."
+                autoComplete="current-password"
+                className="w-full pl-11 pr-11 py-3 bg-slate-950/80 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 cursor-pointer"
+                title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -172,37 +280,35 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlockSuccess }) => {
 
           <button
             type="submit"
-            disabled={loading || !code.trim()}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+            disabled={loading || !account.trim() || !password.trim()}
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
           >
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Đang kiểm tra mã...</span>
+                <span>Đang xác thực...</span>
               </>
             ) : (
               <>
-                <span>Xác Nhận Đăng Nhập</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                <LogIn className="w-4 h-4" />
+                <span>Đăng Nhập</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform ml-1" />
               </>
             )}
           </button>
         </form>
 
-        {/* Feature Highlights Footnote */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80 space-y-2 text-[11px] text-slate-400 leading-relaxed">
-          <div className="flex items-center gap-1.5 text-amber-400/90 font-medium">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Cơ chế bảo mật Mã 1 lần (One-Time Passcode):</span>
-          </div>
+        {/* Footnote */}
+        <div className="mt-6 pt-5 border-t border-slate-800/80 text-center text-[11px] text-slate-400 leading-relaxed">
           <p>
-            • Mỗi mã sử dụng 1 lần sẽ tự động bị <strong>vô hiệu hóa hoàn toàn</strong> ngay sau khi kích hoạt.
+            Hệ thống xác thực tài khoản nội bộ Trường Anh Ngữ Mỹ Du.
           </p>
-          <p>
-            • Người khác không thể dùng lại mã cũ. Hãy xin Mã mới từ Quản trị viên khi mở lại ứng dụng.
+          <p className="text-slate-500 mt-0.5">
+            Quản trị viên &amp; Học sinh đăng nhập bằng Account và Password được cấp.
           </p>
         </div>
       </div>
     </div>
   );
 };
+

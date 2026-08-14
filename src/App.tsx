@@ -594,10 +594,10 @@ export default function App() {
               <button
                 onClick={() => setShowSecurityModal(true)}
                 className="px-3 py-1.5 bg-blue-900/60 hover:bg-blue-900 border border-blue-400/30 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-                title="Bảo mật & Quản lý Mã 1 lần"
+                title="Quản lý Tài khoản & Phân quyền"
               >
                 <ShieldCheck className="w-4 h-4 text-[#FDFA55]" />
-                <span className="hidden xs:inline">Bảo mật</span>
+                <span className="hidden xs:inline">Tài khoản</span>
               </button>
 
               <div className="hidden sm:flex flex-col items-end text-right">
@@ -1375,7 +1375,7 @@ export default function App() {
       {/* Security Lock Screen Gate */}
       {!isUnlocked && <LockScreen onUnlockSuccess={handleUnlockSuccess} />}
 
-      {/* Security Admin & OTP Modal */}
+      {/* Security Admin & User Accounts Modal */}
       <SecurityAdminModal
         isOpen={showSecurityModal}
         onClose={() => setShowSecurityModal(false)}

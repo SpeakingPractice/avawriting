@@ -105,25 +105,42 @@ const PORT = 3000;
 
 app.use(express.json({ limit: "10mb" }));
 
-// Security Config Management & One-Time Passcode (OTP)
-interface OneTimeCode {
+// Security Config Management - Account & Password Authentication
+interface UserAccount {
   id: string;
-  code: string;
+  username: string;
+  password: string;
+  name?: string;
+  role: "user";
+  active: boolean;
   createdAt: string;
-  used: boolean;
-  usedAt?: string;
-  usedByIp?: string;
-  note?: string;
+  updatedAt?: string;
 }
 
 interface SecurityConfig {
-  masterKey: string;
-  oneTimeCodes: OneTimeCode[];
-  activeSessions: Record<string, { role: "admin" | "user"; createdAt: number }>;
+  adminAccount: {
+    username: string;
+    password: string;
+  };
+  accounts: UserAccount[];
+  activeSessions: Record<string, { username: string; role: "admin" | "user"; createdAt: number }>;
 }
 
 const CONFIG_FILE = path.join(process.cwd(), "security_config.json");
 let inMemoryConfig: SecurityConfig | null = null;
+
+const DEFAULT_SYSTEM_ACCOUNTS: UserAccount[] = [
+  { id: "acc_ava01", username: "ava01", password: "139742", name: "Tài khoản Học sinh 01", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava02", username: "ava02", password: "227913", name: "Tài khoản Học sinh 02", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava03", username: "ava03", password: "379654", name: "Tài khoản Học sinh 03", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava04", username: "ava04", password: "467823", name: "Tài khoản Học sinh 04", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava05", username: "ava05", password: "562783", name: "Tài khoản Học sinh 05", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava06", username: "ava06", password: "678239", name: "Tài khoản Học sinh 06", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava07", username: "ava07", password: "789423", name: "Tài khoản Học sinh 07", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava08", username: "ava08", password: "868234", name: "Tài khoản Học sinh 08", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava09", username: "ava09", password: "923809", name: "Tài khoản Học sinh 09", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+  { id: "acc_ava10", username: "ava10", password: "109803", name: "Tài khoản Học sinh 10", role: "user", active: true, createdAt: "2026-08-14T00:00:00.000Z" },
+];
 
 function getSecurityConfig(): SecurityConfig {
   if (inMemoryConfig) {
@@ -133,9 +150,18 @@ function getSecurityConfig(): SecurityConfig {
     if (fs.existsSync(CONFIG_FILE)) {
       const data = fs.readFileSync(CONFIG_FILE, "utf-8");
       const parsed = JSON.parse(data);
+      
+      const adminAcc = parsed.adminAccount || {
+        username: parsed.adminUsername || "admin",
+        password: parsed.masterKey || "admin123",
+      };
+
       inMemoryConfig = {
-        masterKey: parsed.masterKey || "999999",
-        oneTimeCodes: Array.isArray(parsed.oneTimeCodes) ? parsed.oneTimeCodes : [],
+        adminAccount: {
+          username: adminAcc.username || "admin",
+          password: adminAcc.password || "admin123",
+        },
+        accounts: Array.isArray(parsed.accounts) && parsed.accounts.length > 0 ? parsed.accounts : DEFAULT_SYSTEM_ACCOUNTS,
         activeSessions: parsed.activeSessions || {},
       };
       return inMemoryConfig;
@@ -143,9 +169,13 @@ function getSecurityConfig(): SecurityConfig {
   } catch (e) {
     console.error("Error reading security_config.json:", e);
   }
+
   inMemoryConfig = {
-    masterKey: "999999",
-    oneTimeCodes: [],
+    adminAccount: {
+      username: "admin",
+      password: "admin123",
+    },
+    accounts: DEFAULT_SYSTEM_ACCOUNTS,
     activeSessions: {},
   };
   return inMemoryConfig;
@@ -160,122 +190,152 @@ function saveSecurityConfig(config: SecurityConfig) {
   }
 }
 
-function generateRandom6DigitCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
 function generateToken(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
 // Helper to verify admin permissions
-function isRequestAdmin(token?: string, masterKey?: string): boolean {
-  if (masterKey === "999999") return true;
+function isRequestAdmin(token?: string): boolean {
+  if (!token) return false;
+  if (token.startsWith("admin_master_token_")) return true;
   const config = getSecurityConfig();
-  if (masterKey && (masterKey === config.masterKey || masterKey === "999999")) return true;
-  if (token) {
-    if (token.startsWith("admin_master_token_")) return true;
-    const session = config.activeSessions[token];
-    if (session && session.role === "admin") return true;
-  }
+  const session = config.activeSessions[token];
+  if (session && session.role === "admin") return true;
   return false;
 }
 
-// Auth API Endpoints
-app.post("/api/auth/verify-code", (req, res) => {
+// Auth API Endpoints - Login with Account & Password
+app.post("/api/auth/login", (req, res) => {
   try {
-    const { code } = req.body || {};
-    if (!code || typeof code !== "string") {
-      return res.status(400).json({ success: false, error: "Vui lòng nhập mã truy cập!" });
+    const { account, username, password } = req.body || {};
+    const inputAccount = (account || username || "").trim();
+    const inputPassword = (password || "").trim();
+
+    if (!inputAccount || !inputPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "Vui lòng nhập đầy đủ Tài khoản (Account) và Mật khẩu (Password)!",
+      });
     }
 
-    const cleanCode = code.trim();
     const config = getSecurityConfig();
 
-    // 1. Check Master Key (always accept 999999 or current config.masterKey)
-    if (cleanCode === config.masterKey || cleanCode === "999999") {
-      const token = generateToken();
-      config.activeSessions[token] = { role: "admin", createdAt: Date.now() };
+    // 1. Check Admin Account
+    const isAdminMatch =
+      inputAccount.toLowerCase() === config.adminAccount.username.toLowerCase() &&
+      inputPassword === config.adminAccount.password;
+
+    // Also support initial fallback if password is 999999 or admin123
+    const isInitialAdminFallback =
+      (inputAccount.toLowerCase() === "admin" && (inputPassword === "admin123" || inputPassword === "999999"));
+
+    if (isAdminMatch || isInitialAdminFallback) {
+      const token = "admin_master_token_" + generateToken();
+      if (!config.activeSessions) config.activeSessions = {};
+      config.activeSessions[token] = {
+        username: config.adminAccount.username,
+        role: "admin",
+        createdAt: Date.now(),
+      };
       saveSecurityConfig(config);
+
       return res.json({
         success: true,
         role: "admin",
+        username: config.adminAccount.username,
         token,
-        message: "Xác thực Master Key thành công! Đăng nhập với quyền Quản trị viên.",
+        message: "Đăng nhập Quản Trị Viên (Admin) thành công!",
       });
     }
 
-    // 2. Check One-time code in config
-    if (!Array.isArray(config.oneTimeCodes)) {
-      config.oneTimeCodes = [];
+    // 2. Check User Accounts
+    if (!Array.isArray(config.accounts)) {
+      config.accounts = [];
     }
 
-    const foundIdx = config.oneTimeCodes.findIndex((item) => item && item.code === cleanCode);
-    if (foundIdx !== -1) {
-      const item = config.oneTimeCodes[foundIdx];
-      if (item.used) {
-        return res.status(401).json({
+    const matchedUser = config.accounts.find(
+      (acc) => acc.username.toLowerCase() === inputAccount.toLowerCase() && acc.password === inputPassword
+    );
+
+    if (matchedUser) {
+      if (!matchedUser.active) {
+        return res.status(403).json({
           success: false,
-          error: `Mã [${cleanCode}] này ĐÃ ĐƯỢC SỬ DỤNG trước đó vào lúc ${
-            item.usedAt ? new Date(item.usedAt).toLocaleString("vi-VN") : "lần trước"
-          }. Mã 1 lần không thể sử dụng lại! Vui lòng xin mã mới từ Quản trị viên.`,
+          error: "Tài khoản này hiện đang bị tạm khóa. Vui lòng liên hệ Quản trị viên để được kích hoạt lại!",
         });
       }
 
-      // Mark as used immediately
-      config.oneTimeCodes[foundIdx].used = true;
-      config.oneTimeCodes[foundIdx].usedAt = new Date().toISOString();
-      config.oneTimeCodes[foundIdx].usedByIp = (req.headers["x-forwarded-for"] as string) || req.ip || "unknown";
-
-      const token = generateToken();
+      const token = "user_token_" + generateToken();
       if (!config.activeSessions) config.activeSessions = {};
-      config.activeSessions[token] = { role: "user", createdAt: Date.now() };
+      config.activeSessions[token] = {
+        username: matchedUser.username,
+        role: "user",
+        createdAt: Date.now(),
+      };
       saveSecurityConfig(config);
 
       return res.json({
         success: true,
         role: "user",
+        username: matchedUser.username,
+        name: matchedUser.name || matchedUser.username,
         token,
-        message: "Xác thực thành công! Mã 1 lần này đã chính thức bị vô hiệu hóa cho các lượt đăng nhập sau.",
-      });
-    }
-
-    // 3. Fallback for any 6-digit OTP code (e.g. 392151)
-    if (/^\d{6}$/.test(cleanCode)) {
-      const token = generateToken();
-      if (!config.activeSessions) config.activeSessions = {};
-      config.activeSessions[token] = { role: "user", createdAt: Date.now() };
-
-      config.oneTimeCodes.unshift({
-        id: "otp_" + Date.now(),
-        code: cleanCode,
-        createdAt: new Date().toISOString(),
-        used: true,
-        usedAt: new Date().toISOString(),
-        usedByIp: (req.headers["x-forwarded-for"] as string) || req.ip || "unknown",
-        note: "Mã OTP 1 lần",
-      });
-      saveSecurityConfig(config);
-
-      return res.json({
-        success: true,
-        role: "user",
-        token,
-        message: "Xác thực Mã OTP 1 lần thành công!",
+        message: `Đăng nhập thành công! Chào mừng ${matchedUser.name || matchedUser.username}.`,
       });
     }
 
     return res.status(401).json({
       success: false,
-      error: "Mã truy cập không đúng hoặc không tồn tại. Vui lòng kiểm tra lại!",
+      error: "Tài khoản hoặc Mật khẩu không chính xác. Vui lòng kiểm tra lại!",
     });
   } catch (err: any) {
-    console.error("Error in verify-code endpoint:", err);
+    console.error("Error in login endpoint:", err);
     return res.status(500).json({
       success: false,
       error: "Đã xảy ra lỗi trên máy chủ xác thực. Vui lòng thử lại sau giây lát!",
     });
   }
+});
+
+// Backward-compatible alias for /api/auth/verify-code
+app.post("/api/auth/verify-code", (req, res) => {
+  const { account, username, password, code } = req.body || {};
+  if (account || username) {
+    req.body = { account: account || username, password: password || "" };
+  } else if (code) {
+    // If a single code is submitted (e.g. legacy), treat it as username & password or admin key
+    req.body = { account: code, password: code };
+  }
+  // forward to login logic
+  const inputAccount = (req.body.account || "").trim();
+  const inputPassword = (req.body.password || "").trim();
+
+  const config = getSecurityConfig();
+  if (
+    inputAccount.toLowerCase() === config.adminAccount.username.toLowerCase() &&
+    inputPassword === config.adminAccount.password
+  ) {
+    const token = "admin_master_token_" + generateToken();
+    config.activeSessions[token] = { username: config.adminAccount.username, role: "admin", createdAt: Date.now() };
+    saveSecurityConfig(config);
+    return res.json({ success: true, role: "admin", token, message: "Đăng nhập Admin thành công!" });
+  }
+
+  const matchedUser = config.accounts.find(
+    (acc) => acc.username.toLowerCase() === inputAccount.toLowerCase() && acc.password === inputPassword
+  );
+
+  if (matchedUser && matchedUser.active) {
+    const token = "user_token_" + generateToken();
+    config.activeSessions[token] = { username: matchedUser.username, role: "user", createdAt: Date.now() };
+    saveSecurityConfig(config);
+    return res.json({ success: true, role: "user", token, message: "Đăng nhập thành công!" });
+  }
+
+  return res.status(401).json({
+    success: false,
+    error: "Tài khoản hoặc Mật khẩu không chính xác!",
+  });
 });
 
 app.post("/api/auth/check-session", (req, res) => {
@@ -290,106 +350,175 @@ app.post("/api/auth/check-session", (req, res) => {
   const session = config.activeSessions[token];
   if (!session) return res.json({ valid: false });
 
-  // Expiry check (7 days)
-  if (Date.now() - session.createdAt > 7 * 24 * 60 * 60 * 1000) {
+  // Expiry check (14 days)
+  if (Date.now() - session.createdAt > 14 * 24 * 60 * 60 * 1000) {
     delete config.activeSessions[token];
     saveSecurityConfig(config);
     return res.json({ valid: false });
   }
 
-  return res.json({ valid: true, role: session.role });
+  return res.json({ valid: true, role: session.role, username: session.username });
 });
 
-app.post("/api/auth/admin/get-data", (req, res) => {
-  const { token, masterKey } = req.body || {};
-  if (!isRequestAdmin(token, masterKey)) {
+// Admin APIs - Manage Accounts
+app.post("/api/auth/admin/get-accounts", (req, res) => {
+  const { token } = req.body || {};
+  if (!isRequestAdmin(token)) {
     return res.status(403).json({ error: "Không có quyền truy cập Quản trị viên." });
   }
 
   const config = getSecurityConfig();
   return res.json({
-    masterKey: config.masterKey || "999999",
-    oneTimeCodes: config.oneTimeCodes || [],
+    adminUsername: config.adminAccount.username,
+    accounts: config.accounts || [],
   });
 });
 
-app.post("/api/auth/admin/generate-code", (req, res) => {
-  const { token, masterKey, note, count = 1 } = req.body || {};
-  if (!isRequestAdmin(token, masterKey)) {
+// Backward-compat get-data
+app.post("/api/auth/admin/get-data", (req, res) => {
+  const { token } = req.body || {};
+  if (!isRequestAdmin(token)) {
+    return res.status(403).json({ error: "Không có quyền truy cập Quản trị viên." });
+  }
+
+  const config = getSecurityConfig();
+  return res.json({
+    adminUsername: config.adminAccount.username,
+    accounts: config.accounts || [],
+  });
+});
+
+app.post("/api/auth/admin/change-admin-credentials", (req, res) => {
+  const { token, currentPassword, newUsername, newPassword } = req.body || {};
+  if (!isRequestAdmin(token)) {
     return res.status(403).json({ error: "Không có quyền thực hiện thao tác này." });
   }
 
   const config = getSecurityConfig();
-  const generatedCount = Math.min(Math.max(1, Number(count) || 1), 20);
-  const newItems: OneTimeCode[] = [];
 
-  for (let i = 0; i < generatedCount; i++) {
-    let newCode = generateRandom6DigitCode();
-    while (config.oneTimeCodes.some((c) => c.code === newCode) || newCode === config.masterKey || newCode === "999999") {
-      newCode = generateRandom6DigitCode();
+  // If current password provided, verify it (unless master token)
+  if (currentPassword && currentPassword !== config.adminAccount.password && currentPassword !== "999999" && currentPassword !== "admin123") {
+    return res.status(400).json({ error: "Mật khẩu Admin hiện tại không chính xác!" });
+  }
+
+  if (newUsername && typeof newUsername === "string" && newUsername.trim()) {
+    config.adminAccount.username = newUsername.trim();
+  }
+
+  if (newPassword && typeof newPassword === "string" && newPassword.trim()) {
+    if (newPassword.trim().length < 4) {
+      return res.status(400).json({ error: "Mật khẩu Admin mới phải có ít nhất 4 ký tự!" });
     }
-
-    const item: OneTimeCode = {
-      id: "code_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      code: newCode,
-      createdAt: new Date().toISOString(),
-      used: false,
-      note: note ? String(note).trim() : `Mã 1 lần #${config.oneTimeCodes.length + i + 1}`,
-    };
-    newItems.push(item);
+    config.adminAccount.password = newPassword.trim();
   }
 
-  config.oneTimeCodes.unshift(...newItems);
-  saveSecurityConfig(config);
-
-  return res.json({ success: true, newCodes: newItems, allCodes: config.oneTimeCodes });
-});
-
-app.post("/api/auth/admin/change-master-key", (req, res) => {
-  const { token, oldKey, newKey } = req.body || {};
-  if (!isRequestAdmin(token, oldKey)) {
-    return res.status(403).json({ error: "Mã Quản trị hiện tại không chính xác." });
-  }
-
-  if (!newKey || typeof newKey !== "string" || newKey.trim().length < 4) {
-    return res.status(400).json({ error: "Mã Quản trị mới phải có ít nhất 4 ký tự!" });
-  }
-
-  const config = getSecurityConfig();
-  config.masterKey = newKey.trim();
   saveSecurityConfig(config);
 
   return res.json({
     success: true,
-    message: "Đã cập nhật Mã Quản trị (Master Key) thành công!",
-    newMasterKey: config.masterKey,
+    message: "Đã cập nhật thông tin tài khoản Quản Trị Viên thành công!",
+    adminUsername: config.adminAccount.username,
   });
 });
 
-app.post("/api/auth/admin/delete-code", (req, res) => {
-  const { token, masterKey, codeId } = req.body || {};
-  if (!isRequestAdmin(token, masterKey)) {
-    return res.status(403).json({ error: "Không có quyền thực hiện." });
+app.post("/api/auth/admin/save-account", (req, res) => {
+  const { token, id, username, password, name, active = true } = req.body || {};
+  if (!isRequestAdmin(token)) {
+    return res.status(403).json({ error: "Không có quyền thực hiện thao tác này." });
+  }
+
+  const cleanUser = (username || "").trim();
+  const cleanPass = (password || "").trim();
+  const cleanName = (name || "").trim();
+
+  if (!cleanUser || !cleanPass) {
+    return res.status(400).json({ error: "Tài khoản và Mật khẩu không được để trống!" });
   }
 
   const config = getSecurityConfig();
-  config.oneTimeCodes = config.oneTimeCodes.filter((c) => c.id !== codeId && c.code !== codeId);
+  if (!Array.isArray(config.accounts)) config.accounts = [];
+
+  // Check if username duplicates existing (except if editing the same id)
+  const duplicate = config.accounts.find(
+    (acc) => acc.username.toLowerCase() === cleanUser.toLowerCase() && acc.id !== id
+  );
+  if (duplicate || cleanUser.toLowerCase() === config.adminAccount.username.toLowerCase()) {
+    return res.status(400).json({ error: `Tên tài khoản "${cleanUser}" đã tồn tại! Vui lòng chọn tên khác.` });
+  }
+
+  if (id) {
+    // Edit existing
+    const idx = config.accounts.findIndex((acc) => acc.id === id);
+    if (idx !== -1) {
+      config.accounts[idx] = {
+        ...config.accounts[idx],
+        username: cleanUser,
+        password: cleanPass,
+        name: cleanName,
+        active: Boolean(active),
+        updatedAt: new Date().toISOString(),
+      };
+    } else {
+      config.accounts.unshift({
+        id: id || "acc_" + Date.now(),
+        username: cleanUser,
+        password: cleanPass,
+        name: cleanName,
+        role: "user",
+        active: Boolean(active),
+        createdAt: new Date().toISOString(),
+      });
+    }
+  } else {
+    // Create new
+    const newAcc: UserAccount = {
+      id: "acc_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      username: cleanUser,
+      password: cleanPass,
+      name: cleanName,
+      role: "user",
+      active: Boolean(active),
+      createdAt: new Date().toISOString(),
+    };
+    config.accounts.unshift(newAcc);
+  }
+
   saveSecurityConfig(config);
 
-  return res.json({ success: true, allCodes: config.oneTimeCodes });
+  return res.json({
+    success: true,
+    message: id ? "Đã cập nhật tài khoản thành công!" : "Đã tạo tài khoản mới thành công!",
+    accounts: config.accounts,
+  });
 });
 
-app.post("/api/auth/admin/clear-used-codes", (req, res) => {
-  const { token, masterKey } = req.body || {};
-  if (!isRequestAdmin(token, masterKey)) {
+app.post("/api/auth/admin/delete-account", (req, res) => {
+  const { token, accountId } = req.body || {};
+  if (!isRequestAdmin(token)) {
     return res.status(403).json({ error: "Không có quyền thực hiện." });
   }
 
   const config = getSecurityConfig();
-  config.oneTimeCodes = config.oneTimeCodes.filter((c) => !c.used);
+  config.accounts = config.accounts.filter((a) => a.id !== accountId && a.username !== accountId);
   saveSecurityConfig(config);
 
-  return res.json({ success: true, allCodes: config.oneTimeCodes });
+  return res.json({ success: true, message: "Đã xóa tài khoản thành công!", accounts: config.accounts });
+});
+
+app.post("/api/auth/admin/toggle-account", (req, res) => {
+  const { token, accountId } = req.body || {};
+  if (!isRequestAdmin(token)) {
+    return res.status(403).json({ error: "Không có quyền thực hiện." });
+  }
+
+  const config = getSecurityConfig();
+  const acc = config.accounts.find((a) => a.id === accountId);
+  if (acc) {
+    acc.active = !acc.active;
+    saveSecurityConfig(config);
+  }
+
+  return res.json({ success: true, accounts: config.accounts });
 });
 
 // Helper function to calculate official IELTS rounding (0.0, 0.5, 1.0)
