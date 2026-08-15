@@ -416,11 +416,13 @@ export default function App() {
 
     try {
       if (taskType === "combo") {
-        // Grade both Task 1 and Task 2 simultaneously
-        const [res1, res2] = await Promise.all([
-          fetchSingleGrading("task1", essay, prompt, task1Image),
-          fetchSingleGrading("task2", task2Essay, task2Prompt, null),
-        ]);
+        // Grade Task 1 first, then Task 2 sequentially to prevent Rate Limit / 429 RPM spikes on Free Tier keys
+        setLoadingStep("Đang chấm bài làm Task 1 (Academic Writing)...");
+        const res1 = await fetchSingleGrading("task1", essay, prompt, task1Image);
+
+        setLoadingStep("Đã hoàn tất Task 1! Đang tiếp tục chấm bài làm Task 2 (Essay)...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const res2 = await fetchSingleGrading("task2", task2Essay, task2Prompt, null);
 
         clearInterval(interval);
 

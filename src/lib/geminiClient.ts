@@ -92,87 +92,93 @@ async function generateWithFallbackClient(
   options: { contents: any; config?: any }
 ) {
   const models = [
+    "gemini-2.5-flash",
     "gemini-3.7-flash",
     "gemini-3.1-flash-lite",
     "gemini-flash-latest",
-    "gemini-2.5-flash",
   ];
 
   let lastError: any = null;
 
-  for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        let response;
+  for (let cycle = 0; cycle < 2; cycle++) {
+    for (const model of models) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          response = await ai.models.generateContent({
-            model,
-            contents: options.contents,
-            config: {
-              ...options.config,
-              safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" },
-              ],
-            },
-          });
-        } catch (callErr: any) {
-          const callErrMsg = String(callErr?.message || callErr);
-          const isQuota =
-            callErrMsg.includes("429") ||
-            callErrMsg.includes("RESOURCE_EXHAUSTED") ||
-            callErrMsg.includes("quota");
-          if (isQuota) throw callErr;
+          let response;
+          try {
+            response = await ai.models.generateContent({
+              model,
+              contents: options.contents,
+              config: {
+                ...options.config,
+                safetySettings: [
+                  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                  { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" },
+                ],
+              },
+            });
+          } catch (callErr: any) {
+            const callErrMsg = String(callErr?.message || callErr);
+            const isQuota =
+              callErrMsg.includes("429") ||
+              callErrMsg.includes("RESOURCE_EXHAUSTED") ||
+              callErrMsg.includes("quota");
+            if (isQuota) throw callErr;
 
-          response = await ai.models.generateContent({
-            model,
-            contents: options.contents,
-            config: {
-              ...options.config,
-            },
-          });
-        }
+            response = await ai.models.generateContent({
+              model,
+              contents: options.contents,
+              config: {
+                ...options.config,
+              },
+            });
+          }
 
-        const text = extractResponseText(response);
-        if (text && text.length > 0) {
-          return { response, text };
-        } else {
-          const finishReason = response?.candidates?.[0]?.finishReason || "UNKNOWN";
-          lastError = new Error(`Mô hình ${model} không trả về phản hồi (finishReason: ${finishReason}).`);
-          break;
-        }
-      } catch (err: any) {
-        lastError = err;
-        const errMsg = String(err?.message || err);
-
-        const isQuota =
-          errMsg.includes("429") ||
-          errMsg.includes("RESOURCE_EXHAUSTED") ||
-          errMsg.includes("quota") ||
-          errMsg.includes("limit: 20");
-
-        if (isQuota) {
-          break; // Immediately failover to next model
-        }
-
-        const isTransient =
-          errMsg.includes("503") ||
-          errMsg.includes("UNAVAILABLE") ||
-          errMsg.includes("high demand") ||
-          errMsg.includes("overloaded");
-
-        if (isTransient) {
-          if (attempt >= 1) {
+          const text = extractResponseText(response);
+          if (text && text.length > 0) {
+            return { response, text };
+          } else {
+            const finishReason = response?.candidates?.[0]?.finishReason || "UNKNOWN";
+            lastError = new Error(`Mô hình ${model} không trả về phản hồi (finishReason: ${finishReason}).`);
             break;
           }
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        } else {
-          break;
+        } catch (err: any) {
+          lastError = err;
+          const errMsg = String(err?.message || err);
+
+          const isQuota =
+            errMsg.includes("429") ||
+            errMsg.includes("RESOURCE_EXHAUSTED") ||
+            errMsg.includes("quota") ||
+            errMsg.includes("limit: 20");
+
+          if (isQuota) {
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+            break; // Immediately failover to next model
+          }
+
+          const isTransient =
+            errMsg.includes("503") ||
+            errMsg.includes("UNAVAILABLE") ||
+            errMsg.includes("high demand") ||
+            errMsg.includes("overloaded");
+
+          if (isTransient) {
+            if (attempt >= 1) {
+              break;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 800));
+          } else {
+            break;
+          }
         }
       }
+    }
+    if (cycle === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
 
