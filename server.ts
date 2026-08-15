@@ -652,23 +652,21 @@ async function generateContentWithFallback(
     config?: any;
   }
 ) {
-  // Ultra-reliable model preference order starting with production stable gemini-2.5-flash
+  // Ultra-reliable pure Flash model preference order for sub-second failover and high RPM
   const models = [
-    "gemini-2.5-flash",
-    "gemini-3.6-flash",
-    "gemini-2.5-pro",
-    "gemini-2.5-flash-lite",
+    "gemini-3.7-flash",
     "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
+    "gemini-2.5-flash",
   ];
 
   let lastError: any = null;
 
   for (const model of models) {
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
         console.log(`[AVA Gemini] Requesting model: ${model} (attempt ${attempt + 1})`);
         
-        // Try with thinkingBudget: 0 for maximum speed; fallback if unsupported
         let response;
         try {
           response = await ai.models.generateContent({
@@ -676,7 +674,6 @@ async function generateContentWithFallback(
             contents: options.contents,
             config: {
               ...options.config,
-              thinkingConfig: { thinkingBudget: 0 },
               safetySettings: [
                 { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
                 { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -686,27 +683,20 @@ async function generateContentWithFallback(
               ],
             },
           });
-        } catch (thinkingErr: any) {
-          const thinkingErrMsg = String(thinkingErr?.message || thinkingErr);
+        } catch (callErr: any) {
+          const callErrMsg = String(callErr?.message || callErr);
           const isQuota =
-            thinkingErrMsg.includes("429") ||
-            thinkingErrMsg.includes("RESOURCE_EXHAUSTED") ||
-            thinkingErrMsg.includes("quota");
-          if (isQuota) throw thinkingErr;
+            callErrMsg.includes("429") ||
+            callErrMsg.includes("RESOURCE_EXHAUSTED") ||
+            callErrMsg.includes("quota");
+          if (isQuota) throw callErr;
 
-          // If model doesn't support thinkingConfig, fallback without it
+          // Retry without extra config if unsupported
           response = await ai.models.generateContent({
             model,
             contents: options.contents,
             config: {
               ...options.config,
-              safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" },
-              ],
             },
           });
         }
@@ -718,6 +708,7 @@ async function generateContentWithFallback(
           const finishReason = response?.candidates?.[0]?.finishReason || "UNKNOWN";
           console.warn(`[AVA Gemini] Model ${model} returned empty response text (finishReason: ${finishReason}). Trying fallback...`);
           lastError = new Error(`Mô hình ${model} không trả về phản hồi (finishReason: ${finishReason}).`);
+          break; // Try next model immediately
         }
       } catch (err: any) {
         lastError = err;
@@ -727,30 +718,28 @@ async function generateContentWithFallback(
         const isQuota =
           errMsg.includes("429") ||
           errMsg.includes("RESOURCE_EXHAUSTED") ||
-          errMsg.includes("quota");
+          errMsg.includes("quota") ||
+          errMsg.includes("limit: 20");
 
         if (isQuota) {
-          console.warn(`[AVA Gemini] Model ${model} quota hit on attempt ${attempt + 1}.`);
-          if (attempt < 2) {
-            await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1)));
-          }
-        } else {
-          const isTransient =
-            errMsg.includes("503") ||
-            errMsg.includes("UNAVAILABLE") ||
-            errMsg.includes("high demand") ||
-            errMsg.includes("overloaded");
+          console.warn(`[AVA Gemini] Model ${model} reached quota limit. Immediately switching to next model in sequence...`);
+          break; // Do not waste time retrying on a quota-exhausted model, immediately fallback!
+        }
 
-          if (isTransient) {
-            // Fast failover: if high demand on this model, switch immediately after 1 quick retry
-            if (attempt >= 1) {
-              console.warn(`[AVA Gemini] Model ${model} experiencing high demand (503). Switching to next fallback model immediately...`);
-              break;
-            }
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          } else {
+        const isTransient =
+          errMsg.includes("503") ||
+          errMsg.includes("UNAVAILABLE") ||
+          errMsg.includes("high demand") ||
+          errMsg.includes("overloaded");
+
+        if (isTransient) {
+          if (attempt >= 1) {
+            console.warn(`[AVA Gemini] Model ${model} experiencing high demand (503). Switching to next fallback model immediately...`);
             break;
           }
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } else {
+          break;
         }
       }
     }
