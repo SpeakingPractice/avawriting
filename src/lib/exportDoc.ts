@@ -17,6 +17,32 @@ export interface TaskExportData {
 }
 
 /**
+ * Formats file name according to syntax: Writing [Lớp] - [Họ và Tên]
+ * Examples:
+ * - "Writing IELTS 6.5 - Nguyễn Văn A.doc"
+ * - "Writing 12A1 - Trần Thị B.pdf"
+ */
+export function formatExportFileName(
+  studentClass?: string,
+  studentName?: string,
+  extension?: "doc" | "pdf" | string
+): string {
+  const cleanClass = (studentClass || "").trim().replace(/[\\/:*?"<>|]/g, "_");
+  const cleanName = (studentName || "").trim().replace(/[\\/:*?"<>|]/g, "_");
+
+  let baseName = "Writing";
+  if (cleanClass && cleanName) {
+    baseName = `Writing ${cleanClass} - ${cleanName}`;
+  } else if (cleanClass) {
+    baseName = `Writing ${cleanClass}`;
+  } else if (cleanName) {
+    baseName = `Writing - ${cleanName}`;
+  }
+
+  return extension ? `${baseName}.${extension}` : baseName;
+}
+
+/**
  * Formats a band score according to IELTS rules:
  * - Integer scores (e.g. 7, 8) get ".0" -> "7.0", "8.0"
  * - Half-band or decimal scores (e.g. 5.5, 6.5, 7.5, 8.5) stay as-is -> "5.5", "6.5"
@@ -882,11 +908,14 @@ export function generateReportDocumentHtml(
 
   let combinedHeaderSummaryHtml = "";
   let bodyContentHtml = "";
-  let fileName = "";
 
   const studentClassVal = tasks.find((t) => t.studentClass)?.studentClass || "";
   const teacherNameVal = tasks.find((t) => t.teacherName)?.teacherName || "";
   const studentNameVal = tasks.find((t) => t.studentName)?.studentName || "";
+
+  // Syntax: Writing [Lớp] - [Họ và Tên]
+  const baseDocumentTitle = formatExportFileName(studentClassVal, studentNameVal);
+  const fileName = formatExportFileName(studentClassVal, studentNameVal, "doc");
 
   // Dual Header (Left: BẬC THẦY WRITING IELTS, Right: Trường Anh Ngữ Mỹ Du + Địa chỉ + SĐT) + Solid Line + Student Info
   const documentTopHeaderBlock = `
@@ -943,8 +972,6 @@ export function generateReportDocumentHtml(
       t2.report.overallBand
     );
 
-    fileName = `Bao_Cao_Cham_IELTS_Writing_Task1_va_Task2_Truong_Anh_Ngu_My_Du_${Date.now()}.doc`;
-
     combinedHeaderSummaryHtml = `
       ${documentTopHeaderBlock}
 
@@ -979,7 +1006,6 @@ export function generateReportDocumentHtml(
   } else {
     const singleTask = tasks[0];
     const taskTitle = singleTask.taskType === "task1" ? "IELTS Writing Task 1" : "IELTS Writing Task 2";
-    fileName = `Bao_Cao_Cham_IELTS_${singleTask.taskType.toUpperCase()}_Truong_Anh_Ngu_My_Du_${Date.now()}.doc`;
 
     combinedHeaderSummaryHtml = `
       ${documentTopHeaderBlock}
@@ -1000,7 +1026,7 @@ export function generateReportDocumentHtml(
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
 <meta charset='utf-8'>
-<title>BẬC THẦY WRITING IELTS - Trường Anh Ngữ Mỹ Du</title>
+<title>${baseDocumentTitle}</title>
 <!--[if gte mso 9]>
 <xml>
  <w:WordDocument>
@@ -1129,7 +1155,7 @@ export function exportReportToPdf(
   promptTextFallback?: string,
   originalEssayFallback?: string
 ) {
-  const { docHtml } = generateReportDocumentHtml(
+  const { docHtml, fileName } = generateReportDocumentHtml(
     input,
     taskTypeFallback,
     promptTextFallback,
@@ -1137,6 +1163,10 @@ export function exportReportToPdf(
   );
 
   if (!docHtml) return;
+
+  const pdfFileName = fileName.replace(/\.doc$/i, "");
+  const originalDocTitle = document.title;
+  document.title = pdfFileName;
 
   // Create hidden print iframe
   const iframe = document.createElement("iframe");
@@ -1149,11 +1179,18 @@ export function exportReportToPdf(
   document.body.appendChild(iframe);
 
   const doc = iframe.contentWindow?.document || iframe.contentDocument;
-  if (!doc) return;
+  if (!doc) {
+    document.title = originalDocTitle;
+    return;
+  }
 
   doc.open();
   doc.write(docHtml);
   doc.close();
+
+  if (iframe.contentDocument) {
+    iframe.contentDocument.title = pdfFileName;
+  }
 
   // Trigger browser Print to PDF
   setTimeout(() => {
@@ -1164,6 +1201,7 @@ export function exportReportToPdf(
       console.error("PDF Print error:", e);
     }
     setTimeout(() => {
+      document.title = originalDocTitle;
       if (document.body.contains(iframe)) {
         document.body.removeChild(iframe);
       }

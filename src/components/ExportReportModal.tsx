@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { TaskExportData, exportReportToDoc, exportReportToPdf, formatBandScore, calculateCombinedIeltsBand } from "../lib/exportDoc";
-import { Download, X, Check, FileText, FileSpreadsheet } from "lucide-react";
+import { TaskExportData, exportReportToDoc, exportReportToPdf, formatBandScore, calculateCombinedIeltsBand, formatExportFileName } from "../lib/exportDoc";
+import { Download, X, Check, FileText, FileSpreadsheet, Tag } from "lucide-react";
 
 export interface ExportReportModalProps {
   isOpen: boolean;
@@ -36,6 +36,12 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
     return activeTaskData.taskType === "task1" ? "task1" : "task2";
   });
 
+  const effectiveClass = studentClass || activeTaskData.studentClass || t1Task?.studentClass || t2Task?.studentClass || "";
+  const effectiveTeacher = teacherName || activeTaskData.teacherName || t1Task?.teacherName || t2Task?.teacherName || "";
+  const effectiveName = studentName || activeTaskData.studentName || t1Task?.studentName || t2Task?.studentName || "";
+
+  const previewFileName = formatExportFileName(effectiveClass, effectiveName, format);
+
   const combinedBand = hasDualTasks && t1Task && t2Task
     ? calculateCombinedIeltsBand(t1Task.report.overallBand, t2Task.report.overallBand)
     : activeTaskData.report?.overallBand || 0;
@@ -47,18 +53,18 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
       const rawList = hasDualTasks ? [t1Task!, t2Task!] : [activeTaskData];
       tasksToExport = rawList.map((t) => ({
         ...t,
-        studentClass: t.studentClass || studentClass,
-        teacherName: t.teacherName || teacherName,
-        studentName: t.studentName || studentName,
+        studentClass: t.studentClass || effectiveClass,
+        teacherName: t.teacherName || effectiveTeacher,
+        studentName: t.studentName || effectiveName,
       }));
     } else if (contentSelection === "task1") {
       const target = t1Task || (activeTaskData.taskType === "task1" ? activeTaskData : null);
       if (target) {
         tasksToExport = [{
           ...target,
-          studentClass: target.studentClass || studentClass,
-          teacherName: target.teacherName || teacherName,
-          studentName: target.studentName || studentName,
+          studentClass: target.studentClass || effectiveClass,
+          teacherName: target.teacherName || effectiveTeacher,
+          studentName: target.studentName || effectiveName,
         }];
       }
     } else if (contentSelection === "task2") {
@@ -66,9 +72,9 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
       if (target) {
         tasksToExport = [{
           ...target,
-          studentClass: target.studentClass || studentClass,
-          teacherName: target.teacherName || teacherName,
-          studentName: target.studentName || studentName,
+          studentClass: target.studentClass || effectiveClass,
+          teacherName: target.teacherName || effectiveTeacher,
+          studentName: target.studentName || effectiveName,
         }];
       }
     }
@@ -310,6 +316,20 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
                 </p>
               </button>
             </div>
+          </div>
+
+          {/* Section 3: File Name Syntax Preview */}
+          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-1.5">
+            <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700">
+              <Tag className="w-3.5 h-3.5 text-blue-600" />
+              <span>TÊN FILE XUẤT RA:</span>
+            </div>
+            <div className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 font-mono text-xs text-blue-900 font-bold truncate select-all">
+              {previewFileName}
+            </div>
+            <p className="text-[11px] text-slate-500 italic">
+              Cú pháp: Writing [Lớp] - [Họ và Tên]
+            </p>
           </div>
         </div>
 
