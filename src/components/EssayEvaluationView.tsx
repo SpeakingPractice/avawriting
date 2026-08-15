@@ -47,10 +47,12 @@ const getFeatureEvalResult = (
       if (earned <= 0) {
         return { earned: 0, maxScore, status: "none", reasoning: item.reasoning };
       }
-      if (item.status === "partial" || (earned > 0 && earned < maxScore)) {
-        return { earned, maxScore, status: "partial", reasoning: item.reasoning };
+      // If student earned 100% of this feature's max score (e.g. 0.5/0.5 or 1.0/1.0 or 2.0/2.0), it is strictly FULL (Đạt trọn vẹn)
+      if (earned >= maxScore) {
+        return { earned: maxScore, maxScore, status: "full", reasoning: item.reasoning };
       }
-      return { earned, maxScore, status: "full", reasoning: item.reasoning };
+      // If earned is strictly less than maxScore (e.g. 0.5/1.0 or 1.0/2.0), it is PARTIAL (Đạt một phần)
+      return { earned, maxScore, status: "partial", reasoning: item.reasoning };
     }
   }
 
@@ -64,6 +66,9 @@ const getFeatureEvalResult = (
     return { earned: maxScore, maxScore, status: "full" };
   } else if (b > prevThreshold) {
     const partial = Math.min(maxScore, Math.max(0.5, b - prevThreshold));
+    if (partial >= maxScore) {
+      return { earned: maxScore, maxScore, status: "full" };
+    }
     return { earned: partial, maxScore, status: "partial" };
   }
   return { earned: 0, maxScore, status: "none" };
@@ -343,8 +348,8 @@ export const EssayEvaluationView: React.FC<EssayEvaluationViewProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {achievedFeatures.map(({ feat, featIndex, evalRes }) => {
                       const style = getFeatureColorStyle(feat.minBand);
-                      const isPartial = evalRes.status === "partial";
                       const maxFeatScore = parseFloat(feat.score) || 0;
+                      const isPartial = evalRes.status === "partial" && evalRes.earned < maxFeatScore;
 
                       return (
                         <div

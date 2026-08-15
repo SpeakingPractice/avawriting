@@ -259,8 +259,9 @@ Quy tắc chấm điểm tiêu chí và làm tròn băng điểm (Flexible & Enc
 
 - NGUYÊN TẮC CHẤM THOÁNG TAY, LINH HOẠT VÀ NỬA ĐIỂM (PARTIAL 0.5 & FULL SCORE):
   + Xét từng đặc tính từ #1 đến #8 với tinh thần rộng mở, khuyến khích:
-    * Chỉ cần bài viết thể hiện được ý niệm cốt lõi của đặc tính -> Sẵn sàng cho trọn vẹn điểm tối đa (Status: "full").
-    * Nếu có dấu hiệu chớm xuất hiện hoặc áp dụng một phần -> Trao ngay 0.5 điểm (Status: "partial").
+    * Chỉ cần bài viết thể hiện được ý niệm cốt lõi của đặc tính -> Sẵn sàng cho trọn vẹn điểm tối đa của đặc tính đó (Status: "full"). Ví dụ: Feature #4 và #5 có max score là 0.5, nếu đạt 0.5 điểm thì status là "full" (Đạt trọn vẹn), KHÔNG ĐƯỢC để là "partial".
+    * Nếu chỉ đạt một phần điểm số (ví dụ đạt 0.5 trên 1.0 hoặc đạt 1.0 trên 2.0) -> Trao điểm thành phần và ghi status: "partial" (Đạt một phần).
+    * BẮT BUỘC: Bất cứ khi nào scoreEarned == maxScore của đặc tính đó -> Status PHẢI LÀ "full".
 
 - ⚠️ QUY TẮC BẮT BUỘC VỀ SỰ KHÁC BIỆT COHERENCE & COHESION (CC) GIỮA TASK 1 VÀ TASK 2:
   1. ĐỐI VỚI TASK 1 (MÔ TẢ BIỂU ĐỒ / SƠ ĐỒ / BẢN ĐỒ / QUY TRÌNH):
