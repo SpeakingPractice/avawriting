@@ -126,17 +126,25 @@ export const EssayEvaluationView: React.FC<EssayEvaluationViewProps> = ({
 
   const categories = taskType === "task1" ? task1ProgressionCategories : task2ProgressionCategories;
 
-  // Map category code to report criterion details
+  // Map category code to report criterion details safely
+  const defaultCriterion: CriterionDetail = { name: "Tiêu chí", band: 6, feedback: "Đang phân tích", example: "", featureScores: [] };
+  const safeCriteria = report?.criteria || {
+    taOrTr: defaultCriterion,
+    cc: defaultCriterion,
+    lr: defaultCriterion,
+    gra: defaultCriterion,
+  };
+
   const getCriterionDetail = (code: "TA_TR" | "CC" | "LR" | "GRA"): CriterionDetail => {
     switch (code) {
       case "TA_TR":
-        return report.criteria.taOrTr;
+        return safeCriteria.taOrTr || defaultCriterion;
       case "CC":
-        return report.criteria.cc;
+        return safeCriteria.cc || defaultCriterion;
       case "LR":
-        return report.criteria.lr;
+        return safeCriteria.lr || defaultCriterion;
       case "GRA":
-        return report.criteria.gra;
+        return safeCriteria.gra || defaultCriterion;
     }
   };
 

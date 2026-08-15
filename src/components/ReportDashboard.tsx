@@ -156,7 +156,17 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
     });
   };
 
-  const { taOrTr, cc, lr, gra } = activeReport.criteria;
+  const defaultCriterion = { band: 6, summary: "Đang phân tích...", feedback: "Đang cập nhật...", featureScores: [] };
+  const safeCriteria = activeReport?.criteria || {
+    taOrTr: defaultCriterion,
+    cc: defaultCriterion,
+    lr: defaultCriterion,
+    gra: defaultCriterion,
+  };
+  const taOrTr = safeCriteria.taOrTr || defaultCriterion;
+  const cc = safeCriteria.cc || defaultCriterion;
+  const lr = safeCriteria.lr || defaultCriterion;
+  const gra = safeCriteria.gra || defaultCriterion;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden" id="report-dashboard">
@@ -395,7 +405,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activeReport.strengths.map((st, idx) => (
+                {(activeReport.strengths || []).map((st, idx) => (
                   <div key={idx} className="bg-emerald-50/30 border border-emerald-100 rounded-xl p-4">
                     <div className="flex items-start space-x-2">
                       <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mt-0.5">
@@ -430,7 +440,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
               </div>
 
               <div className="space-y-3">
-                {activeReport.improvements.map((imp, idx) => (
+                {(activeReport.improvements || []).map((imp, idx) => (
                   <div
                     key={idx}
                     className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex items-start space-x-3 hover:border-slate-200 transition-colors"
@@ -467,7 +477,7 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
             </div>
 
             <div className="space-y-4">
-              {activeReport.nextBandSteps.map((step, idx) => (
+              {(activeReport.nextBandSteps || []).map((step, idx) => (
                 <div
                   key={idx}
                   className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-start space-x-3"

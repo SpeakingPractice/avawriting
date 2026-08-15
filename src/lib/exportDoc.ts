@@ -735,12 +735,20 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
     })
     .join("");
 
-  // Criteria
+  // Criteria with defensive fallbacks
+  const defaultCrit = { name: "", band: 6, feedback: "", example: "", featureScores: [] };
+  const safeCriteria = report?.criteria || {
+    taOrTr: defaultCrit,
+    cc: defaultCrit,
+    lr: defaultCrit,
+    gra: defaultCrit,
+  };
+
   const criteriaList = [
-    { title: isTask1 ? "Task Achievement (TA)" : "Task Response (TR)", code: "TA_TR" as const, detail: report.criteria.taOrTr },
-    { title: "Coherence & Cohesion (CC)", code: "CC" as const, detail: report.criteria.cc },
-    { title: "Lexical Resource (LR)", code: "LR" as const, detail: report.criteria.lr },
-    { title: "Grammatical Range & Accuracy (GRA)", code: "GRA" as const, detail: report.criteria.gra },
+    { title: isTask1 ? "Task Achievement (TA)" : "Task Response (TR)", code: "TA_TR" as const, detail: safeCriteria.taOrTr || defaultCrit },
+    { title: "Coherence & Cohesion (CC)", code: "CC" as const, detail: safeCriteria.cc || defaultCrit },
+    { title: "Lexical Resource (LR)", code: "LR" as const, detail: safeCriteria.lr || defaultCrit },
+    { title: "Grammatical Range & Accuracy (GRA)", code: "GRA" as const, detail: safeCriteria.gra || defaultCrit },
   ];
 
   const criteriaHtml = criteriaList

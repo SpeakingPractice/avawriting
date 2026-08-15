@@ -76,7 +76,7 @@ export const ReviewHistory: React.FC<ReviewHistoryProps> = ({
                   </span>
                   <div className="flex items-center text-amber-500 text-[11px] font-bold">
                     <Award className="w-3.5 h-3.5 mr-0.5" />
-                    Band {item.report.overallBand.toFixed(1)}
+                    Band {Number(item.report?.overallBand || 0).toFixed(1)}
                   </div>
                 </div>
 
@@ -88,7 +88,7 @@ export const ReviewHistory: React.FC<ReviewHistoryProps> = ({
                   <Calendar className="w-3 h-3 mr-1" />
                   {formattedDate}
                   <span className="mx-1">•</span>
-                  {item.report.wordCount} từ
+                  {item.report?.wordCount || 0} từ
                 </div>
               </div>
 
