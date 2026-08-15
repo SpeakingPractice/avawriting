@@ -845,17 +845,23 @@ Quy tắc chấm điểm tiêu chí linh hoạt và làm tròn băng điểm (Fl
   + Khi bài viết nằm ở ranh giới giữa 2 band (ví dụ giữa Band 6 và Band 7, hoặc giữa Band 7 và Band 8), bạn BẮT BUỘC ƯU TIÊN chấm ở mức Band cao hơn (ví dụ cho Band 7 thay vì dìm xuống Band 6).
   + Chỉ cần bài viết thể hiện được đa số các điểm tích cực của một Band điểm, hãy ghi nhận ngay Band điểm đó cho học viên. Không hạ điểm chỉ vì một vài lỗi nhỏ không đáng kể.
 
-- HƯỚNG DẪN CHẤM LỎNG TAY & DỄ HƠN CHO TỪNG TIÊU CHÍ:
+- HƯỚNG DẪN CHẤM CHO TỪNG TIÊU CHÍ:
   1. Task Achievement (Task 1) / Task Response (Task 2):
-     + Task 1: Chấm thoáng về Overview và việc chọn số liệu. Miễn là bài viết có nêu được xu hướng chung nổi bật (dù đặt ở đoạn 2 hay cuối bài) và có chọn lọc số liệu tiêu biểu để so sánh, hãy mạnh dạn cho Band 7.0+. Các số liệu ước lượng hợp lý (dùng từ xấp xỉ như about, around, roughly, nearly...) luôn được đánh giá cao và công nhận trọn vẹn.
-     + Task 2: Chấm dễ và linh hoạt về phát triển ý tưởng. Miễn là thí sinh trả lời đúng trọng tâm câu hỏi đề bài, có lập trường rõ ràng và có đưa ra lý lẽ/ví dụ bổ trợ (kể cả ví dụ đơn giản hoặc đời thường), BẮT BUỘC chấm từ Band 7.0 trở lên. Tuyệt đối không khắt khe với các lỗi khái quát hóa nhẹ (overgeneralization) hay bắt bẻ tính học thuật cao siêu.
-  2. Coherence & Cohesion (CC) - ⚠️ PHÂN BIỆT RÕ RÀNG GIỮA TASK 1 VÀ TASK 2:
+     + Task 1: 
+       * Overview và chọn số liệu: Có nêu được xu hướng chung nổi bật (dù đặt ở đoạn 2 hay cuối bài) và có chọn lọc số liệu tiêu biểu để so sánh. Các số liệu ước lượng hợp lý (dùng từ xấp xỉ như about, around, roughly, nearly...) được đánh giá cao.
+       * ⚠️ **QUY TẮC PHẠT NẶNG KHI SAI SỐ LIỆU (DATA INACCURACY & MISATTRIBUTION PENALTY)**: Soi xét kỹ từng con số, danh mục và mốc thời gian. Nếu bài viết **sai lệch thông tin số liệu**, **mô tả nhầm số liệu của đối tượng/năm này sang đối tượng/năm khác**, hoặc đưa ra các số liệu sai lệch đáng kể so với biểu đồ -> **BẮT BUỘC HẠ/KHỐNG CHẾ ĐIỂM TASK ACHIEVEMENT (TA) KHÔNG ĐƯỢC VƯỢT QUÁ BAND 5.0 (Capped at Band 5.0)** theo đúng Band Descriptors của IELTS Task 1 ("key features may be inaccurate / there may be considerable inaccuracy in detail"). Phải nêu rõ lỗi sai số liệu trong phần feedback.
+     + Task 2: Chấm linh hoạt về phát triển ý tưởng. Miễn là thí sinh trả lời đúng trọng tâm câu hỏi đề bài, có lập trường rõ ràng và có đưa ra lý lẽ/ví dụ bổ trợ (kể cả ví dụ đơn giản hoặc đời thường), BẮT BUỘC chấm từ Band 7.0 trở lên. Tuyệt đối không khắt khe với các lỗi khái quát hóa nhẹ (overgeneralization) hay bắt bẻ tính học thuật cao siêu.
+  2. Coherence & Cohesion (CC):
      + ĐỐI VỚI TASK 1:
        * **TASK 1 TUYỆT ĐỐI KHÔNG CÓ** quy tắc Diễn Tiến Đề Ngữ (Theme–Rheme progression), Diễn Tiến Cố Định (Constant progression) hay Linear Thinking. Các quy tắc này CHỈ DÀNH CHO TASK 2.
        * Khi chấm Task 1: TUYỆT ĐỐI KHÔNG ghi chú hay bắt bẻ lỗi "Chưa có Rheme-Theme progression", "Thiếu Theme-Rheme" hay "Chưa có Linear Thinking".
        * Tiêu chí CC của Task 1 CHỈ ĐÁNH GIÁ: Bố cục 4 phần rõ ràng (Intro - Overview - Body 1 - Body 2), chiến lược nhóm dữ liệu (grouping data) hợp lý, sử dụng các từ nối báo cáo số liệu và chuyển đoạn tự nhiên (Looking first at, Turning to, While, Whereas, Meanwhile, In comparison, By contrast...).
      + ĐỐI VỚI TASK 2:
        * Mới áp dụng đánh giá sự phát triển mạch suy luận qua Theme-Rheme progression / Constant progression / Linear Thinking.
+     + ⚠️ **QUY TẮC KHỐNG CHẾ ĐIỂM CC KHI BỊ ẢNH HƯỞNG BỞI LỖI TRUYỀN TẢI & KHÔNG TRÙNG KHỚP THÔNG TIN (Áp dụng cho cả Task 1 & 2)**:
+       * Nếu bài viết **mô tả không trùng khớp thông tin, câu trước mâu thuẫn câu sau** hoặc số liệu giữa các đoạn đá nhau.
+       * Hoặc bài viết có **mật độ lỗi ngữ pháp, từ vựng, chính tả dày đặc khiến người đọc thực sự khó hiểu (causes severe strain for the reader / impedes overall communication)**.
+       * -> **BẮT BUỘC HẠ/KHỐNG CHẾ ĐIỂM COHERENCE & COHESION (CC) Ở MỨC TỐI ĐA BAND 5.0 HOẶC THẤP HƠN (Capped at Band 5.0 / 4.0 for CC)**. Tuyệt đối không cho điểm CC cao khi người đọc phải liên tục suy đoán hoặc mạch ý bị đứt gãy nghiêm trọng do sai lệch thông tin và lỗi ngôn ngữ dồn dập.
   3. Lexical Resource (LR):
      + Đánh giá tích cực và khuyến khích vốn từ: Ghi nhận xứng đáng khi thí sinh có nỗ lực sử dụng từ vựng theo chủ đề, các cụm collocations hay và biết paraphrase đề bài.
      + Bỏ qua các lỗi chính tả nhỏ, lỗi giới từ hoặc từ dùng chưa hoàn toàn tự nhiên (word choice slips) nếu người đọc vẫn hiểu đúng ý nghĩa câu văn. Ưu tiên chấm Band 7.0+ khi thí sinh có vốn từ phong phú.

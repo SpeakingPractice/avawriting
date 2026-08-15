@@ -275,6 +275,20 @@ Quy tắc chấm điểm tiêu chí và làm tròn băng điểm (Flexible & Enc
   2. ĐỐI VỚI TASK 2 (BÀI LUẬN ESSAY):
      + Mới áp dụng đánh giá mạch suy luận chiều sâu và chuyển ý logic qua Theme–Rheme progression / Constant progression / Linear Thinking ở đặc tính nâng cao C2 (cc2_8).
 
+- ⚠️ QUY TẮC CHẤM KỸ ĐỘ CHÍNH XÁC SỐ LIỆU TASK 1 (TASK ACHIEVEMENT - DATA ACCURACY & CAPPING):
+  + Giám khảo PHẢI SOI XÉT KỸ TỪNG CON SỐ, ĐỐI TƯỢNG VÀ THỜI GIAN:
+    * Kiểm tra đối chiếu số liệu, năm, danh mục được mô tả trong bài viết với đề bài và hình ảnh biểu đồ.
+    * **QUY TẮC PHẠT NẶNG & HẠ ĐIỂM XUỐNG TỐI ĐA BAND 5 (Capped at Band 5.0 for TA)**: Nếu bài viết **sai lệch thông tin số liệu**, **mô tả nhầm số liệu của hạng mục/năm này sang hạng mục/năm khác (misattribution of data / confusing categories / incorrect figures)**, hoặc đưa ra các số liệu sai lệch đáng kể so với thực tế của biểu đồ -> **BẮT BUỘC HẠ/KHỐNG CHẾ ĐIỂM TASK ACHIEVEMENT (TA) KHÔNG ĐƯỢC VƯỢT QUÁ BAND 5.0** (theo đúng Band Descriptors của IELTS Task 1: "key features may be inaccurate / there may be considerable inaccuracy in detail").
+    * Khi bị sai/nhầm số liệu, không được trao điểm tối đa ở các đặc tính về số liệu (ta1_2, ta1_4, ta1_5, ta1_6, ta1_7, ta1_8) và phải chỉ rõ trong nhận xét và reasoning lỗi sai số liệu cụ thể (ví dụ: "Nhầm số liệu 50% của nhóm A sang nhóm B", "Báo cáo sai số liệu năm 2010 thành 80 thay vì 30").
+    * Đối với số liệu xấp xỉ: Chỉ công nhận khi thí sinh sử dụng từ ước lượng hợp lý (about, around, approximately, roughly, nearly...). Nếu đoán bừa sai hẳn số liệu hoặc gán nhầm số liệu thì vẫn bị trừ điểm và giới hạn ở Band 5.0.
+
+- ⚠️ QUY TẮC CHẤM KỸ COHERENCE & COHESION (CC) KHI BỊ ẢNH HƯỞNG BỞI LỖI TRUYỀN TẢI & KHÔNG TRÙNG KHỚP THÔNG TIN:
+  + Chấm kỹ tính mạch lạc và liên kết của bài viết (áp dụng cho cả Task 1 và Task 2):
+    * **MÔ TẢ KHÔNG TRÙNG KHỚP / MÂU THUẪN NỘI DUNG**: Nếu các thông tin trong bài bị đá nhau (ví dụ: câu trước viết xu hướng tăng, câu sau lại bảo giảm mà không có liên từ tương phản; số liệu ở Overview và Body mâu thuẫn trực tiếp; các ý rời rạc không ăn khớp).
+    * **LỖI NGỮ PHÁP, TỪ VỰNG, CHÍNH TẢ GÂY KHÓ HIỂU THỰC SỰ (Causes strain for the reader / impedes communication)**: Nếu bài viết có mật độ lỗi sai ngữ pháp, từ vựng, chính tả nhiều đến mức người đọc phải liên tục dừng lại suy đoán, gây khó hiểu thực sự cho mạch văn.
+    * -> **BẮT BUỘC HẠ/KHỐNG CHẾ ĐIỂM COHERENCE & COHESION (CC) Ở MỨC BAND 5.0 HOẶC THẤP HƠN (Capped at Band 5.0 / 4.0 for CC)**. Tuyệt đối không cho điểm CC cao (không cho Band 6.0/7.0+) khi người đọc gặp khó khăn nghiêm trọng trong việc tiếp nhận thông tin hoặc khi thông tin mô tả bị mâu thuẫn, đứt gãy.
+    * Trong nhận xét CC và ghi chú reasoning các đặc tính (cc1_5, cc2_5...), phải nêu rõ: việc thông tin không trùng khớp hoặc lỗi ngôn ngữ dồn dập đã cản trở mạch đọc và khả năng tiếp nhận của giám khảo như thế nào.
+
 - CÁC HƯỚNG DẪN ĐÁNH GIÁ LINH HOẠT VÀ DỄ TÍNH KHÁC:
   1. Nhận diện Ví dụ Linh hoạt & Tự nhiên: Đưa ví dụ minh họa công nhận linh hoạt tất cả các hình thức (such as, like, including, namely, hoặc đưa trực tiếp ví dụ thực tế/số liệu vào câu). Luôn ghi nhận đạt điểm cao (Full/Partial) cho các đặc tính phát triển luận điểm & ví dụ minh họa.
   2. Đánh giá Cấu trúc Đoạn văn & Lập luận (TR Task 2): Nếu bài viết triển khai được ý tưởng rõ ràng, có giải thích và minh họa bổ trợ (dù ví dụ đơn giản) -> Trao trọn vẹn điểm (1.0 full) hoặc nửa điểm (0.5 partial) ở Feature #6 của TR (tr2_6).
@@ -284,8 +298,6 @@ Quy tắc chấm điểm tiêu chí và làm tròn băng điểm (Flexible & Enc
   6. Sẵn sàng chấm Band 8.0, 8.5 hoặc 9.0 khi bài viết đạt mức độ xuất sắc.
 
 - QUY TẮC CHẤM BAND 7 CHO TASK RESPONSE (TR) TASK 2: Ở Task 2, chỉ cần bài viết trả lời đúng trọng tâm đề bài và có lập trường rõ ràng xuyên suốt thì tiêu chí TR tối thiểu đạt điểm 7.0 trở lên.
-- QUY TẮC BÁO CÁO SỐ LIỆU VÀ TỪ ƯỚC LƯỢNG Ở TASK 1 (TASK ACHIEVEMENT DATA ACCURACY):
-  + Đối với các số liệu biểu đồ xấp xỉ, chỉ cần thí sinh dùng các từ thể hiện ước lượng (about, around, approximately, roughly, nearly...) là được công nhận điểm tối đa cho độ chính xác số liệu.
 - Điểm Tổng (Overall Band) là trung bình cộng của 4 tiêu chí thành phần, làm tròn theo quy tắc IELTS chuẩn (Ví dụ: 6.75 -> 7.0; 6.25 -> 6.5; 6.125 -> 6.0).
 
 Yêu cầu về số lượng từ (hãy kiểm tra số từ nhận được: ${wordCount} từ):
