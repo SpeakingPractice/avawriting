@@ -816,10 +816,10 @@ async function generateContentWithFallback(
 ) {
   // Ultra-fast and high-concurrency model lineup prioritizing Flash models for speed and quota resilience
   const models = [
+    "gemini-2.0-flash",
     "gemini-2.5-flash",
     "gemini-3.7-flash",
-    "gemini-3.1-flash-lite",
-    "gemini-flash-latest",
+    "gemini-2.0-flash-lite",
   ];
 
   let lastError: any = null;

@@ -412,17 +412,15 @@ export default function App() {
         currentStepIdx++;
         setLoadingStep(steps[currentStepIdx]);
       }
-    }, 1200);
+    }, 600);
 
     try {
       if (taskType === "combo") {
-        // Grade Task 1 first, then Task 2 sequentially to prevent Rate Limit / 429 RPM spikes on Free Tier keys
-        setLoadingStep("Đang chấm bài làm Task 1 (Academic Writing)...");
-        const res1 = await fetchSingleGrading("task1", essay, prompt, task1Image);
-
-        setLoadingStep("Đã hoàn tất Task 1! Đang tiếp tục chấm bài làm Task 2 (Essay)...");
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        const res2 = await fetchSingleGrading("task2", task2Essay, task2Prompt, null);
+        setLoadingStep("AVA đang chấm song song siêu tốc cả Task 1 & Task 2 (Dual Flash AI)...");
+        const [res1, res2] = await Promise.all([
+          fetchSingleGrading("task1", essay, prompt, task1Image),
+          fetchSingleGrading("task2", task2Essay, task2Prompt, null),
+        ]);
 
         clearInterval(interval);
 
