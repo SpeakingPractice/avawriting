@@ -347,7 +347,7 @@ async function generateWithFallbackClient(
             errMsg.includes("limit: 20");
 
           if (isQuota) {
-            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+            await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
             break; // Immediately failover to next model
           }
 
@@ -361,7 +361,7 @@ async function generateWithFallbackClient(
             if (attempt >= 1) {
               break;
             }
-            await new Promise((resolve) => setTimeout(resolve, 800));
+            await new Promise((resolve) => setTimeout(resolve, 500));
           } else {
             break;
           }

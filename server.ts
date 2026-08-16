@@ -814,7 +814,7 @@ async function generateContentWithFallback(
     config?: any;
   }
 ) {
-  // Ultra-reliable model preference order with intelligent failover
+  // Ultra-fast and high-concurrency model lineup prioritizing Flash models for speed and quota resilience
   const models = [
     "gemini-2.5-flash",
     "gemini-3.7-flash",
@@ -885,9 +885,9 @@ async function generateContentWithFallback(
             errMsg.includes("limit: 20");
 
           if (isQuota) {
-            // Wait briefly before switching to give per-minute tokens time to reset
-            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-            break; // Switch to next model in sequence
+            // Instantly failover to the next Flash model to avoid 429 delays
+            await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+            break; // Switch to next model in sequence immediately
           }
 
           const isTransient =
@@ -900,7 +900,7 @@ async function generateContentWithFallback(
             if (attempt >= 1) {
               break;
             }
-            await new Promise((resolve) => setTimeout(resolve, 800));
+            await new Promise((resolve) => setTimeout(resolve, 500));
           } else {
             break;
           }
@@ -909,7 +909,7 @@ async function generateContentWithFallback(
     }
     // Brief pause between full cycles if still failing
     if (cycle === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
