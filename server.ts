@@ -814,10 +814,9 @@ async function generateContentWithFallback(
     config?: any;
   }
 ) {
-  // High-speed, high-accuracy model lineup prioritizing gemini-2.5-flash and gemini-3.7-flash
+  // High-speed, high-accuracy, cost-optimized model lineup prioritizing gemini-2.5-flash with zero thinking tokens
   const models = [
     "gemini-2.5-flash",
-    "gemini-3.7-flash",
     "gemini-flash-latest",
     "gemini-3.1-flash-lite",
   ];
@@ -1150,6 +1149,9 @@ ${trimmedEssay}
         responseMimeType: "application/json",
         temperature: 0.2, // Keep grading precise and consistent
         maxOutputTokens: 8192,
+        thinkingConfig: {
+          thinkingBudget: 0,
+        },
       },
     });
 

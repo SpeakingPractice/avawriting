@@ -284,7 +284,6 @@ async function generateWithFallbackClient(
 ) {
   const models = [
     "gemini-2.5-flash",
-    "gemini-3.7-flash",
     "gemini-flash-latest",
     "gemini-3.1-flash-lite",
   ];
@@ -615,6 +614,9 @@ ${trimmedEssay}
       responseMimeType: "application/json",
       temperature: 0.2,
       maxOutputTokens: 8192,
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
     },
   });
 
