@@ -814,12 +814,11 @@ async function generateContentWithFallback(
     config?: any;
   }
 ) {
-  // Ultra-fast and high-concurrency model lineup prioritizing Flash models for speed and quota resilience
+  // High-speed, high-accuracy model lineup prioritizing gemini-2.5-flash and gemini-3.7-flash
   const models = [
-    "gemini-2.0-flash",
     "gemini-2.5-flash",
     "gemini-3.7-flash",
-    "gemini-2.0-flash-lite",
+    "gemini-flash-latest",
   ];
 
   let lastError: any = null;
