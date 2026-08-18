@@ -819,6 +819,7 @@ async function generateContentWithFallback(
     "gemini-2.5-flash",
     "gemini-3.7-flash",
     "gemini-flash-latest",
+    "gemini-3.1-flash-lite",
   ];
 
   let lastError: any = null;
@@ -935,20 +936,17 @@ app.post("/api/validate-key", async (req, res) => {
 
     // Make a lightweight call to test key validity with fallbacks
     await generateContentWithFallback(testAi, {
-      contents: "Test connection.",
-      config: {
-        maxOutputTokens: 5,
-      },
+      contents: "ping",
     });
 
     return res.json({ valid: true });
   } catch (err: any) {
     console.error("Custom API Key validation failed:", err);
     const errMsg = err.message || "";
-    let cleanMsg = "Khóa API không hợp lệ hoặc không có quyền truy cập mô hình gemini-3.6-flash.";
+    let cleanMsg = "Khóa API không hợp lệ hoặc chưa kích hoạt trên Google AI Studio.";
     if (errMsg.includes("quota") || errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED")) {
-      cleanMsg = "Khóa API hợp lệ nhưng đã hết hạn ngạch sử dụng (Quota Exceeded / Rate Limit).";
-    } else if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("invalid")) {
+      cleanMsg = "Khóa API hợp lệ nhưng tài khoản đang tạm thời bị giới hạn tần suất (Rate Limit / 429). Vui lòng thử lại sau 10-15 giây.";
+    } else if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("invalid") || errMsg.includes("API key not valid")) {
       cleanMsg = "Khóa API không chính xác hoặc không tồn tại (Invalid API Key).";
     }
     return res.json({ valid: false, error: cleanMsg });

@@ -286,6 +286,7 @@ async function generateWithFallbackClient(
     "gemini-2.5-flash",
     "gemini-3.7-flash",
     "gemini-flash-latest",
+    "gemini-3.1-flash-lite",
   ];
 
   let lastError: any = null;
@@ -383,21 +384,18 @@ export async function validateGeminiApiKeyClient(apiKey: string): Promise<{ vali
     });
 
     await generateWithFallbackClient(ai, {
-      contents: "Test connection.",
-      config: {
-        maxOutputTokens: 5,
-      },
+      contents: "ping",
     });
 
     return { valid: true };
   } catch (err: any) {
     const errMsg = err?.message || String(err);
-    let cleanMsg = "Khóa API không hợp lệ hoặc đã bị vô hiệu hóa.";
+    let cleanMsg = "Khóa API không hợp lệ hoặc chưa kích hoạt.";
 
-    if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("API key not valid")) {
+    if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("API key not valid") || errMsg.includes("invalid")) {
       cleanMsg = "Mã API Key không đúng hoặc đã bị xóa trên Google AI Studio.";
-    } else if (errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED")) {
-      cleanMsg = "API Key hợp lệ nhưng tài khoản đang hết hạn ngạch (Quota Exceeded / 429).";
+    } else if (errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED") || errMsg.includes("quota")) {
+      cleanMsg = "API Key hợp lệ nhưng tài khoản đang tạm thời bị giới hạn tần suất (Rate Limit / 429).";
     }
 
     return { valid: false, error: cleanMsg };
