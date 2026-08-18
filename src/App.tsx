@@ -416,11 +416,12 @@ export default function App() {
 
     try {
       if (taskType === "combo") {
-        setLoadingStep("AVA đang chấm song song siêu tốc cả Task 1 & Task 2 (Dual Flash AI)...");
-        const [res1, res2] = await Promise.all([
-          fetchSingleGrading("task1", essay, prompt, task1Image),
-          fetchSingleGrading("task2", task2Essay, task2Prompt, null),
-        ]);
+        setLoadingStep("AVA đang chấm Task 1 (Academic Writing)...");
+        const res1 = await fetchSingleGrading("task1", essay, prompt, task1Image);
+
+        setLoadingStep("Đã xong Task 1! Đang chấm tiếp Task 2 (Academic Essay)...");
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        const res2 = await fetchSingleGrading("task2", task2Essay, task2Prompt, null);
 
         clearInterval(interval);
 
@@ -507,7 +508,7 @@ export default function App() {
         rawMsg.includes("quota") ||
         rawMsg.includes("limit")
       ) {
-        userFriendlyMsg = "Hệ thống đang tạm thời vượt quá lượt yêu cầu (Lỗi 429 Quota Exceeded). Bạn vui lòng đợi 15-30 giây rồi bấm nộp lại hoặc nhập API Key cá nhân từ Google AI Studio phía trên.";
+        userFriendlyMsg = "Hệ thống hoặc API Key đang tạm thời chạm giới hạn tần suất trong 1 phút (Rate Limit / 429). Bạn vui lòng đợi khoảng 10-15 giây rồi nhấn 'Nộp bài & Bắt đầu chấm điểm' lại!";
       }
 
       setError(userFriendlyMsg);
@@ -515,15 +516,13 @@ export default function App() {
       if (customApiKey.trim()) {
         const lowerMsg = rawMsg.toLowerCase();
         if (
-          lowerMsg.includes("quota") ||
-          lowerMsg.includes("429") ||
-          lowerMsg.includes("hạn ngạch") ||
-          lowerMsg.includes("limit") ||
-          lowerMsg.includes("exhausted") ||
-          lowerMsg.includes("key")
+          lowerMsg.includes("invalid") ||
+          lowerMsg.includes("không hợp lệ") ||
+          lowerMsg.includes("không chính xác") ||
+          lowerMsg.includes("api_key_invalid")
         ) {
           setIsKeyValid(false);
-          setKeyValidationMsg("API Key cá nhân đã hết quota hoặc bị từ chối kết nối. Vui lòng cấu hình khóa mới.");
+          setKeyValidationMsg("Mã API Key không đúng hoặc đã bị xóa trên Google AI Studio. Vui lòng kiểm tra lại khóa của bạn.");
           setForceShowConfig(true);
           localStorage.setItem("ava_custom_api_key_valid", "false");
         }

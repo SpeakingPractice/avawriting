@@ -885,9 +885,9 @@ async function generateContentWithFallback(
             errMsg.includes("limit: 20");
 
           if (isQuota) {
-            // Instantly failover to the next Flash model to avoid 429 delays
-            await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
-            break; // Switch to next model in sequence immediately
+            // Exponential backoff before trying next model to allow per-minute quota window to reset
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+            break; // Switch to next model in sequence
           }
 
           const isTransient =
@@ -900,7 +900,7 @@ async function generateContentWithFallback(
             if (attempt >= 1) {
               break;
             }
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 800));
           } else {
             break;
           }
@@ -909,7 +909,7 @@ async function generateContentWithFallback(
     }
     // Brief pause between full cycles if still failing
     if (cycle === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
 
