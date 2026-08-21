@@ -197,6 +197,8 @@ function normalizeGradingReport(raw: any, taskType: "task1" | "task2", wordCount
     criteriaGuides: raw.criteriaGuides && typeof raw.criteriaGuides === "object" ? raw.criteriaGuides : {},
     strengths: Array.isArray(raw.strengths) ? raw.strengths : ["Bài viết có cấu trúc rõ ràng và bám sát đề bài."],
     fullUpgradeEssay: typeof raw.fullUpgradeEssay === "string" && raw.fullUpgradeEssay ? raw.fullUpgradeEssay : "Bài viết mẫu nâng cấp chuẩn Band 8.0+ đang được cập nhật.",
+    fullUpgradeEssayVietnamese: typeof raw.fullUpgradeEssayVietnamese === "string" ? raw.fullUpgradeEssayVietnamese : undefined,
+    vietnameseGreeting: typeof raw.vietnameseGreeting === "string" ? raw.vietnameseGreeting : undefined,
     upgrades: Array.isArray(raw.upgrades) ? raw.upgrades : [],
     detailedFeedback: Array.isArray(raw.detailedFeedback) ? raw.detailedFeedback : [],
     nextBandSteps: Array.isArray(raw.nextBandSteps) ? raw.nextBandSteps : ["Tiếp tục mở rộng vốn từ vựng học thuật theo chủ đề.", "Tăng cường sử dụng các cấu trúc câu phức."],
@@ -1078,7 +1080,7 @@ Cấu trúc JSON phản hồi bắt buộc:
     }
   },
   "fullUpgradeEssay": "Bài viết mẫu hoàn chỉnh đạt chuẩn Band 8.0+. QUY TẮC BẮT BUỘC: Nâng cấp trực tiếp từ bài làm gốc của thí sinh. Những phần/câu/đoạn nào trong bài gốc đã viết tốt, không bị lỗi nặng thì BẮT BUỘC GIỮ NGUYÊN. Những chỗ nào bị lỗi hoặc ảnh hưởng tiêu cực đến điểm số thì sửa lại/nâng cấp. TẤT CẢ các câu/cụm từ/đoạn văn ĐÃ ĐƯỢC CHỈNH SỬA HOẶC BỔ SUNG NÂNG CẤP BẮT BUỘC BỌC TRONG THẺ <mark>câu/từ đã sửa/nâng cấp</mark> (Ví dụ: <mark>While urban connectivity surged, rural access fell sharply.</mark>) để thí sinh nhận biết chính xác những vị trí đã được thay đổi. Đồng thời bài viết mẫu này BẮT BUỘC phải tiếp thu, trực tiếp sử dụng và áp dụng triệt để tất cả các ý tưởng mới và các bước hành động đã đề xuất trong phần Cẩm Nang Lên Band.",
-  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT HOÀN CHỈNH 100%, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT MẪU (fullUpgradeEssay) Ở TRÊN. QUY TẮC BẮT BUỘC VỀ BẢN DỊCH TIẾNG VIỆT (DÀNH CHO CẢ TASK 1 VÀ TASK 2): 1. DỊCH TOÀN BỘ 100% TẤT CẢ CÁC ĐOẠN VĂN (Mở bài, Tổng quan Overview, Thân bài 1, Thân bài 2, và Kết bài). TUYỆT ĐỐI KHÔNG DỪNG GIỮA CHỪNG, KHÔNG TÓM TẮT VÀ KHÔNG BỎ SÓT BẤT KỲ ĐOẠN VĂN NÀO. 2. Số lượng đoạn văn (phân tách bởi \\n\\n) trong bản dịch BẮT BUỘC BẰNG CHÍNH XÁC số lượng đoạn văn của bài mẫu tiếng Anh (fullUpgradeEssay). 3. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với vị trí đã được sửa/nâng cấp (<mark>...</mark>) trong bài tiếng Anh BẮT BUỘC BỌC TRONG THẺ <mark>câu/cụm từ tiếng Việt dịch tương ứng</mark> (Ví dụ: <mark>Trong khi tính kết nối đô thị tăng mạnh, khả năng tiếp cận ở nông thôn lại giảm sâu.</mark>).",
+  "fullUpgradeEssayVietnamese": "BẢN DỊCH TIẾNG VIỆT 100% HOÀN CHỈNH, CHUẨN XÁC, SÁT NGHĨA VÀ MƯỢT MÀ CỦA BÀI VIẾT NÂNG CẤP (fullUpgradeEssay) Ở TRÊN. BẮT BUỘC TUÂN THỦ CÁC QUY TẮC: 1. ĐÂY PHẢI LÀ BẢN DỊCH HOÀN TOÀN BẰNG TIẾNG VIỆT (VIETNAMESE), TUYỆT ĐỐI KHÔNG ĐƯỢC ĐỂ NGUYÊN TIẾNG ANH HAY DỊCH LAI TẠP NỬA ANH NỬA VIỆT. 2. DỊCH ĐẦY ĐỦ 100% TỪNG CÂU TỪNG ĐOẠN (Mở bài, Overview/Thân bài, Kết bài), không được bỏ sót bất kỳ câu nào. 3. Số lượng đoạn văn (ngăn cách bằng \\n\\n) PHẢI KHỚP CHÍNH XÁC với số lượng đoạn của fullUpgradeEssay. 4. TẤT CẢ các câu/cụm từ tiếng Việt tương ứng với đoạn có thẻ <mark>...</mark> trong bài tiếng Anh BẮT BUỘC ĐƯỢC BỌC TRONG THẺ <mark>câu tiếng Việt tương ứng</mark>.",
   "strengths": [
     {
       "title": "Tiêu đề thế mạnh thứ nhất",

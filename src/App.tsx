@@ -53,6 +53,7 @@ export default function App() {
   const [isValidatingKey, setIsValidatingKey] = useState<boolean>(false);
   const [keyValidationMsg, setKeyValidationMsg] = useState<string | null>(null);
   const [forceShowConfig, setForceShowConfig] = useState<boolean>(false);
+  const [showApiKeySection, setShowApiKeySection] = useState<boolean>(false);
   const [isDraggingTask1Image, setIsDraggingTask1Image] = useState<boolean>(false);
   const [studentClass, setStudentClass] = useState<string>("");
   const [teacherName, setTeacherName] = useState<string>("");
@@ -532,6 +533,54 @@ export default function App() {
     }
   };
 
+  // Handle switching task type tabs
+  const handleSwitchTaskType = (newType: "task1" | "task2" | "combo") => {
+    if (newType === taskType) return;
+    setTaskType(newType);
+    setError(null);
+
+    if (newType === "combo") {
+      // If switching to combo, auto-populate from latest task 1 and task 2 in history if empty
+      const latestT1 = history.find((h) => h.taskType === "task1");
+      const latestT2 = history.find((h) => h.taskType === "task2");
+      if (latestT1 && !essay.trim()) {
+        setEssay(latestT1.essay);
+        setPrompt(latestT1.prompt);
+        if (latestT1.image) setTask1Image(latestT1.image);
+      }
+      if (latestT2 && !task2Essay.trim()) {
+        setTask2Essay(latestT2.essay);
+        setTask2Prompt(latestT2.prompt);
+      }
+    } else {
+      // When selecting a specific task type (Task 1 or Task 2):
+      const currentActiveItem = history.find((h) => h.id === activeHistoryId);
+      if (currentActiveItem && currentActiveItem.taskType === newType) {
+        return;
+      }
+
+      // Look for latest matching item in history
+      const matchingItem = history.find((h) => h.taskType === newType);
+      if (matchingItem) {
+        setEssay(matchingItem.essay);
+        setPrompt(matchingItem.prompt);
+        setReport(matchingItem.report);
+        if (matchingItem.image) {
+          setTask1Image(matchingItem.image);
+        } else if (newType === "task1") {
+          setTask1Image(null);
+        }
+        setActiveHistoryId(matchingItem.id);
+      } else {
+        // If current report was for a different task, clear report to only display feedback for the chosen task
+        if (report) {
+          setReport(null);
+          setActiveHistoryId(undefined);
+        }
+      }
+    }
+  };
+
   // Reset/Clear active inputs for a new attempt
   const handleNewAttempt = () => {
     setEssay("");
@@ -679,85 +728,99 @@ export default function App() {
 
       {/* Main Content Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        {/* Custom API Key Info Banner (When key is valid and not forced to show) */}
-        {isKeyValid === true && !forceShowConfig ? (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 text-emerald-800 animate-fadeIn" id="api-key-active-banner">
+        {/* Collapsible API Key Configuration Section */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6 transition-all" id="api-key-accordion">
+          {/* Header Toggle Bar */}
+          <div
+            onClick={() => setShowApiKeySection(!showApiKeySection)}
+            className="px-4 py-3 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between cursor-pointer select-none transition-colors border-b border-transparent data-[open=true]:border-slate-200"
+            data-open={showApiKeySection}
+          >
             <div className="flex items-center gap-2.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-xs font-semibold">
-                🔑 Đang áp dụng <strong className="underline">API KEY CÁ NHÂN</strong> hoạt động ổn định. Đã ẩn cấu hình để tối ưu hiển thị.
-              </span>
-            </div>
-            <button
-              onClick={() => setForceShowConfig(true)}
-              className="text-xs text-blue-900 hover:text-blue-700 font-bold underline transition-colors cursor-pointer self-start sm:self-auto"
-            >
-              Cấu hình lại hoặc Xóa khóa
-            </button>
-          </div>
-        ) : (
-          /* Custom API Key Input Bar (Shown when key is empty, invalid, or forced) */
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative overflow-hidden" id="api-key-config-box">
-            <div className="flex items-start md:items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-50 text-blue-900 shrink-0">
-                <Key className="w-5 h-5" />
+              <div className="p-1.5 rounded-lg bg-blue-100 text-blue-900 shrink-0">
+                <Key className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                  Cấu hình <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-blue-800 hover:text-blue-600">API KEY CÁ NHÂN</a> (Tùy chọn)
-                </h4>
-                <p className="text-[11px] text-slate-500">Nhập khóa Gemini API Key của bạn để sử dụng tài khoản riêng, tránh bị quá tải giới hạn yêu cầu (API Quota Limit).</p>
-              </div>
-            </div>
-            <div className="flex-1 max-w-sm w-full">
-              <div className="relative">
-                <input
-                  type="password"
-                  value={customApiKey}
-                  onChange={(e) => handleApiKeyChange(e.target.value)}
-                  placeholder="Nhập khóa API Key của bạn (AIzaSy...)"
-                  className="w-full text-xs bg-slate-50 text-slate-800 border border-slate-300 rounded-lg pl-3 pr-16 py-2.5 focus:ring-1 focus:ring-blue-900 focus:border-blue-900 outline-none transition-all placeholder:text-slate-400 font-mono"
-                />
-                {customApiKey && (
-                  <button 
-                    onClick={() => handleApiKeyChange("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 hover:text-rose-700 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-                    title="Xóa khóa API"
-                  >
-                    Xóa
-                  </button>
+                <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                  Cấu hình API Key Cá Nhân (Tùy chọn)
+                </span>
+                {customApiKey ? (
+                  <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Đang bật khóa riêng
+                  </span>
+                ) : (
+                  <span className="ml-2 text-[11px] text-slate-500 font-normal hidden sm:inline">
+                    (Mặc định sử dụng máy chủ trường Mỹ Du)
+                  </span>
                 )}
               </div>
+            </div>
 
-              {/* Validation Status Message */}
-              {customApiKey.trim().length > 0 && (
-                <div className="mt-1.5 text-[11px] font-medium flex items-center gap-1.5">
-                  {isValidatingKey ? (
-                    <span className="text-blue-600 animate-pulse flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span>
-                      Đang tự động xác minh khóa...
-                    </span>
-                  ) : isKeyValid === true ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-600 font-semibold">✓ {keyValidationMsg}</span>
-                      <button
-                        onClick={() => setForceShowConfig(false)}
-                        className="text-[10px] text-slate-400 hover:text-slate-600 underline font-bold"
-                      >
-                        [Ẩn khung này]
-                      </button>
-                    </div>
-                  ) : isKeyValid === false ? (
-                    <span className="text-rose-600 font-semibold">✗ {keyValidationMsg}</span>
-                  ) : null}
-                </div>
-              )}
+            <div className="flex items-center gap-2 text-xs font-semibold text-blue-900 hover:text-blue-700">
+              <span>{showApiKeySection ? "Thu gọn" : "Mở cấu hình"}</span>
+              <svg
+                className={`w-4 h-4 transition-transform duration-200 ${showApiKeySection ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
           </div>
-        )}
+
+          {/* Collapsible Content */}
+          {showApiKeySection && (
+            <div className="p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fadeIn border-t border-slate-100">
+              <div className="max-w-md">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                  Khóa Gemini API riêng của bạn
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Nhập khóa <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-blue-800 hover:text-blue-600 font-medium">Gemini API Key cá nhân</a> nếu bạn muốn dùng hạn ngạch riêng độc lập.
+                </p>
+              </div>
+
+              <div className="flex-1 max-w-sm w-full">
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={customApiKey}
+                    onChange={(e) => handleApiKeyChange(e.target.value)}
+                    placeholder="Nhập khóa API Key (AIzaSy...)"
+                    className="w-full text-xs bg-slate-50 text-slate-800 border border-slate-300 rounded-lg pl-3 pr-16 py-2.5 focus:ring-1 focus:ring-blue-900 focus:border-blue-900 outline-none transition-all placeholder:text-slate-400 font-mono"
+                  />
+                  {customApiKey && (
+                    <button 
+                      onClick={() => handleApiKeyChange("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 hover:text-rose-700 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                      title="Xóa khóa API"
+                    >
+                      Xóa
+                    </button>
+                  )}
+                </div>
+
+                {/* Validation Status Message */}
+                {customApiKey.trim().length > 0 && (
+                  <div className="mt-1.5 text-[11px] font-medium flex items-center gap-1.5">
+                    {isValidatingKey ? (
+                      <span className="text-blue-600 animate-pulse flex items-center gap-1">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span>
+                        Đang tự động xác minh khóa...
+                      </span>
+                    ) : isKeyValid === true ? (
+                      <span className="text-emerald-600 font-semibold">✓ {keyValidationMsg}</span>
+                    ) : isKeyValid === false ? (
+                      <span className="text-rose-600 font-semibold">✗ {keyValidationMsg}</span>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
@@ -840,7 +903,7 @@ export default function App() {
                 <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
                   <button
                     type="button"
-                    onClick={() => setTaskType("task1")}
+                    onClick={() => handleSwitchTaskType("task1")}
                     className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                       taskType === "task1"
                         ? "bg-white text-blue-900 shadow-xs border border-slate-200/80"
@@ -851,7 +914,7 @@ export default function App() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setTaskType("task2")}
+                    onClick={() => handleSwitchTaskType("task2")}
                     className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                       taskType === "task2"
                         ? "bg-white text-blue-900 shadow-xs border border-slate-200/80"
@@ -862,7 +925,7 @@ export default function App() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setTaskType("combo")}
+                    onClick={() => handleSwitchTaskType("combo")}
                     className={`py-2 text-[11px] font-extrabold rounded-lg transition-all cursor-pointer ${
                       taskType === "combo"
                         ? "bg-amber-400 text-blue-950 shadow-xs border border-amber-300"
@@ -1292,29 +1355,25 @@ export default function App() {
                   studentName,
                 };
 
-                const latestTask1Item = history.find((item) => item.taskType === "task1");
-                const latestTask2Item = history.find((item) => item.taskType === "task2");
+                let availableTasks: TaskExportData[] = [];
+                if (taskType === "combo") {
+                  const latestTask1Item = history.find((item) => item.taskType === "task1");
+                  const latestTask2Item = history.find((item) => item.taskType === "task2");
 
-                const t1Data: TaskExportData | null =
-                  taskType === "task1"
-                    ? activeTaskData
-                    : latestTask1Item
+                  const t1Data: TaskExportData | null = latestTask1Item
                     ? {
                         taskType: "task1",
                         promptText: latestTask1Item.prompt,
                         originalEssay: latestTask1Item.essay,
                         report: latestTask1Item.report,
-                        task1Image: latestTask1Item.image || (taskType === "task1" ? task1Image : null),
+                        task1Image: latestTask1Item.image || task1Image,
                         studentClass,
                         teacherName,
                         studentName,
                       }
                     : null;
 
-                const t2Data: TaskExportData | null =
-                  taskType === "task2"
-                    ? activeTaskData
-                    : latestTask2Item
+                  const t2Data: TaskExportData | null = latestTask2Item
                     ? {
                         taskType: "task2",
                         promptText: latestTask2Item.prompt,
@@ -1327,9 +1386,15 @@ export default function App() {
                       }
                     : null;
 
-                const availableTasks: TaskExportData[] = [];
-                if (t1Data) availableTasks.push(t1Data);
-                if (t2Data) availableTasks.push(t2Data);
+                  if (t1Data) availableTasks.push(t1Data);
+                  if (t2Data) availableTasks.push(t2Data);
+                  if (availableTasks.length === 0) {
+                    availableTasks = [activeTaskData];
+                  }
+                } else {
+                  // Explicit single task: only include the active task!
+                  availableTasks = [activeTaskData];
+                }
 
                 return (
                   <ReportDashboard

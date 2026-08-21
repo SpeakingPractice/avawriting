@@ -17,10 +17,10 @@ export interface TaskExportData {
 }
 
 /**
- * Formats file name according to syntax: Writing [Lớp] - [Họ và Tên]
+ * Formats file name according to syntax: [Lớp] - [Họ và Tên]
  * Examples:
- * - "Writing IELTS 6.5 - Nguyễn Văn A.doc"
- * - "Writing 12A1 - Trần Thị B.pdf"
+ * - "IELTS C2 - Nguyễn Hoàng Nam.doc"
+ * - "12A1 - Trần Thị B.pdf"
  */
 export function formatExportFileName(
   studentClass?: string,
@@ -30,13 +30,13 @@ export function formatExportFileName(
   const cleanClass = (studentClass || "").trim().replace(/[\\/:*?"<>|]/g, "_");
   const cleanName = (studentName || "").trim().replace(/[\\/:*?"<>|]/g, "_");
 
-  let baseName = "Writing";
+  let baseName = "IELTS Writing";
   if (cleanClass && cleanName) {
-    baseName = `Writing ${cleanClass} - ${cleanName}`;
+    baseName = `${cleanClass} - ${cleanName}`;
   } else if (cleanClass) {
-    baseName = `Writing ${cleanClass}`;
+    baseName = cleanClass;
   } else if (cleanName) {
-    baseName = `Writing - ${cleanName}`;
+    baseName = cleanName;
   }
 
   return extension ? `${baseName}.${extension}` : baseName;
@@ -669,39 +669,29 @@ export function getVietnameseEssayText(report: GradingReport): string {
   const enParas = enText.split("\n\n").map((p) => p.trim()).filter((p) => p.length > 0);
   let viText = report.fullUpgradeEssayVietnamese?.trim() || "";
 
+  // Check if AI generated a genuine Vietnamese translation
   const hasVietnamese = /[àáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ]/i.test(viText);
 
-  if (hasVietnamese && viText.length > 0) {
+  if (hasVietnamese && viText.length > 20) {
     let viParas = viText.split("\n\n").map((p) => p.trim()).filter((p) => p.length > 0);
 
-    const lastViPara = viParas[viParas.length - 1] || "";
-    const isLastParaComplete = /[.!?\"'\>]\s*$/i.test(lastViPara);
-
-    // If viParas has at least as many paragraphs as enParas AND ends with proper punctuation
-    if (viParas.length >= enParas.length && isLastParaComplete) {
-      return viText;
-    }
-
-    // viText is truncated mid-paragraph or missing paragraphs: repair & complete missing paragraphs
-    const completeParas: string[] = [...viParas];
-
-    // Check if the last existing paragraph in viText was cut off mid-sentence
-    const lastIdx = completeParas.length - 1;
-    if (lastIdx >= 0 && !/[.!?\"'\>]\s*$/i.test(completeParas[lastIdx])) {
-      if (enParas[lastIdx]) {
-        completeParas[lastIdx] = generateFallbackVietnameseTranslation(enParas[lastIdx]);
+    // If Vietnamese translation has paragraphs and good content, return it
+    if (viParas.length > 0) {
+      // If paragraphs match or are close, return viText directly
+      if (viParas.length >= enParas.length) {
+        return viText;
       }
-    }
 
-    // Fill in any remaining missing paragraphs from enParas
-    for (let i = completeParas.length; i < enParas.length; i++) {
-      completeParas.push(generateFallbackVietnameseTranslation(enParas[i]));
+      // If AI returned fewer paragraphs, ensure all missing paragraphs are cleanly appended
+      const completeParas: string[] = [...viParas];
+      for (let i = completeParas.length; i < enParas.length; i++) {
+        completeParas.push(generateFallbackVietnameseTranslation(enParas[i]));
+      }
+      return completeParas.join("\n\n");
     }
-
-    return completeParas.join("\n\n");
   }
 
-  // Fallback if no Vietnamese translation was present at all
+  // Fallback if no Vietnamese translation was present
   return enParas.map((p) => generateFallbackVietnameseTranslation(p)).join("\n\n");
 }
 
@@ -755,9 +745,9 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
     .map(
       (c) => `
     <div style="margin-bottom: 18pt; border: 1px solid #cbd5e1; padding: 12pt; background-color: #ffffff;">
-      <div style="font-size: 13pt; font-weight: bold; color: #1e3a8a; margin-bottom: 6pt;">
+      <h3 style="font-size: 13pt; font-weight: bold; color: #1e3a8a; margin-top: 0; margin-bottom: 6pt; mso-outline-level: 3;">
         ${c.title} &mdash; <span style="background-color: #dbeafe; color: #1e40af; padding: 2pt 8pt; font-size: 11pt;">Band ${formatBandScore(c.detail.band)}</span>
-      </div>
+      </h3>
       <p style="margin-bottom: 6pt; font-size: 12pt; color: #334155;"><strong>Phân tích chi tiết:</strong> ${c.detail.feedback}</p>
       ${
         c.detail.example
@@ -774,7 +764,7 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
   const nextStepsHtml = (report.nextBandSteps || [])
     .map(
       (step, idx) => `
-    <li style="margin-bottom: 8pt; font-size: 11pt !important; font-family: Calibri, Arial, sans-serif; color: #1e293b; line-height: 1.5;">
+    <li style="margin-bottom: 6pt; font-size: 10pt !important; font-family: Calibri, Arial, sans-serif; color: #1e293b; line-height: 1.45;">
       <strong>Bước ${idx + 1}:</strong> ${step}
     </li>
   `
@@ -839,17 +829,17 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
 
     <!-- 1.1 English Essay -->
     <div style="background-color: #fafafa; border: 1px solid #e2e8f0; padding: 14pt; margin-bottom: 14pt;">
-      <div style="font-size: 11pt; font-weight: bold; color: #1e3a8a; margin-bottom: 8pt; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4pt;">
+      <h3 style="font-size: 11pt !important; font-weight: bold; color: #1e3a8a; margin-top: 0; margin-bottom: 8pt; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4pt; mso-outline-level: 3;">
         [1.1] BÀI VIẾT NÂNG CẤP TIẾNG ANH (ENGLISH MODEL ESSAY BAND 8.0+)
-      </div>
+      </h3>
       ${formattedEssayHtml}
     </div>
 
     <!-- 1.2 Vietnamese Translation -->
     <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 14pt; margin-bottom: 20pt;">
-      <div style="font-size: 11pt; font-weight: bold; color: #1e3a8a; margin-bottom: 8pt; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4pt;">
+      <h3 style="font-size: 11pt !important; font-weight: bold; color: #1e3a8a; margin-top: 0; margin-bottom: 8pt; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4pt; mso-outline-level: 3;">
         [1.2] BẢN DỊCH TIẾNG VIỆT SONG NGỮ ĐỐI CHIẾU (VIETNAMESE TRANSLATION)
-      </div>
+      </h3>
       <div style="background-color: #fff1f2; border: 1px solid #fecdd3; padding: 6pt 10pt; margin-bottom: 10pt; font-size: 10.5pt; color: #9f1239; font-style: italic;">
         Các cụm từ/câu tô màu đỏ nhạt trong bản dịch tương ứng với các vị trí đã nâng cấp ở bản tiếng Anh đối chiếu.
       </div>
@@ -857,11 +847,11 @@ function renderTaskSectionHtml(task: TaskExportData, sectionTitle?: string) {
     </div>
 
     <!-- SECTION 2: 4 Tiêu chí -->
-    <h2>2. Nhận Xét Chi Tiết Theo 4 Tiêu Chí IELTS Band Descriptors (${taskName})</h2>
+    <h2 style="mso-outline-level: 2;">2. Nhận Xét Chi Tiết Theo 4 Tiêu Chí IELTS Band Descriptors (${taskName})</h2>
     ${criteriaHtml}
 
     <!-- SECTION 3: Cẩm nang lên band -->
-    <h2>3. Cẩm Nang Lên Band (${taskName})</h2>
+    <h2 style="mso-outline-level: 2;">3. Cẩm Nang Lên Band (${taskName})</h2>
     <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 12pt; margin-bottom: 20pt;">
       <ol style="margin-top: 0; margin-bottom: 0; padding-left: 20pt;">
         ${nextStepsHtml}
@@ -987,7 +977,7 @@ export function generateReportDocumentHtml(
       <p style="margin-top: 14pt; margin-bottom: 14pt; font-size: 12pt; line-height: 1.5; color: transparent; user-select: none;">&nbsp;</p>
 
       <div style="text-align: center; margin-bottom: 16pt;">
-        <h1 style="font-size: 18pt !important; color: #0f172a; margin: 0;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP WRITING TASK 1 &amp; TASK 2</h1>
+        <h1 style="font-size: 18pt !important; color: #0f172a; margin: 0; line-height: 1.3;">BÁO CÁO PHÂN TÍCH &amp; NÂNG CẤP WRITING<br>TASK 1 &amp; TASK 2</h1>
       </div>
 
       <table class="meta-table" style="margin-bottom: 20pt; background-color: #eff6ff; border: 2px solid #1e3a8a;">
@@ -1072,8 +1062,9 @@ export function generateReportDocumentHtml(
     color: #1e293b;
   }
 
-  h1 { font-size: 18pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; font-weight: bold; margin-bottom: 4pt; }
-  h2 { font-size: 13pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 4pt; margin-top: 20pt; margin-bottom: 10pt; font-weight: bold; }
+  h1 { font-size: 18pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; font-weight: bold; margin-bottom: 4pt; mso-outline-level: 1; }
+  h2 { font-size: 13pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 4pt; margin-top: 20pt; margin-bottom: 10pt; font-weight: bold; mso-outline-level: 2; }
+  h3 { font-size: 12pt !important; font-family: 'Calibri', Arial, sans-serif !important; color: #1e3a8a; font-weight: bold; margin-top: 12pt; margin-bottom: 6pt; mso-outline-level: 3; }
 
   mark {
     background-color: #ffe4e6 !important;

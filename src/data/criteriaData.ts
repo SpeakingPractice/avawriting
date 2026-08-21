@@ -147,7 +147,7 @@ export const task1ProgressionCategories: ProgressionCategoryGroup[] = [
         title: "Liên kết tự nhiên bằng phép thế và từ thay thế (referencing/ substitution)",
         description: "Dùng linh hoạt this figure, this value, this area/site, the former, the latter, this trend, respectively…",
         score: "1",
-        minBand: "B2",
+        minBand: "C1",
       },
       {
         id: "cc1_7",
@@ -214,7 +214,7 @@ export const task1ProgressionCategories: ProgressionCategoryGroup[] = [
         title: "Vốn từ học thuật chính xác và collocations nâng cao",
         description: "Sử dụng sắc bén các collocations nâng cao (record a sharp increase, undergo substantial redevelopment...).",
         score: "1",
-        minBand: "B2",
+        minBand: "C1",
       },
       {
         id: "lr1_7",
@@ -281,7 +281,7 @@ export const task1ProgressionCategories: ProgressionCategoryGroup[] = [
         title: "Cấu trúc phức nâng cao",
         description: "Sử dụng bị động, mệnh đề quan hệ rút gọn, mệnh đề phân từ nâng cao.",
         score: "1",
-        minBand: "B2",
+        minBand: "C1",
       },
       {
         id: "gra1_7",
@@ -418,7 +418,7 @@ export const task2ProgressionCategories: ProgressionCategoryGroup[] = [
         title: "Liên kết bằng phép thế đại từ & Danh từ hóa (Nominalization)",
         description: "Sử dụng tự nhiên “it, this policy, these measures, the former/latter” và biến đổi danh từ.",
         score: "1",
-        minBand: "B2",
+        minBand: "C1",
       },
       {
         id: "cc2_7",
@@ -485,7 +485,7 @@ export const task2ProgressionCategories: ProgressionCategoryGroup[] = [
         title: "Vốn từ học thuật sâu rộng & Collocations đắt giá",
         description: "Sử dụng các từ vựng đắt giá (lucrative opportunity, far-reaching impact, root cause, alleviate…).",
         score: "1",
-        minBand: "B2",
+        minBand: "C1",
       },
       {
         id: "lr2_7",
@@ -552,7 +552,7 @@ export const task2ProgressionCategories: ProgressionCategoryGroup[] = [
         title: "Cấu trúc phức nâng cao (Phân từ rút gọn, Đảo ngữ)",
         description: "Thành thạo đa dạng ngữ pháp: mệnh đề phân từ chỉ nguyên nhân/kết quả (V-ing, V3, have V3 đầu câu), MĐQH rút gọn (V-ing/ V3), đảo ngữ, cấu trúc nhượng bộ phức tạp (admittedly, granted, it is true that… Nevertheless …), câu điều kiện (if), bị động (be V3/ed)…",
         score: "1",
-        minBand: "B2",
+        minBand: "C1",
       },
       {
         id: "gra2_7",

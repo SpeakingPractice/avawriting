@@ -58,14 +58,18 @@ export const ReportDashboard: React.FC<ReportDashboardProps> = ({
 
   const t1Task = allAvailableTasks.find((t) => t.taskType === "task1");
   const t2Task = allAvailableTasks.find((t) => t.taskType === "task2");
-  const hasDualTasks = !!(t1Task && t2Task);
+  const hasDualTasks = taskType === "combo" && !!(t1Task && t2Task);
 
   const [selectedTaskIdx, setSelectedTaskIdx] = useState<number>(() => {
-    if (hasDualTasks) {
-      return taskType === "task1" ? 0 : 1;
-    }
+    if (taskType === "task1") return 0;
+    if (taskType === "task2") return 1;
     return 0;
   });
+
+  React.useEffect(() => {
+    if (taskType === "task1") setSelectedTaskIdx(0);
+    else if (taskType === "task2") setSelectedTaskIdx(1);
+  }, [taskType]);
 
   const activeTaskData: TaskExportData = hasDualTasks
     ? selectedTaskIdx === 0

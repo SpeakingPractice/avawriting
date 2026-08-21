@@ -328,7 +328,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
               {previewFileName}
             </div>
             <p className="text-[11px] text-slate-500 italic">
-              Cú pháp: Writing [Lớp] - [Họ và Tên]
+              Cú pháp mặc định: [Lớp] - [Họ và Tên] (Ví dụ: IELTS C2 - Nguyễn Hoàng Nam.{format})
             </p>
           </div>
         </div>
