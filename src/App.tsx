@@ -161,15 +161,46 @@ export default function App() {
         setError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF...).");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Kích thước tệp hình ảnh không được vượt quá 5MB.");
+      if (file.size > 8 * 1024 * 1024) {
+        setError("Kích thước tệp hình ảnh không được vượt quá 8MB.");
         return;
       }
       const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setCustomLogo(result);
-        localStorage.setItem("mydu_custom_logo", result);
+      reader.onload = (event) => {
+        const rawData = event.target?.result as string;
+        const img = new window.Image();
+        img.onload = () => {
+          const maxDim = 400;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL("image/png");
+            setCustomLogo(compressed);
+            try {
+              localStorage.setItem("mydu_custom_logo", compressed);
+            } catch (err) {
+              console.warn("Logo save storage quota warning:", err);
+            }
+          } else {
+            setCustomLogo(rawData);
+          }
+        };
+        img.onerror = () => setCustomLogo(rawData);
+        img.src = rawData;
       };
       reader.readAsDataURL(file);
     }
@@ -180,14 +211,46 @@ export default function App() {
       setError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF...).");
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setError("Kích thước tệp hình ảnh không được vượt quá 8MB.");
+    if (file.size > 15 * 1024 * 1024) {
+      setError("Kích thước tệp hình ảnh không được vượt quá 15MB.");
       return;
     }
     const reader = new FileReader();
     reader.onload = (event) => {
-      setTask1Image(event.target?.result as string);
-      setError(null);
+      const rawData = event.target?.result as string;
+      const img = new window.Image();
+      img.onload = () => {
+        // Optimize resolution for Gemini vision and document export (max 1400px width/height)
+        const maxDim = 1400;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const optimized = canvas.toDataURL("image/jpeg", 0.88);
+          setTask1Image(optimized);
+        } else {
+          setTask1Image(rawData);
+        }
+        setError(null);
+      };
+      img.onerror = () => {
+        setTask1Image(rawData);
+        setError(null);
+      };
+      img.src = rawData;
     };
     reader.readAsDataURL(file);
   };
@@ -297,10 +360,44 @@ export default function App() {
     }
   }, []);
 
-  // Save history to localStorage
+  // Save history to localStorage safely without throwing QuotaExceededError
   const saveHistoryToCache = (newHistory: EssayHistoryItem[]) => {
     setHistory(newHistory);
-    localStorage.setItem("ava_essay_history", JSON.stringify(newHistory));
+    try {
+      // Limit to 25 items max
+      let itemsToSave = newHistory.slice(0, 25);
+      try {
+        localStorage.setItem("ava_essay_history", JSON.stringify(itemsToSave));
+        return;
+      } catch (quotaErr) {
+        console.warn("Storage quota exceeded. Compacting history cache...", quotaErr);
+        // Step 1: Strip base64 image data from older history entries (keep only in latest item)
+        itemsToSave = itemsToSave.map((item, idx) => {
+          if (idx > 0 && item.image) {
+            return { ...item, image: undefined };
+          }
+          return item;
+        });
+
+        try {
+          localStorage.setItem("ava_essay_history", JSON.stringify(itemsToSave));
+          return;
+        } catch (quotaErr2) {
+          // Step 2: Strip all base64 images and limit to latest 10 items
+          const compact = itemsToSave.slice(0, 10).map((item) => ({ ...item, image: undefined }));
+          try {
+            localStorage.setItem("ava_essay_history", JSON.stringify(compact));
+            return;
+          } catch (quotaErr3) {
+            // Step 3: Keep only latest 3 items
+            const minimal = compact.slice(0, 3);
+            localStorage.setItem("ava_essay_history", JSON.stringify(minimal));
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Non-fatal localStorage save warning:", err);
+    }
   };
 
   // Word count helper
