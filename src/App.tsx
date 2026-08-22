@@ -502,14 +502,14 @@ export default function App() {
         rawMsg.includes("high demand") ||
         rawMsg.includes("overloaded")
       ) {
-        userFriendlyMsg = "Máy chủ Google AI hiện đang cao tải tạm thời (Lỗi 503 High Demand). Hệ thống đã tự động kích hoạt mô hình dự phòng gemini-2.5-flash, bạn vui lòng đợi 3-5 giây rồi nhấn 'Nộp bài & Bắt đầu chấm điểm' lại!";
+        userFriendlyMsg = "Máy chủ Google AI hiện đang cao tải tạm thời (Lỗi 503 High Demand). Hệ thống đã tự động thử nghiệm mô hình dự phòng, bạn vui lòng đợi 3-5 giây rồi nhấn 'Nộp bài & Bắt đầu chấm điểm' lại!";
       } else if (
         rawMsg.includes("429") ||
         rawMsg.includes("RESOURCE_EXHAUSTED") ||
-        rawMsg.includes("quota") ||
-        rawMsg.includes("limit")
+        rawMsg.includes("rate_limit") ||
+        rawMsg.includes("quota exceeded")
       ) {
-        userFriendlyMsg = "Hệ thống hoặc API Key đang tạm thời chạm giới hạn tần suất trong 1 phút (Rate Limit / 429). Bạn vui lòng đợi khoảng 10-15 giây rồi nhấn 'Nộp bài & Bắt đầu chấm điểm' lại!";
+        userFriendlyMsg = "Hệ thống đang tạm thời chạm giới hạn tần suất trong 1 phút (Rate Limit / 429). Bạn vui lòng đợi khoảng 5-10 giây rồi nhấn 'Nộp bài & Bắt đầu chấm điểm' lại!";
       }
 
       setError(userFriendlyMsg);

@@ -1228,18 +1228,18 @@ ${trimmedEssay}
       errMsg.includes("overloaded")
     ) {
       return res.status(503).json({
-        error: "Máy chủ Google AI hiện đang quá tải lượt truy cập cao (503 High Demand). Hệ thống AVA đã tự động chuyển đổi mô hình dự phòng nhưng vẫn bận. Vui lòng thử lại sau 15-30 giây!",
+        error: "Máy chủ Google AI hiện đang cao tải tạm thời (503 High Demand). Hệ thống đã tự động thử lại các mô hình dự phòng nhưng vẫn đang bận. Vui lòng bấm chấm lại sau 5-10 giây!",
       });
     }
 
     if (
       errMsg.includes("429") ||
-      errMsg.includes("quota") ||
       errMsg.includes("RESOURCE_EXHAUSTED") ||
-      errMsg.includes("limit")
+      errMsg.includes("rate_limit_exceeded") ||
+      errMsg.includes("quota exceeded")
     ) {
       return res.status(429).json({
-        error: "Hệ thống đang tạm thời quá tải hoặc đã vượt quá lượt yêu cầu miễn phí của hôm nay (Resource Exhausted / 429). Vui lòng đợi 15-30 giây rồi gửi lại bài viết của bạn.",
+        error: "Hệ thống đang tạm thời chạm ngưỡng tần suất của Gemini API (Rate Limit 429). Vui lòng đợi 5-10 giây rồi bấm 'Nộp bài & Bắt đầu chấm điểm' lại.",
       });
     }
 
