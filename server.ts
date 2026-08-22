@@ -250,12 +250,16 @@ function createDefaultGradingReport(taskType: "task1" | "task2", wordCount: numb
 dotenv.config();
 
 // Ensure GEMINI_API_KEY is present
-const apiKey = process.env.GEMINI_API_KEY;
+function getAiClient(customApiKey?: string): GoogleGenAI | null {
+  const effectiveKey =
+    customApiKey && typeof customApiKey === "string" && customApiKey.trim().length > 0
+      ? customApiKey.trim()
+      : process.env.GEMINI_API_KEY;
 
-let ai: GoogleGenAI | null = null;
-if (apiKey) {
-  ai = new GoogleGenAI({
-    apiKey: apiKey,
+  if (!effectiveKey) return null;
+
+  return new GoogleGenAI({
+    apiKey: effectiveKey.trim(),
     httpOptions: {
       headers: {
         "User-Agent": "aistudio-build",
@@ -816,10 +820,11 @@ async function generateContentWithFallback(
     config?: any;
   }
 ) {
-  // High-speed, high-accuracy, cost-optimized model lineup prioritizing gemini-2.5-flash with zero thinking tokens
+  // High-speed, high-accuracy model lineup strictly from Tier 1 project: gemini-2.5-flash first, then 3.5 flash lite, 3.7 flash, 3.1 flash lite
   const models = [
     "gemini-2.5-flash",
-    "gemini-flash-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-3.7-flash",
     "gemini-3.1-flash-lite",
   ];
 
@@ -963,19 +968,7 @@ app.post("/api/grade", async (req, res) => {
       return res.status(400).json({ error: "Nội dung bài viết không được để trống." });
     }
 
-    let activeAi: GoogleGenAI | null = null;
-    if (customApiKey && typeof customApiKey === "string" && customApiKey.trim().length > 0) {
-      activeAi = new GoogleGenAI({
-        apiKey: customApiKey.trim(),
-        httpOptions: {
-          headers: {
-            "User-Agent": "aistudio-build",
-          },
-        },
-      });
-    } else {
-      activeAi = ai;
-    }
+    const activeAi = getAiClient(customApiKey);
 
     if (!activeAi) {
       return res.status(500).json({
